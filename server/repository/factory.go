@@ -91,21 +91,21 @@ func (f *RepositoryFactory) GetCmsPlaceRepository() *CmsAssociatedPlaceRepositor
 	return f.cms_place
 }
 
-func (f *RepositoryFactory) GetCmsArchiveRepository() *CmsDocumentArchiveRepository {
+func (f *RepositoryFactory) GetCmsDocumentArchiveRepository() *CmsDocumentArchiveRepository {
 	if f.cms_archive == nil {
 		f.cms_archive = NewCmsDocumentArchiveRepository(f.db)
 	}
 	return f.cms_archive
 }
 
-func (f *RepositoryFactory) GetCmsDocTagRepository() *CmsDocumentTagRepository {
+func (f *RepositoryFactory) GetCmsDocumentTagRepository() *CmsDocumentTagRepository {
 	if f.cms_doc_tag == nil {
 		f.cms_doc_tag = NewCmsDocumentTagRepository(f.db)
 	}
 	return f.cms_doc_tag
 }
 
-func (f *RepositoryFactory) GetCmsDocVideoRepository() *CmsDocumentVideoRepository {
+func (f *RepositoryFactory) GetCmsDocumentVideoRepository() *CmsDocumentVideoRepository {
 	if f.cms_doc_video == nil {
 		f.cms_doc_video = NewCmsDocumentVideoRepository(f.db)
 	}
