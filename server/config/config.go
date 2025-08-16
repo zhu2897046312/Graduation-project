@@ -148,7 +148,7 @@ func Init() error {
 } 
 
 // InitMySQLDB 初始化MySQL数据库连接
-func InitMySQLDB() error {
+func InitMySQLDB() (*gorm.DB, error) {
     // 配置GORM日志级别
     gormConfig := &gorm.Config{
         Logger: logger.Default.LogMode(logger.Info),
@@ -159,13 +159,13 @@ func InitMySQLDB() error {
     // 创建数据库连接
     db, err := gorm.Open(mysql.Open(GlobalConfig.Database.DSN()), gormConfig)
     if err != nil {
-        return fmt.Errorf("failed to connect database: %v", err)
+        return nil,fmt.Errorf("failed to connect database: %v", err)
     }
 
     // 获取通用数据库对象 sql.DB
     sqlDB, err := db.DB()
     if err != nil {
-        return fmt.Errorf("failed to get sql.DB: %v", err)
+        return nil,fmt.Errorf("failed to get sql.DB: %v", err)
     }
 
     // 设置连接池参数
@@ -175,7 +175,7 @@ func InitMySQLDB() error {
 
     DB = db
     log.Println("MySQL database connection established successfully")
-    return nil
+    return DB,nil
 }
 
 // InitRedis 初始化Redis连接
