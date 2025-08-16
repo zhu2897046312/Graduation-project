@@ -24,9 +24,6 @@ func (s *SpSkuService) CreateSku(sku *sp.SpSku) error {
 	if sku.Price <= 0 {
 		return errors.New("SKU价格必须大于0")
 	}
-	if sku.Stock < 0 {
-		return errors.New("库存不能为负数")
-	}
 	
 	return s.repoFactory.GetSpSkuRepository().Create(sku)
 }
@@ -38,9 +35,6 @@ func (s *SpSkuService) UpdateSku(sku *sp.SpSku) error {
 	}
 	if sku.Price <= 0 {
 		return errors.New("SKU价格必须大于0")
-	}
-	if sku.Stock < 0 {
-		return errors.New("库存不能为负数")
 	}
 	
 	return s.repoFactory.GetSpSkuRepository().Update(sku)
