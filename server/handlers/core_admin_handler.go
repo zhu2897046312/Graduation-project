@@ -2,17 +2,24 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
+	"strconv"
+	"net/http"
 	"server/models/core"
 	"server/service"
-	"strconv"
+	"server/utils"
 )
 
 type CoreAdminHandler struct {
 	service *service.CoreAdminService
+	rdb     *redis.Client // 添加Redis客户端
 }
 
-func NewCoreAdminHandler(service *service.CoreAdminService) *CoreAdminHandler {
-	return &CoreAdminHandler{service: service}
+func NewCoreAdminHandler(service *service.CoreAdminService, rdb *redis.Client) *CoreAdminHandler {
+	return &CoreAdminHandler{
+		service: service,
+		rdb:     rdb, // 初始化Redis客户端
+	}
 }
 
 // 创建管理员
@@ -117,4 +124,50 @@ func (h *CoreAdminHandler) UpdateAdminPassword(c *gin.Context) {
 	}
 
 	Success(c, nil)
+}
+
+// LoginRequest 定义登录请求结构体
+type LoginRequest struct {
+	Account  string `json:"account" binding:"required"`
+	Password string `json:"pwd" binding:"required"`
+}
+
+// LoginResponse 定义登录响应结构体
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
+// Login 管理员登录
+func (h *CoreAdminHandler) LoginAdmin(c *gin.Context) {
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求参数"})
+		return
+	}
+
+	admin, err := h.service.GetAdminByAccount(req.Account)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "账号或密码错误"})
+		return
+	}
+
+	// 验证账号密码
+	if !utils.VerifyPassword(req.Password, admin.Pwd) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "账号或密码错误"})
+		return
+	}
+
+	// 创建会话信息
+	sessionInfo := &utils.CoreLoginUserInfoModel{
+		ID: admin.ID,
+	}
+
+	// 存储到Redis并获取token
+	token, err := utils.PutSession(h.rdb, admin.ID, sessionInfo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建会话失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, LoginResponse{Token: token})
 }

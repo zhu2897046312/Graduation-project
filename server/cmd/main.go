@@ -27,7 +27,7 @@ func main(){
 	// 创建 Gin 引擎
     r := gin.Default()
 
-	router.SetupRouter(serviceFactory)
+	router.SetupRouter(r,serviceFactory,config.RedisClient)
 	// 启动服务器
     port := config.GlobalConfig.Server.Port
     log.Printf("服务器启动在 :%d", port)
