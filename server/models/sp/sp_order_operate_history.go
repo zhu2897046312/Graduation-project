@@ -12,3 +12,6 @@ type SpOrderOperateHistory struct {
     CreatedTime  time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime  time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+func (SpOrderOperateHistory) TableName() string {
+    return "sp_order_operate_history"
+}

@@ -12,3 +12,7 @@ type CmsUserLikeHistory struct {
     CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+
+func (CmsUserLikeHistory) TableName() string {
+	return "cms_user_like_history"
+}

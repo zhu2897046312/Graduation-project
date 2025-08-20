@@ -21,3 +21,6 @@ type SpUserAddress struct {
     Country       string     `gorm:"size:64;not null;default:''" json:"country"`
     PostalCode    string     `gorm:"size:64;not null;default:''" json:"postalCode"`
 }
+func (SpUserAddress) TableName() string {
+    return "sp_user_address"
+}

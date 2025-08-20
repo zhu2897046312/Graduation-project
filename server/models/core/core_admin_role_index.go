@@ -10,3 +10,7 @@ type CoreAdminRoleIndex struct {
     CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+
+func (CoreAdminRoleIndex) TableName() string {
+    return "core_admin_role_index"
+}

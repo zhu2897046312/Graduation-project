@@ -19,3 +19,6 @@ type SpSku struct {
     UpdatedTime  time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     DeletedTime  *time.Time `json:"deletedTime"`
 }
+func (SpSku) TableName() string {
+    return "sp_sku"
+}

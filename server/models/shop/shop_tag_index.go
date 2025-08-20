@@ -11,3 +11,6 @@ type ShopTagIndex struct {
     CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+func (ShopTagIndex) TableName() string {
+    return "shop_tag_index"
+}

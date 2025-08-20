@@ -14,3 +14,7 @@ type CmsFile struct {
     CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+
+func (CmsFile) TableName() string {
+	return "cms_file"
+}

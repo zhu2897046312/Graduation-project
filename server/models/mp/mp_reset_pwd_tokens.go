@@ -11,3 +11,6 @@ type MpResetPwdTokens struct {
     CreatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     Count          int       `gorm:"not null;default:1" json:"count"`
 }
+func (MpResetPwdTokens) TableName() string {
+    return "mp_reset_pwd_tokens"
+}

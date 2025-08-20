@@ -16,3 +16,6 @@ type MpUser struct {
     UpdatedTime time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     Token       string     `gorm:"size:100" json:"token"`
 }
+func (MpUser) TableName() string {
+    return "mp_user"
+}

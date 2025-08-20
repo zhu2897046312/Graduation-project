@@ -16,3 +16,6 @@ type SpOrderRefund struct {
     UpdatedTime  time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     RefundNo     string         `gorm:"size:64" json:"refundNo"`
 }
+func (SpOrderRefund) TableName() string {
+    return "sp_order_refund"
+}

@@ -13,3 +13,6 @@ type SpProductContent struct {
     CreatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+func (SpProductContent) TableName() string {
+    return "sp_product_content"
+}

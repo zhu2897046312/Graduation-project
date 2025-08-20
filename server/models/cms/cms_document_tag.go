@@ -10,3 +10,7 @@ type CmsDocumentTag struct {
     CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+
+func (CmsDocumentTag) TableName() string {
+	return "cms_document_tag"
+}

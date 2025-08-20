@@ -17,3 +17,7 @@ type CmsTag struct {
     UpdatedTime  time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     DeletedTime  *time.Time `json:"deletedTime"`
 }
+
+func (CmsTag) TableName() string {
+	return "cms_tag"
+}

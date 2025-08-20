@@ -12,3 +12,6 @@ type ShopTagMate struct {
     CreatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+func (ShopTagMate) TableName() string {
+    return "shop_tag_mate"
+}

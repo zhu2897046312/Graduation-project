@@ -22,3 +22,6 @@ type SpOrderItem struct {
     CreatedTime   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+func (SpOrderItem) TableName() string {
+    return "sp_order_item"
+}

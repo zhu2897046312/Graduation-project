@@ -9,3 +9,6 @@ type PaypalOrderLogs struct {
     PaypalOrderID string    `gorm:"size:64;not null;unique" json:"paypalOrderId"`
     CreateTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createTime"`
 }
+func (PaypalOrderLogs) TableName() string {
+    return "paypal_order_logs"
+}

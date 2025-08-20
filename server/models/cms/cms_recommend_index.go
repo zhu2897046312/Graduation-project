@@ -16,3 +16,7 @@ type CmsRecommendIndex struct {
     CreatedTime  time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime  time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+
+func (CmsRecommendIndex) TableName() string {
+	return "cms_recommend_index"
+}

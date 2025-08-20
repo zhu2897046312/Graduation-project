@@ -11,3 +11,6 @@ type SpProdAttributes struct {
     UpdatedTime time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     DeletedTime *time.Time `json:"deletedTime"`
 }
+func (SpProdAttributes) TableName() string {
+    return "sp_prod_attributes"
+}

@@ -16,3 +16,6 @@ type ShopTag struct {
     DeletedTime *time.Time `json:"deletedTime"`
     MatchWord   string     `gorm:"size:255" json:"matchWord"`
 }
+func (ShopTag) TableName() string {
+    return "shop_tag"
+}

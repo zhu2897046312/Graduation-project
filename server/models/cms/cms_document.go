@@ -29,3 +29,7 @@ type CmsDocument struct {
     DeletedTime       *time.Time `json:"deletedTime"`
     Code              string    `gorm:"size:512" json:"code"`
 }
+
+func (CmsDocument) TableName() string {
+	return "cms_document"
+}

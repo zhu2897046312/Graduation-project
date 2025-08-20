@@ -13,3 +13,6 @@ type MpPayConfig struct {
     CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+func (MpPayConfig) TableName() string {
+    return "mp_pay_config"
+}

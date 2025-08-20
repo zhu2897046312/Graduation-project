@@ -21,3 +21,7 @@ type CmsScenicSpot struct {
     CreatedTime      time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime      time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
 }
+
+func (CmsScenicSpot) TableName() string {
+	return "cms_scenic_spot"
+}

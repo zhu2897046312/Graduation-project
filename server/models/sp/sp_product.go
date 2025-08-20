@@ -28,3 +28,6 @@ type SpProduct struct {
     DetailURL      string         `gorm:"size:512" json:"detailUrl"`
     PriceLocked    bool           `gorm:"default:0" json:"priceLocked"`
 }
+func (SpProduct) TableName() string {
+    return "sp_product"
+}

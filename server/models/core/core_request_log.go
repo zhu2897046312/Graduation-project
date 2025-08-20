@@ -18,3 +18,7 @@ type CoreRequestLog struct {
     Token           string    `gorm:"size:200" json:"token"`
     CreateTime      time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createTime"`
 }
+
+func (CoreRequestLog) TableName() string {
+    return "core_request_log"
+}

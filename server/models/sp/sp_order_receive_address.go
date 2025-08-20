@@ -19,3 +19,6 @@ type SpOrderReceiveAddress struct {
     Country       string    `gorm:"size:64;not null;default:''" json:"country"`
     PostalCode    string    `gorm:"size:64;not null;default:''" json:"postalCode"`
 }
+func (SpOrderReceiveAddress) TableName() string {
+    return "sp_order_receive_address"
+}

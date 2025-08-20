@@ -18,3 +18,6 @@ type MpProduct struct {
     UpdatedTime   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     ShowType      int8      `gorm:"not null;default:0" json:"showType"`
 }
+func (MpProduct) TableName() string {
+    return "mp_product"
+}

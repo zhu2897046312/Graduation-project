@@ -14,3 +14,6 @@ type PaypalWebhookLogs struct {
     CreateTime    time.Time      `gorm:"default:CURRENT_TIMESTAMP" json:"createTime"`
     ProcessResult string         `gorm:"size:255" json:"processResult"`
 }
+func (PaypalWebhookLogs) TableName() string {
+    return "paypal_webhook_logs"
+}

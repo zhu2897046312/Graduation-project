@@ -26,3 +26,7 @@ type CmsComment struct {
     UpdatedTime       time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     DeletedTime       *time.Time `json:"deletedTime"`
 }
+
+func (CmsComment) TableName() string {
+	return "cms_comment"
+}
