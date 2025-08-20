@@ -1,9 +1,12 @@
 package utils
-import(
+
+import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 )
 func VerifyPassword(inputPwd, storedPwd string) bool {
+	fmt.Println(inputPwd)
 	// 1. 第一次加密：md5(pwd + "_" + pwd)
 	data := []byte(inputPwd + "_" + inputPwd)
 	first := md5.Sum(data)
@@ -18,5 +21,6 @@ func VerifyPassword(inputPwd, storedPwd string) bool {
 	hashedInput := firstHex + "$$" + secondHex
 
 	// 4. 比较结果
+	fmt.Println(hashedInput, storedPwd)
 	return hashedInput == storedPwd
 }

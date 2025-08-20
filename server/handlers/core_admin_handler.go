@@ -1,13 +1,15 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
-	"strconv"
+	"fmt"
 	"net/http"
 	"server/models/core"
 	"server/service"
 	"server/utils"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 )
 
 type CoreAdminHandler struct {
@@ -144,7 +146,7 @@ func (h *CoreAdminHandler) LoginAdmin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求参数"})
 		return
 	}
-
+	fmt.Println(req)
 	admin, err := h.service.GetAdminByAccount(req.Account)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "账号或密码错误"})
