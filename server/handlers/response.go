@@ -10,7 +10,9 @@ import (
 type Response struct {
 	Code    int         `json:"code"`    // 状态码，0表示成功
 	Message string      `json:"message"` // 提示信息
-	Data    interface{} `json:"data"`    // 返回数据
+	Data    interface{} `json:"result"`    // 返回数据
+	Error   interface{} `json:"error"`    
+	Time    int64       `json:"time"`    
 }
 
 // 成功响应

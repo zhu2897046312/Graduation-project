@@ -7,7 +7,7 @@ import (
 	"server/service"
 	"server/utils"
 	"strconv"
-
+	"server/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
@@ -143,33 +143,69 @@ type LoginResponse struct {
 func (h *CoreAdminHandler) LoginAdmin(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求参数"})
+		InvalidParams(c)
 		return
 	}
 	fmt.Println(req)
 	admin, err := h.service.GetAdminByAccount(req.Account)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "账号或密码错误"})
+		Error(c, 5006, "账号或密码错误")
 		return
 	}
 
 	// 验证账号密码
 	if !utils.VerifyPassword(req.Password, admin.Pwd) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "账号或密码错误"})
+		Error(c, 5006, "账号或密码错误")
 		return
 	}
 
 	// 创建会话信息
 	sessionInfo := &utils.CoreLoginUserInfoModel{
 		ID: admin.ID,
+		Nickname: admin.Nickname,
+		Permission: string(admin.Permission),
+		Avatar: "",
+		DeptID: admin.DeptID,
 	}
 
 	// 存储到Redis并获取token
 	token, err := utils.PutSession(h.rdb, admin.ID, sessionInfo)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建会话失败"})
+		Error(c, 5006, "登录失败")
 		return
 	}
 
-	c.JSON(http.StatusOK, LoginResponse{Token: token})
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
+		"result": token,
+		"error": nil,
+		"message": nil,
+		"time": 1755765633795,
+	})
+}
+
+// 在 CoreAdminHandler 结构体添加方法
+
+// GetAdminInfo 获取当前登录管理员信息
+func (h *CoreAdminHandler) GetAdminInfo(c *gin.Context) {
+	// 从上下文中获取用户信息
+	user := middleware.GetUserFromContext(c)
+	if user == nil {
+		Error(c, 5006, "获取管理员信息失败")
+		return
+	}
+
+	// 根据用户ID获取完整的用户信息
+	admin, err := h.service.GetAdminByID(user.ID)
+	if err != nil {
+		Error(c, 5006, "获取管理员信息失败")
+		return
+	}
+
+	Success(c, admin)
+}
+
+func (h *CoreAdminHandler) GetEnumDict(c *gin.Context) {
+	utils.GetEnumDict()
+	c.JSON(http.StatusOK, utils.GetEnumDict())
 }

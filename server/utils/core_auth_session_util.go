@@ -8,15 +8,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"golang.org/x/net/context"
 )
 
 // CoreLoginUserInfoModel 定义用户信息结构体
 type CoreLoginUserInfoModel struct {
-	ID    int64  `json:"id"`
-	
+	ID         int64  `json:"id"`
+	Nickname   string `json:"nickname"`
+	Account    string `json:"account"`
+	DeptID     int64 `json:"dept_id"`
+	Avatar     string `json:"avatar"`
+	Permission string `json:"permission"`
 }
 
 // RedisPrefixKey Redis 键前缀
@@ -28,10 +32,10 @@ func SessionID(id int64) string {
 	hashID := md5.Sum([]byte(fmt.Sprintf("%d", id)))
 	hashNow := md5.Sum([]byte(now))
 	randomUUID := strings.ReplaceAll(uuid.New().String(), "-", "")[:5]
-	
-	return fmt.Sprintf("%s.%s.%s", 
-		hex.EncodeToString(hashID[:]), 
-		hex.EncodeToString(hashNow[:]), 
+
+	return fmt.Sprintf("%s.%s.%s",
+		hex.EncodeToString(hashID[:]),
+		hex.EncodeToString(hashNow[:]),
 		randomUUID)
 }
 
@@ -43,9 +47,9 @@ func PutSession(rdb *redis.Client, id int64, obj *CoreLoginUserInfoModel) (strin
 		return "", err
 	}
 
-	err = rdb.Set(context.Background(), 
-		fmt.Sprintf("%s:%s", RedisPrefixKey, key), 
-		jsonData, 
+	err = rdb.Set(context.Background(),
+		fmt.Sprintf("%s:%s", RedisPrefixKey, key),
+		jsonData,
 		8*time.Hour).Err()
 	if err != nil {
 		return "", err

@@ -2,18 +2,68 @@ package router
 
 import (
 	"server/handlers"
-	"server/service"
 	"server/middleware"
+	"server/service"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
 
-func SetupRouter(r *gin.Engine,factory *service.ServiceFactory, rdb *redis.Client) *gin.Engine {
+func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Client) *gin.Engine {
 	r.Use(
-		middleware.Cors(),                           // CORS中间件         // 服务注入中间件
+		middleware.Cors(), // CORS中间件         // 服务注入中间件
 	)
 	api := r.Group("/api")
 	{
+		// 公开路由（不需要认证）
+		public := api.Group("")
+		{
+			// 管理员登录
+			adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
+			public.POST("/manage/core/auth/login", adminHandler.LoginAdmin)
+		}
+		// 管理员认证路由
+		adminAuth := api.Group("/manage")
+		adminAuth.Use(middleware.AuthMiddleware(rdb)) // 添加管理员认证中间件
+		{
+			// 获取当前管理员信息
+			adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
+			adminAuth.GET("/core/auth/info", adminHandler.GetAdminInfo)
+			adminAuth.GET("/core/auth/enumDict", adminHandler.GetEnumDict)
+			adminGroup := adminAuth.Group("/core/admins")
+			{
+				adminGroup.POST("", adminHandler.CreateAdmin)
+				adminGroup.PUT("/:id", adminHandler.UpdateAdmin)
+				adminGroup.GET("/:id", adminHandler.GetAdmin)
+				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
+				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
+			}
+		}
+		// 用户认证路由（需要登录用户）
+		userAuth := api.Group("")
+		userAuth.Use(middleware.AuthMiddleware(rdb)) // 添加用户认证中间件
+		{
+			// 用户相关操作
+			// 用户路由组
+			userHandler := handlers.NewMpUserHandler(factory.GetMpUserService())
+			userGroup := api.Group("/mp/users")
+			{
+				userGroup.POST("", userHandler.CreateUser)
+				userGroup.PUT("/:id", userHandler.UpdateUser)
+				userGroup.GET("/:id", userHandler.GetUser)
+				userGroup.GET("/email", userHandler.GetUserByEmail)
+				userGroup.PATCH("/:id/status", userHandler.UpdateUserStatus)
+				userGroup.PATCH("/:id/password", userHandler.UpdateUserPassword)
+				userGroup.PATCH("/:id/verify-email", userHandler.VerifyUserEmail)
+				userGroup.PATCH("/:id/token", userHandler.UpdateUserToken)
+			}
+		}
+		// 可选认证路由（游客可访问，但如果有有效token会设置用户信息）
+		optionalAuth := api.Group("")
+		optionalAuth.Use(middleware.OptionalAuthMiddleware(rdb)) // 添加可选认证中间件
+		{
+
+		}
 		// 地点路由组
 		placeHandler := handlers.NewCmsPlaceHandler(factory.GetCmsAssociatedPlaceService())
 		placeGroup := api.Group("/cms/places")
@@ -153,21 +203,6 @@ func SetupRouter(r *gin.Engine,factory *service.ServiceFactory, rdb *redis.Clien
 			likeHistoryGroup.GET("/count/document/:document_id", likeHistoryHandler.GetLikeCount)
 		}
 
-		// 管理员路由组
-		adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(),rdb)
-		adminAuth := api.Group("/manage/core/auth")
-		{
-			adminAuth.POST("/login", adminHandler.LoginAdmin)
-		}
-		adminGroup := api.Group("/core/admins")
-		{
-			adminGroup.POST("", adminHandler.CreateAdmin)
-			adminGroup.PUT("/:id", adminHandler.UpdateAdmin)
-			adminGroup.GET("/:id", adminHandler.GetAdmin)
-			adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
-			adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
-		}
-
 		// 管理员角色路由组
 		adminRoleHandler := handlers.NewCoreAdminRoleIndexHandler(factory.GetCoreAdminRoleIndexService())
 		adminRoleGroup := api.Group("/core/admin-roles")
@@ -279,20 +314,6 @@ func SetupRouter(r *gin.Engine,factory *service.ServiceFactory, rdb *redis.Clien
 			resetTokenGroup.PATCH("/increment/:email", resetTokenHandler.IncrementTokenCount)
 			resetTokenGroup.DELETE("/cleanup", resetTokenHandler.DeleteExpiredTokens)
 			resetTokenGroup.DELETE("/email/:email", resetTokenHandler.DeleteTokenByEmail)
-		}
-
-		// 用户路由组
-		userHandler := handlers.NewMpUserHandler(factory.GetMpUserService())
-		userGroup := api.Group("/mp/users")
-		{
-			userGroup.POST("", userHandler.CreateUser)
-			userGroup.PUT("/:id", userHandler.UpdateUser)
-			userGroup.GET("/:id", userHandler.GetUser)
-			userGroup.GET("/email", userHandler.GetUserByEmail)
-			userGroup.PATCH("/:id/status", userHandler.UpdateUserStatus)
-			userGroup.PATCH("/:id/password", userHandler.UpdateUserPassword)
-			userGroup.PATCH("/:id/verify-email", userHandler.VerifyUserEmail)
-			userGroup.PATCH("/:id/token", userHandler.UpdateUserToken)
 		}
 
 		// 用户令牌路由组
@@ -519,6 +540,6 @@ func SetupRouter(r *gin.Engine,factory *service.ServiceFactory, rdb *redis.Clien
 			cartGroup.DELETE("/:id", cartHandler.DeleteCartItem)
 			cartGroup.DELETE("/user/:user_id/clear", cartHandler.ClearCart)
 		}
-	}	
+	}
 	return r
 }
