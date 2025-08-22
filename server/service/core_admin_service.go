@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"server/models/core"
 )
@@ -65,7 +66,12 @@ func (s *CoreAdminService) GetAdminByID(id int64) (*core.CoreAdmin, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的管理员ID")
 	}
-	return s.repoFactory.GetCoreAdminRepository().FindByID(id)
+	admin,_:=s.repoFactory.GetCoreAdminRepository().FindByID(id)
+	// 确保权限字段不为nil
+	if admin.Permission == nil {
+		admin.Permission =  json.RawMessage("[]")
+	}
+	return admin, nil
 }
 
 // GetAdminsByDeptID 根据部门ID获取管理员列表

@@ -201,7 +201,7 @@ func (h *CoreAdminHandler) GetAdminInfo(c *gin.Context) {
 		Error(c, 5006, "获取管理员信息失败")
 		return
 	}
-
+	
 	Success(c, admin)
 }
 
