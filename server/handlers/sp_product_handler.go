@@ -1,11 +1,20 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"server/models/sp"
 	"server/service"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
+
+type ListProductsRequest struct {
+	CategoryID string `json:"category_id"`
+	State      int `json:"state"`
+	Title      string `json:"title"`
+	Page       int `json:"page_no"`
+	PageSize   int `json:"page_size"`
+}
 
 type SpProductHandler struct {
 	service *service.SpProductService
@@ -73,10 +82,13 @@ func (h *SpProductHandler) GetProduct(c *gin.Context) {
 
 // ListProducts 分页获取商品
 func (h *SpProductHandler) ListProducts(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	var req ListProductsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
 
-	products, total, err := h.service.ListProducts(page, pageSize)
+	products, total, err := h.service.ListProducts(req.Page, req.PageSize)
 	if err != nil {
 		ServerError(c, err)
 		return

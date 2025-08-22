@@ -19,6 +19,7 @@ type SpCategory struct {
     CreatedTime   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     DeletedTime   *time.Time `json:"deletedTime"`
+    //Children      []SpCategory `gorm:"-" json:"children"` // 添加Children字段，gorm:"-"表示忽略数据库映射
 }
 func (SpCategory) TableName() string {
     return "sp_category"

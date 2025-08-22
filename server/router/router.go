@@ -15,6 +15,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 	)
 	api := r.Group("/api")
 	{
+		// SP分类路由组
+		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -38,6 +40,30 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
+			//商品路由组
+			productHandler := handlers.NewSpProductHandler(factory.GetSpProductService())
+			productGroup := adminAuth.Group("/shop/product")
+			{
+				productGroup.POST("", productHandler.CreateProduct)
+				productGroup.PUT("/:id", productHandler.UpdateProduct)
+				productGroup.GET("/:id", productHandler.GetProduct)
+				productGroup.POST("/list", productHandler.ListProducts)
+				productGroup.PATCH("/:id/stock", productHandler.UpdateStock)
+			}
+			spCategoryGroup := adminAuth.Group("/shop/category")
+			{
+				spCategoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
+			}
+		}
+		
+		spCategoryGroup := api.Group("/sp/categories")
+		{
+			spCategoryGroup.POST("", spCategoryHandler.CreateCategory)
+			spCategoryGroup.PUT("/:id", spCategoryHandler.UpdateCategory)
+			spCategoryGroup.GET("/:id", spCategoryHandler.GetCategory)
+			spCategoryGroup.GET("", spCategoryHandler.GetSubCategories)
+			spCategoryGroup.PATCH("/:id/state", spCategoryHandler.UpdateCategoryState)
+			spCategoryGroup.PATCH("/:id/sort", spCategoryHandler.UpdateCategorySortNum)
 		}
 		// 用户认证路由（需要登录用户）
 		userAuth := api.Group("")
@@ -386,17 +412,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 	tagGroup.GET("/list", tagHandler.ListTags)
 		// }
 
-		// SP分类路由组
-		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
-		spCategoryGroup := api.Group("/sp/categories")
-		{
-			spCategoryGroup.POST("", spCategoryHandler.CreateCategory)
-			spCategoryGroup.PUT("/:id", spCategoryHandler.UpdateCategory)
-			spCategoryGroup.GET("/:id", spCategoryHandler.GetCategory)
-			spCategoryGroup.GET("", spCategoryHandler.GetSubCategories)
-			spCategoryGroup.PATCH("/:id/state", spCategoryHandler.UpdateCategoryState)
-			spCategoryGroup.PATCH("/:id/sort", spCategoryHandler.UpdateCategorySortNum)
-		}
+		
 
 		// SP订单项路由组
 		spOrderItemHandler := handlers.NewSpOrderItemHandler(factory.GetSpOrderItemService())
@@ -498,17 +514,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			productPropertyGroup.GET("/product/:product_id", productPropertyHandler.GetPropertiesByProduct)
 			productPropertyGroup.DELETE("/product/:product_id", productPropertyHandler.DeletePropertiesByProduct)
 		}
-
-		// 商品路由组
-		// productHandler := handlers.NewSpProductHandler(factory.GetSpProductService())
-		// productGroup := api.Group("/sp/products")
-		// {
-		// 	productGroup.POST("", productHandler.CreateProduct)
-		// 	productGroup.PUT("/:id", productHandler.UpdateProduct)
-		// 	productGroup.GET("/:id", productHandler.GetProduct)
-		// 	productGroup.GET("", productHandler.ListProducts)
-		// 	productGroup.PATCH("/:id/stock", productHandler.UpdateStock)
-		// }
 
 		// SKU路由组
 		skuHandler := handlers.NewSpSkuHandler(factory.GetSpSkuService())

@@ -65,6 +65,11 @@ func (s *SpCategoryService) GetCategoryByID(id uint) (*sp.SpCategory, error) {
 	return s.repoFactory.GetSpCategoryRepository().FindByID(id)
 }
 
+// GetAllCategories 获取所有分类
+func (s *SpCategoryService) GetAllCategories() ([]*sp.SpCategory, error) {
+	return s.repoFactory.GetSpCategoryRepository().FindAll()
+}
+
 // GetCategoriesByPid 根据父ID获取子分类
 func (s *SpCategoryService) GetCategoriesByPid(pid uint) ([]*sp.SpCategory, error) {
 	return s.repoFactory.GetSpCategoryRepository().FindByPid(pid)

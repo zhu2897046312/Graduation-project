@@ -21,6 +21,7 @@ func Success(c *gin.Context, data interface{}) {
 		Code:    0,
 		Message: "success",
 		Data:    data,
+		Error: nil,
 	})
 }
 
