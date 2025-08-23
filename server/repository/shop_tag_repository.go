@@ -20,7 +20,7 @@ func (r *ShopTagRepository) Create(tag *shop.ShopTag) error {
 	return r.db.Create(tag).Error
 }
 
-// 更新商品标签
+// 更新商品标签shop
 func (r *ShopTagRepository) Update(tag *shop.ShopTag) error {
 	return r.db.Save(tag).Error
 }
@@ -58,19 +58,50 @@ func (r *ShopTagRepository) IncrementReadNum(id int) error {
 }
 
 // 获取所有标签（分页）
-func (r *ShopTagRepository) ListWithPagination(page, pageSize int) ([]shop.ShopTag, int64, error) {
+func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]shop.ShopTag, int64, error) {
 	var tags []shop.ShopTag
 	var total int64
 
-	offset := (page - 1) * pageSize
+	// 设置默认值
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.PageSize < 1 || params.PageSize > 100 {
+		params.PageSize = 10
+	}
+	if params.SortBy == "" {
+		params.SortBy = "sort_num"
+	}
+	if params.SortOrder == "" {
+		params.SortOrder = "ASC"
+	}
 
-	if err := r.db.Model(&shop.ShopTag{}).Count(&total).Error; err != nil {
+	offset := (params.Page - 1) * params.PageSize
+	
+	// 构建查询
+	query := r.db.Model(&shop.ShopTag{})
+
+	// 应用过滤条件
+	if params.State != 0 {
+		query = query.Where("state = ?", params.State)
+	}
+
+	if params.Title != "" {
+		query = query.Where("title LIKE ?", "%"+params.Title+"%")
+	}
+
+	// 设置排序
+	orderClause := params.SortBy + " " + params.SortOrder
+	query = query.Order(orderClause)
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	err := r.db.Offset(offset).
-		Limit(pageSize).
-		Order("sort_num ASC").
+	// 获取分页数据
+	err := query.Offset(offset).
+		Limit(params.PageSize).
 		Find(&tags).Error
 
 	return tags, total, err

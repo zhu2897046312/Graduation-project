@@ -19,6 +19,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
 		// SP商品属性路由组
 		spAttrHandler := handlers.NewSpProdAttributesHandler(factory.GetSpProdAttributesService())
+		// 商品标签路由组
+		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService())
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -59,6 +61,10 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spAttrGroup := adminAuth.Group("/shop/prodAttributes")
 			{
 				spAttrGroup.POST("/list", spAttrHandler.GetAttributesByPage)
+			}
+			tagGroup := adminAuth.Group("/shop/tag")
+			{
+				tagGroup.POST("/list", tagHandler.ListTags)
 			}
 		}
 		
@@ -213,15 +219,15 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		}
 
 		// 标签路由组
-		tagHandler := handlers.NewCmsTagHandler(factory.GetCmsTagService())
+		cmsTagHandler := handlers.NewCmsTagHandler(factory.GetCmsTagService())
 		tagGroup := api.Group("/cms/tags")
 		{
-			tagGroup.POST("", tagHandler.CreateTag)
-			tagGroup.PUT("/:id", tagHandler.UpdateTag)
-			tagGroup.GET("/:id", tagHandler.GetTag)
-			tagGroup.GET("", tagHandler.GetByState)
-			tagGroup.PATCH("/:id/read", tagHandler.IncrementReadNum)
-			tagGroup.GET("/search", tagHandler.SearchTags)
+			tagGroup.POST("", cmsTagHandler.CreateTag)
+			tagGroup.PUT("/:id", cmsTagHandler.UpdateTag)
+			tagGroup.GET("/:id", cmsTagHandler.GetTag)
+			tagGroup.GET("", cmsTagHandler.GetByState)
+			tagGroup.PATCH("/:id/read", cmsTagHandler.IncrementReadNum)
+			tagGroup.GET("/search", cmsTagHandler.SearchTags)
 		}
 
 		// 用户点赞路由组

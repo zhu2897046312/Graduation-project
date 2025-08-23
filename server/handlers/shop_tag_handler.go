@@ -11,6 +11,14 @@ type ShopTagHandler struct {
 	service *service.ShopTagService
 }
 
+type ListTagsRequest struct {
+	// CategoryID interface{} `json:"category_id"` // 使用interface{}接收任何类型
+	State      int `json:"status"`
+	Title      string `json:"title"`
+	Page       int `json:"page_no"`
+	PageSize   int `json:"page_size"`
+}
+
 func NewShopTagHandler(service *service.ShopTagService) *ShopTagHandler {
 	return &ShopTagHandler{service: service}
 }
@@ -123,10 +131,18 @@ func (h *ShopTagHandler) IncrementTagReadNum(c *gin.Context) {
 
 // 分页获取标签
 func (h *ShopTagHandler) ListTags(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+	var req ListTagsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
 
-	tags, total, err := h.service.ListTags(page, pageSize)
+	tags, total, err := h.service.ListTags(shop.TagQueryParams{
+		State:      req.State,
+		Title:      req.Title,
+		Page:       req.Page,
+		PageSize:   req.PageSize,
+	})
 	if err != nil {
 		Error(c, 21007, "获取标签列表失败")
 		return

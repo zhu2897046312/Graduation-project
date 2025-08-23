@@ -81,14 +81,14 @@ func (s *ShopTagService) IncrementTagReadNum(id int) error {
 }
 
 // ListTags 获取所有标签（分页）
-func (s *ShopTagService) ListTags(page, pageSize int) ([]shop.ShopTag, int64, error) {
+func (s *ShopTagService) ListTags(params shop.TagQueryParams) ([]shop.ShopTag, int64, error) {
 	// 验证分页参数
-	if page < 1 {
-		page = 1
+	if params.Page < 1 {
+		params.Page = 1
 	}
-	if pageSize < 1 || pageSize > 100 {
-		pageSize = 20
+	if params.PageSize < 1 || params.PageSize > 100 {
+		params.PageSize = 10
 	}
 	
-	return s.repoFactory.GetShopTagRepository().ListWithPagination(page, pageSize)
+	return s.repoFactory.GetShopTagRepository().ListWithPagination(params)
 }

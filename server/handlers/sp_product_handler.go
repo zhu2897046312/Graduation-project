@@ -3,8 +3,8 @@ package handlers
 import (
 	"server/models/sp"
 	"server/service"
+	"server/utils"
 	"strconv"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -83,50 +83,15 @@ func (h *SpProductHandler) GetProduct(c *gin.Context) {
 
 	Success(c, product)
 }
-func convertToUint(value interface{}) uint {
-	if value == nil {
-		return 0
-	}
-	
-	switch v := value.(type) {
-	case string:
-		if v == "" || v == "0" {
-			return 0
-		}
-		if id, err := strconv.ParseUint(v, 10, 32); err == nil {
-			return uint(id)
-		}
-	case float64: // JSON数字默认是float64
-		if v == 0 {
-			return 0
-		}
-		return uint(v)
-	case int:
-		return uint(v)
-	case int64:
-		return uint(v)
-	case uint:
-		return v
-	case uint64:
-		return uint(v)
-	default:
-		// 尝试转换为字符串再解析
-		if str, ok := v.(fmt.Stringer); ok {
-			return convertToUint(str.String())
-		}
-	}
-	
-	return 0
-}
 // ListProducts 分页获取商品
 func (h *SpProductHandler) ListProducts(c *gin.Context) {
 	var req ListProductsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams_1(c,req)
+		InvalidParams(c)
 		return
 	}
 	// 统一转换CategoryID为uint
-	categoryID := convertToUint(req.CategoryID)
+	categoryID := utils.ConvertToUint(req.CategoryID)
 	products, total, err := h.service.ListProducts(sp.ProductQueryParams{
 		CategoryID: categoryID,
 		State:      req.State,
