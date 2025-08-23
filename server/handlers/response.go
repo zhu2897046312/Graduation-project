@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,6 +36,11 @@ func Error(c *gin.Context, code int, message string) {
 
 // 参数错误响应
 func InvalidParams(c *gin.Context) {
+	Error(c, 1001, "参数错误")
+}
+
+func InvalidParams_1(c *gin.Context,req interface{}) {
+	fmt.Println(req)
 	Error(c, 1001, "参数错误")
 }
 

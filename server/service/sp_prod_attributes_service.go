@@ -64,6 +64,18 @@ func (s *SpProdAttributesService) GetAllAttributes() ([]sp.SpProdAttributes, err
 	return s.repoFactory.GetSpProdAttributesRepository().FindAll()
 }
 
+// GetAttributesByPage 分页获取属性
+func (s *SpProdAttributesService) GetAttributesByPage(title string, page, pageSize int) ([]sp.SpProdAttributes, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20 // 默认每页20条
+	}
+	
+	return s.repoFactory.GetSpProdAttributesRepository().FindByPage(title, page, pageSize)
+}
+
 // UpdateAttributeSortNum 更新属性排序
 func (s *SpProdAttributesService) UpdateAttributeSortNum(id uint, sortNum uint16) error {
 	if sortNum > 9999 {

@@ -92,14 +92,14 @@ func (s *SpProductService) GetHotProducts(limit int) ([]sp.SpProduct, error) {
 }
 
 // ListProducts 分页获取商品
-func (s *SpProductService) ListProducts(page, pageSize int) ([]sp.SpProduct, int64, error) {
-	if page < 1 {
-		page = 1
+func (s *SpProductService) ListProducts(praramms sp.ProductQueryParams) ([]sp.SpProduct, int64, error) {
+	if praramms.Page < 1 {
+		praramms.Page = 1
 	}
-	if pageSize < 1 || pageSize > 100 {
-		pageSize = 10
+	if praramms.PageSize < 1 || praramms.PageSize > 100 {
+		praramms.PageSize = 10
 	}
-	return s.repoFactory.GetSpProductRepository().ListWithPagination(page, pageSize)
+	return s.repoFactory.GetSpProductRepository().ListWithPagination(praramms)
 }
 
 // UpdateStock 更新商品库存

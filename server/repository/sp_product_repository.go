@@ -55,19 +55,59 @@ func (r *SpProductRepository) FindHotProducts(limit int) ([]sp.SpProduct, error)
 }
 
 // 分页获取商品
-func (r *SpProductRepository) ListWithPagination(page, pageSize int) ([]sp.SpProduct, int64, error) {
+// 分页获取商品（带过滤选项）
+func (r *SpProductRepository) ListWithPagination(params sp.ProductQueryParams) ([]sp.SpProduct, int64, error) {
 	var products []sp.SpProduct
 	var total int64
 
-	offset := (page - 1) * pageSize
+	// 设置默认值
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.PageSize < 1 || params.PageSize > 100 {
+		params.PageSize = 10
+	}
+	if params.SortBy == "" {
+		params.SortBy = "sort_num"
+	}
+	if params.SortOrder == "" {
+		params.SortOrder = "ASC"
+	}
 
-	if err := r.db.Model(&sp.SpProduct{}).Count(&total).Error; err != nil {
+	offset := (params.Page - 1) * params.PageSize
+
+	// 构建查询
+	query := r.db.Model(&sp.SpProduct{})
+
+	// 应用过滤条件
+	if params.CategoryID != 0 {
+		query = query.Where("category_id = ?", params.CategoryID)
+	}
+
+	if params.State != 0 {
+		query = query.Where("state = ?", params.State)
+	}
+
+	if params.Title != "" {
+		query = query.Where("title LIKE ?", "%"+params.Title+"%")
+	}
+
+	if params.Hot != nil {
+		query = query.Where("hot = ?", *params.Hot)
+	}
+
+	// 设置排序
+	orderClause := params.SortBy + " " + params.SortOrder
+	query = query.Order(orderClause)
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	err := r.db.Offset(offset).
-		Limit(pageSize).
-		Order("sort_num ASC").
+	// 获取分页数据
+	err := query.Offset(offset).
+		Limit(params.PageSize).
 		Find(&products).Error
 
 	return products, total, err

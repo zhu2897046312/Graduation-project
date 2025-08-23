@@ -17,6 +17,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 	{
 		// SP分类路由组
 		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
+		// SP商品属性路由组
+		spAttrHandler := handlers.NewSpProdAttributesHandler(factory.GetSpProdAttributesService())
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -41,7 +43,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
 			//商品路由组
-			productHandler := handlers.NewSpProductHandler(factory.GetSpProductService())
+			productHandler := handlers.NewSpProductHandler(factory.GetSpProductService(),factory.GetSpCategoryService())
 			productGroup := adminAuth.Group("/shop/product")
 			{
 				productGroup.POST("", productHandler.CreateProduct)
@@ -53,6 +55,10 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spCategoryGroup := adminAuth.Group("/shop/category")
 			{
 				spCategoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
+			}
+			spAttrGroup := adminAuth.Group("/shop/prodAttributes")
+			{
+				spAttrGroup.POST("/list", spAttrHandler.GetAttributesByPage)
 			}
 		}
 		
@@ -471,8 +477,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spOrderGroup.PATCH("/:id/delivery", spOrderHandler.UpdateDeliveryInfo)
 		}
 
-		// SP商品属性路由组
-		spAttrHandler := handlers.NewSpProdAttributesHandler(factory.GetSpProdAttributesService())
+		
+		
 		spAttrGroup := api.Group("/sp/attributes")
 		{
 			spAttrGroup.POST("", spAttrHandler.CreateAttribute)

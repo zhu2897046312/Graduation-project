@@ -7,6 +7,17 @@ import (
 	"strconv"
 )
 
+type SpProdAttributesPageRequest struct {
+	Title    string `json:"title"`
+	Page     int    `json:"page_no"`
+	PageSize int    `json:"page_size"`
+}
+
+type SpProdAttributesPageResponse struct {
+	Data       []sp.SpProdAttributes `json:"list"`
+	Total      int64                 `json:"total"`
+}
+
 type SpProdAttributesHandler struct {
 	service *service.SpProdAttributesService
 }
@@ -80,6 +91,42 @@ func (h *SpProdAttributesHandler) GetAllAttributes(c *gin.Context) {
 	}
 
 	Success(c, attrs)
+}
+
+// 分页获取属性
+func (h *SpProdAttributesHandler) GetAttributesByPage(c *gin.Context) {
+	var req SpProdAttributesPageRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
+
+	// 设置默认值
+	if req.Page == 0 {
+		req.Page = 1
+	}
+	if req.PageSize == 0 {
+		req.PageSize = 20
+	}
+
+	attrs, total, err := h.service.GetAttributesByPage(req.Title, req.Page, req.PageSize)
+	if err != nil {
+		Error(c, 28007, "获取属性列表失败")
+		return
+	}
+
+	// 计算总页数
+	totalPages := total / int64(req.PageSize)
+	if total%int64(req.PageSize) > 0 {
+		totalPages++
+	}
+
+	response := SpProdAttributesPageResponse{
+		Data:       attrs,
+		Total:      total,
+	}
+
+	Success(c, response)
 }
 
 // 更新属性排序

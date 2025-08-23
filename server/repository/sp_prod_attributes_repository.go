@@ -39,6 +39,32 @@ func (r *SpProdAttributesRepository) FindAll() ([]sp.SpProdAttributes, error) {
 	return attrs, err
 }
 
+// 分页查询属性
+func (r *SpProdAttributesRepository) FindByPage(title string, page, pageSize int) ([]sp.SpProdAttributes, int64, error) {
+	var attrs []sp.SpProdAttributes
+	var total int64
+	
+	query := r.db.Model(&sp.SpProdAttributes{})
+	if title != "" {
+		query = query.Where("title LIKE ?", "%"+title+"%")
+	}
+	
+	// 获取总数
+	err := query.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	
+	// 分页查询
+	offset := (page - 1) * pageSize
+	err = query.Order("sort_num ASC, id DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&attrs).Error
+		
+	return attrs, total, err
+}
+
 // 更新属性排序
 func (r *SpProdAttributesRepository) UpdateSortNum(id uint, sortNum uint16) error {
 	return r.db.Model(&sp.SpProdAttributes{}).
