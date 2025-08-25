@@ -45,12 +45,26 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
 			//商品路由组
-			productHandler := handlers.NewSpProductHandler(factory.GetSpProductService(),factory.GetSpCategoryService())
+			//
+			//skuIndexService *service.SpSkuIndexService,
+			// tagIndexService *service.ShopTagIndexService,
+			// tagService      *service.ShopTagService,
+			//
+			productHandler := handlers.NewSpProductHandler(
+				factory.GetSpProductService(),
+				factory.GetSpCategoryService(),
+				factory.GetSpProductContentService(),
+				factory.GetSpProductPropertyService(),
+				factory.GetSpSkuService(),
+				factory.GetSpSkuIndexService(),
+				factory.GetShopTagIndexService(),
+				factory.GetShopTagService(),
+			)
 			productGroup := adminAuth.Group("/shop/product")
 			{
 				productGroup.POST("", productHandler.CreateProduct)
 				productGroup.PUT("/:id", productHandler.UpdateProduct)
-				productGroup.GET("/:id", productHandler.GetProduct)
+				productGroup.GET("/info", productHandler.GetProduct)
 				productGroup.POST("/list", productHandler.ListProducts)
 				productGroup.PATCH("/:id/stock", productHandler.UpdateStock)
 			}
@@ -67,7 +81,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				tagGroup.POST("/list", tagHandler.ListTags)
 			}
 		}
-		
+
 		spCategoryGroup := api.Group("/sp/categories")
 		{
 			spCategoryGroup.POST("", spCategoryHandler.CreateCategory)
@@ -424,8 +438,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 	tagGroup.GET("/list", tagHandler.ListTags)
 		// }
 
-		
-
 		// SP订单项路由组
 		spOrderItemHandler := handlers.NewSpOrderItemHandler(factory.GetSpOrderItemService())
 		spOrderItemGroup := api.Group("/sp/order-items")
@@ -483,8 +495,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spOrderGroup.PATCH("/:id/delivery", spOrderHandler.UpdateDeliveryInfo)
 		}
 
-		
-		
 		spAttrGroup := api.Group("/sp/attributes")
 		{
 			spAttrGroup.POST("", spAttrHandler.CreateAttribute)

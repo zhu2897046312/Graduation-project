@@ -2,29 +2,52 @@ package handlers
 
 import (
 	"server/models/sp"
+	"server/models/shop"
 	"server/service"
 	"server/utils"
 	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
 
 type ListProductsRequest struct {
 	CategoryID interface{} `json:"category_id"` // 使用interface{}接收任何类型
-	State      int `json:"state"`
-	Title      string `json:"title"`
-	Page       int `json:"page_no"`
-	PageSize   int `json:"page_size"`
+	State      int         `json:"state"`
+	Title      string      `json:"title"`
+	Page       int         `json:"page_no"`
+	PageSize   int         `json:"page_size"`
 }
 
 type SpProductHandler struct {
-	service *service.SpProductService
+	service         *service.SpProductService
 	categoryService *service.SpCategoryService
+	contentService  *service.SpProductContentService
+	propertyService *service.SpProductPropertyService
+	skuService      *service.SpSkuService 
+	skuIndexService *service.SpSkuIndexService
+	tagIndexService *service.ShopTagIndexService
+	tagService      *service.ShopTagService
 }
 
-func NewSpProductHandler(service *service.SpProductService,categoryService *service.SpCategoryService) *SpProductHandler {
+func NewSpProductHandler(
+	service *service.SpProductService, 
+	categoryService *service.SpCategoryService,
+	contentService *service.SpProductContentService,
+	propertyService *service.SpProductPropertyService,
+	skuService *service.SpSkuService,
+	skuIndexService *service.SpSkuIndexService,
+	tagIndexService *service.ShopTagIndexService,
+	tagService      *service.ShopTagService,
+	) *SpProductHandler {
 	return &SpProductHandler{
-		service: service,
+		service:         service,
 		categoryService: categoryService,
+		contentService:  contentService,
+		propertyService: propertyService,
+		skuService:      skuService,
+		skuIndexService: skuIndexService,
+		tagIndexService: tagIndexService,
+		tagService:      tagService,
 	}
 }
 
@@ -68,21 +91,73 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 }
 
 // GetProduct 获取商品详情
+// GetProduct 获取商品详情
 func (h *SpProductHandler) GetProduct(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
+    id := c.Query("id")
+    uintId := utils.ConvertToUint(id)
+    if uintId == 0 {
+        InvalidParams_1(c, uintId)
+        return
+    }
 
-	product, err := h.service.GetProductByID(uint(id))
-	if err != nil {
-		Error(c, 3103, "商品不存在")
-		return
-	}
+    product, err := h.service.GetProductByID(uintId)
+    if err != nil {
+        Error(c, 3103, "商品不存在")
+        return
+    }
 
-	Success(c, product)
+    // 获取商品内容
+    content, err := h.contentService.GetContentByProductID(product.ID)
+    if err != nil {
+        content = &sp.SpProductContent{
+            ProductID: uintId,
+        }
+    }
+
+    // 获取商品属性列表
+    properties, err := h.propertyService.GetPropertiesByProductID(uintId)
+    if err != nil {
+        properties = []sp.SpProductProperty{}
+    }
+
+    // 获取SKU列表
+    skus, err := h.skuService.GetSkusByProductID(uintId)
+    if err != nil {
+        skus = []sp.SpSku{}
+    }
+
+    // 获取SKU配置列表
+    skuConfigList, err := h.skuIndexService.GetIndicesByProductID(uintId)
+    if err != nil {
+        skuConfigList = []sp.SpSkuIndex{}
+    }
+
+    // 获取标签
+    tagIds, err := h.tagIndexService.GetTagIndicesByProductID(int(uintId))
+    var tags []shop.ShopTag
+    if err == nil && len(tagIds) > 0 {
+        // 使用循环逐个获取标签
+        for _, tagId := range tagIds {
+            tag, err := h.tagService.GetTagByID(int(tagId.ID))
+            if err == nil {
+                tags = append(tags, *tag)
+            }
+            // 如果获取失败，可以选择记录日志但继续处理其他标签
+        }
+    }
+
+    // 构建返回结构
+    response := gin.H{
+        "product":         product,
+        "content":         content,
+        "property_list":   properties,
+        "sku_list":        skus,
+        "sku_config_list": skuConfigList,
+        "tags":            tags,
+    }
+    Success(c, response)
 }
+
 // ListProducts 分页获取商品
 func (h *SpProductHandler) ListProducts(c *gin.Context) {
 	var req ListProductsRequest
@@ -116,6 +191,7 @@ func (h *SpProductHandler) ListProducts(c *gin.Context) {
 		"total": total,
 	})
 }
+
 // enrichProductsWithCategory 为商品列表添加分类信息
 func (h *SpProductHandler) enrichProductsWithCategory(products []sp.SpProduct) ([]map[string]interface{}, error) {
 	var result []map[string]interface{}
@@ -153,6 +229,7 @@ func (h *SpProductHandler) enrichProductsWithCategory(products []sp.SpProduct) (
 
 	return result, nil
 }
+
 // UpdateStock 更新库存
 func (h *SpProductHandler) UpdateStock(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

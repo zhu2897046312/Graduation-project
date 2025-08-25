@@ -28,10 +28,7 @@ func (r *SpProductRepository) Update(product *sp.SpProduct) error {
 // 根据ID获取商品
 func (r *SpProductRepository) FindByID(id uint) (*sp.SpProduct, error) {
 	var product sp.SpProduct
-	err := r.db.Preload("Content").
-		Preload("Properties").
-		Preload("Skus").
-		First(&product, id).Error
+	err := r.db.First(&product, id).Error
 	return &product, err
 }
 
