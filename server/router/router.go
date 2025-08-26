@@ -15,6 +15,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 	)
 	api := r.Group("/api")
 	{
+		ossHandler := handlers.NewOssHandler()
 		// SP分类路由组
 		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
 		// SP商品属性路由组
@@ -36,6 +37,13 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
 			adminAuth.GET("/core/auth/info", adminHandler.GetAdminInfo)
 			adminAuth.GET("/core/auth/enumDict", adminHandler.GetEnumDict)
+			adminOssGroup := adminAuth.Group("/core/oss")
+			{
+				adminOssGroup.POST("/uploadFile", ossHandler.UploadFile)
+				adminOssGroup.POST("/uploadFiles", ossHandler.UploadMultipleFiles)
+				adminOssGroup.DELETE("/deleteFile", ossHandler.DeleteFile)
+				adminOssGroup.GET("/fileInfo", ossHandler.GetFileInfo)
+			}
 			adminGroup := adminAuth.Group("/core/admins")
 			{
 				adminGroup.POST("", adminHandler.CreateAdmin)
@@ -45,11 +53,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
 			//商品路由组
-			//
-			//skuIndexService *service.SpSkuIndexService,
-			// tagIndexService *service.ShopTagIndexService,
-			// tagService      *service.ShopTagService,
-			//
 			productHandler := handlers.NewSpProductHandler(
 				factory.GetSpProductService(),
 				factory.GetSpCategoryService(),
@@ -568,5 +571,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			cartGroup.DELETE("/user/:user_id/clear", cartHandler.ClearCart)
 		}
 	}
+	r.Static("/api/oss", "./oss")
 	return r
 }
