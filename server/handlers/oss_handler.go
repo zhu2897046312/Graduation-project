@@ -129,7 +129,7 @@ func (h *OssHandler) UploadMultipleFiles(c *gin.Context) {
 			continue // 跳过保存失败的文件
 		}
 
-		accessURL := fmt.Sprintf("/api/oss/%s/%s/%s/%s", year, month, day, filename)
+		accessURL := fmt.Sprintf("/%s/%s/%s/%s", year, month, day, filename)
 
 		uploadedFiles = append(uploadedFiles, gin.H{
 			"original_name": file.Filename,

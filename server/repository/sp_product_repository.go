@@ -16,9 +16,16 @@ func NewSpProductRepository(db *gorm.DB) *SpProductRepository {
 }
 
 // 创建商品
-func (r *SpProductRepository) Create(product *sp.SpProduct) error {
-	return r.db.Create(product).Error
+// 创建商品并返回完整的商品信息
+func (r *SpProductRepository) Create(product *sp.SpProduct) (*sp.SpProduct, error) {
+    // 执行创建操作
+    if err := r.db.Create(product).Error; err != nil {
+        return nil, err
+    }
+    // 返回创建后的完整对象
+    return product, nil
 }
+
 
 // 更新商品
 func (r *SpProductRepository) Update(product *sp.SpProduct) error {

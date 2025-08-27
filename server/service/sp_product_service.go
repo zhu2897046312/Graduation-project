@@ -15,29 +15,37 @@ func NewSpProductService(base *Service) *SpProductService {
 }
 
 // CreateProduct 创建商品
-func (s *SpProductService) CreateProduct(product *sp.SpProduct) error {
-	if product.Title == "" {
-		return errors.New("商品名称不能为空")
-	}
-	if product.CategoryID == 0 {
-		return errors.New("分类ID不能为空")
-	}
-	if product.Price <= 0 {
-		return errors.New("商品价格必须大于0")
-	}
-	
-	// 设置默认值
-	if product.SortNum == 0 {
-		product.SortNum = 99
-	}
-	if product.State == 0 {
-		product.State = 1 // 默认上架
-	}
-	
-	product.CreatedTime = time.Now()
-	product.UpdatedTime = time.Now()
-	
-	return s.repoFactory.GetSpProductRepository().Create(product)
+func (s *SpProductService) CreateProduct(product *sp.SpProduct) (*sp.SpProduct, error) {
+    // 参数校验
+    if product.Title == "" {
+        return nil, errors.New("商品名称不能为空")
+    }
+    if product.CategoryID == 0 {
+        return nil, errors.New("分类ID不能为空")
+    }
+    if product.Price <= 0 {
+        return nil, errors.New("商品价格必须大于0")
+    }
+
+    // 设置默认值
+    if product.SortNum == 0 {
+        product.SortNum = 99
+    }
+    if product.State == 0 {
+        product.State = 1 // 默认上架
+    }
+
+    // 设置时间
+    product.CreatedTime = time.Now()
+    product.UpdatedTime = time.Now()
+
+    // 调用 Repository 创建商品并返回完整对象
+    createdProduct, err := s.repoFactory.GetSpProductRepository().Create(product)
+    if err != nil {
+        return nil, errors.New("创建商品失败")
+    }
+
+    return createdProduct, nil
 }
 
 // UpdateProduct 更新商品

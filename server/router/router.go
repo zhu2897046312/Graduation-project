@@ -62,10 +62,11 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				factory.GetSpSkuIndexService(),
 				factory.GetShopTagIndexService(),
 				factory.GetShopTagService(),
+				factory.GetSpProdAttributesValueService(),
 			)
 			productGroup := adminAuth.Group("/shop/product")
 			{
-				productGroup.POST("", productHandler.CreateProduct)
+				productGroup.POST("/create", productHandler.CreateProduct)
 				productGroup.PUT("/:id", productHandler.UpdateProduct)
 				productGroup.GET("/info", productHandler.GetProduct)
 				productGroup.POST("/list", productHandler.ListProducts)
