@@ -85,3 +85,22 @@ func (r *SpProdAttributesValueRepository) ListWithPagination(params sp.SpProdAtt
 
 	return products, total, err
 }
+
+func (r *SpProdAttributesValueRepository) List(params sp.SpProdAttributesQueryParams) ([]sp.SpProdAttributesValue,int64, error) {
+	var products []sp.SpProdAttributesValue
+	var total int64
+	// 构建查询
+	query := r.db.Model(&sp.SpProdAttributesValue{})
+
+	// 应用过滤条件
+	if params.ProdAttributesID != 0 {
+		query = query.Where("prod_attributes_id = ?", params.ProdAttributesID)
+	}
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	// 获取数据
+	err := query.Find(&products).Error
+	return products,total, err
+}

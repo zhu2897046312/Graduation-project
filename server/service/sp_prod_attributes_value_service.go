@@ -91,3 +91,7 @@ func (s *SpProdAttributesValueService) ListProdAttributes(prarams sp.SpProdAttri
 	}
 	return s.repoFactory.GetSpProdAttributesValueRepository().ListWithPagination(prarams)
 }
+
+func (s *SpProdAttributesValueService) GetAllByProdAttributesID(prarams sp.SpProdAttributesQueryParams) ([]sp.SpProdAttributesValue, int64, error) {
+	return s.repoFactory.GetSpProdAttributesValueRepository().List(prarams)
+}

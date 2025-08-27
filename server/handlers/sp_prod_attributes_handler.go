@@ -21,6 +21,7 @@ type SpProdAttributesPageResponse struct {
 
 type SpProdAttributesHandler struct {
 	service *service.SpProdAttributesService
+	spProdAttributesValuesService *service.SpProdAttributesValueService
 }
 
 type SpProdAttributesCreateRequest struct {
@@ -28,8 +29,11 @@ type SpProdAttributesCreateRequest struct {
 	SortNum uint16 `json:"sort_num"`
 }
 
-func NewSpProdAttributesHandler(service *service.SpProdAttributesService) *SpProdAttributesHandler {
-	return &SpProdAttributesHandler{service: service}
+func NewSpProdAttributesHandler(service *service.SpProdAttributesService,spProdAttributesValuesService *service.SpProdAttributesValueService) *SpProdAttributesHandler {
+	return &SpProdAttributesHandler{
+		service: service,
+		spProdAttributesValuesService: spProdAttributesValuesService,
+	}
 }
 
 // 创建商品属性
@@ -165,13 +169,21 @@ func (h *SpProdAttributesHandler) UpdateAttributeSortNum(c *gin.Context) {
 
 // 删除属性
 func (h *SpProdAttributesHandler) DeleteAttribute(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
 		return
 	}
-
-	if err := h.service.DeleteAttribute(uint(id)); err != nil {
+	prodAttributesID := utils.ConvertToUint(id)
+	_,len,_ :=h.spProdAttributesValuesService.GetAllByProdAttributesID(sp.SpProdAttributesQueryParams{
+		ProdAttributesID: prodAttributesID,
+	})
+	if len > 0 {
+		Error(c, 28006, "属性值不为空，无法删除")
+		return
+	}
+	if err := h.service.DeleteAttribute(uintId); err != nil {
 		Error(c, 28006, err.Error())
 		return
 	}

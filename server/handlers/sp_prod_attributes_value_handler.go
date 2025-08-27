@@ -64,7 +64,7 @@ func (h *SpProdAttributesValueHandler) UpdateAttributeValue(c *gin.Context) {
 }
 
 // 根据属性ID获取值列表
-func (h *SpProdAttributesValueHandler) GetValuesByAttribute(c *gin.Context) {
+func (h *SpProdAttributesValueHandler) List(c *gin.Context) {
 	var req ListProdAttributesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)

@@ -19,7 +19,10 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// SP分类路由组
 		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
 		// SP商品属性路由组
-		spAttrHandler := handlers.NewSpProdAttributesHandler(factory.GetSpProdAttributesService())
+		spAttrHandler := handlers.NewSpProdAttributesHandler(
+			factory.GetSpProdAttributesService(),
+			factory.GetSpProdAttributesValueService(),
+		)
 		// 商品标签路由组
 		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService())
 		// SP商品属性值路由组
@@ -90,10 +93,11 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spAttrGroup.POST("/create", spAttrHandler.CreateAttribute)
 				spAttrGroup.GET("/info", spAttrHandler.GetAttribute)
 				spAttrGroup.POST("/modify", spAttrHandler.UpdateAttribute)
+				spAttrGroup.GET("/del", spAttrHandler.DeleteAttribute)
 			}
 			spAttrValueGroup := adminAuth.Group("/shop/prodAttributesValue")
 			{
-				spAttrValueGroup.POST("/list", spAttrValueHandler.GetValuesByAttribute)
+				spAttrValueGroup.POST("/list", spAttrValueHandler.List)
 			}
 			tagGroup := adminAuth.Group("/shop/tag")
 			{
@@ -528,7 +532,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		{
 			spAttrValueGroup.POST("", spAttrValueHandler.CreateAttributeValue)
 			spAttrValueGroup.PUT("/:id", spAttrValueHandler.UpdateAttributeValue)
-			spAttrValueGroup.GET("/attribute/:attr_id", spAttrValueHandler.GetValuesByAttribute)
+			// spAttrValueGroup.GET("/attribute/:attr_id", spAttrValueHandler.GetValuesByAttribute)
 			spAttrValueGroup.GET("/:id", spAttrValueHandler.GetValue)
 			spAttrValueGroup.POST("/batch", spAttrValueHandler.BatchCreateAttributeValues)
 			spAttrValueGroup.DELETE("/attribute/:attr_id/all", spAttrValueHandler.DeleteValuesByAttribute)
