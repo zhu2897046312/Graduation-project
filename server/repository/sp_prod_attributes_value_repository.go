@@ -51,3 +51,37 @@ func (r *SpProdAttributesValueRepository) DeleteByAttributeID(attrID uint) error
 	return r.db.Where("prod_attributes_id = ?", attrID).
 		Delete(&sp.SpProdAttributesValue{}).Error
 }
+
+func (r *SpProdAttributesValueRepository) ListWithPagination(params sp.SpProdAttributesQueryParams) ([]sp.SpProdAttributesValue, int64, error) {
+	var products []sp.SpProdAttributesValue
+	var total int64
+
+	// 设置默认值
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.PageSize < 1 || params.PageSize > 100 {
+		params.PageSize = 10
+	}
+
+	offset := (params.Page - 1) * params.PageSize
+
+	// 构建查询
+	query := r.db.Model(&sp.SpProdAttributesValue{})
+
+	// 应用过滤条件
+	if params.ProdAttributesID != 0 {
+		query = query.Where("prod_attributes_id = ?", params.ProdAttributesID)
+	}
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取分页数据
+	err := query.Offset(offset).
+		Limit(params.PageSize).
+		Find(&products).Error
+
+	return products, total, err
+}

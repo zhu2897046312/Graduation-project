@@ -80,3 +80,14 @@ func (s *SpProdAttributesValueService) DeleteValuesByAttributeID(attrID uint) er
 	}
 	return s.repoFactory.GetSpProdAttributesValueRepository().DeleteByAttributeID(attrID)
 }
+
+
+func (s *SpProdAttributesValueService) ListProdAttributes(prarams sp.SpProdAttributesQueryParams) ([]sp.SpProdAttributesValue, int64, error) {
+	if prarams.Page < 1 {
+		prarams.Page = 1
+	}
+	if prarams.PageSize < 1 || prarams.PageSize > 100 {
+		prarams.PageSize = 10
+	}
+	return s.repoFactory.GetSpProdAttributesValueRepository().ListWithPagination(prarams)
+}

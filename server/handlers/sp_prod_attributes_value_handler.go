@@ -1,11 +1,20 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"server/models/sp"
 	"server/service"
+	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
+
+type ListProdAttributesRequest struct {
+	ProdAttributesID string   `json:"prod_attributes_id"`
+	Title            string `json:"title"`
+	Page             int    `json:"page_no"`
+	PageSize         int    `json:"page_size"`
+}
 
 type SpProdAttributesValueHandler struct {
 	service *service.SpProdAttributesValueService
@@ -56,19 +65,27 @@ func (h *SpProdAttributesValueHandler) UpdateAttributeValue(c *gin.Context) {
 
 // 根据属性ID获取值列表
 func (h *SpProdAttributesValueHandler) GetValuesByAttribute(c *gin.Context) {
-	attrID, err := strconv.ParseUint(c.Param("attr_id"), 10, 32)
-	if err != nil || attrID == 0 {
+	var req ListProdAttributesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	values, err := h.service.GetValuesByAttributeID(uint(attrID))
+	ProdAttributesID := utils.ConvertToUint(req.ProdAttributesID)
+	attr := sp.SpProdAttributesQueryParams{
+		Page:             req.Page,
+		PageSize:         req.PageSize,
+		ProdAttributesID: ProdAttributesID,
+	}
+	values, len, err := h.service.ListProdAttributes(attr)
 	if err != nil {
 		Error(c, 29003, "获取属性值失败")
 		return
 	}
 
-	Success(c, values)
+	Success(c, gin.H{
+		"list": values,
+		"total":  len,
+	})
 }
 
 // 获取属性值详情

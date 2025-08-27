@@ -22,6 +22,21 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		spAttrHandler := handlers.NewSpProdAttributesHandler(factory.GetSpProdAttributesService())
 		// 商品标签路由组
 		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService())
+		// SP商品属性值路由组
+		spAttrValueHandler := handlers.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
+		//商品路由组
+		productHandler := handlers.NewSpProductHandler(
+			factory.GetSpProductService(),
+			factory.GetSpCategoryService(),
+			factory.GetSpProductContentService(),
+			factory.GetSpProductPropertyService(),
+			factory.GetSpSkuService(),
+			factory.GetSpSkuIndexService(),
+			factory.GetShopTagIndexService(),
+			factory.GetShopTagService(),
+			factory.GetSpProdAttributesValueService(),
+		)
+		
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -52,18 +67,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
-			//商品路由组
-			productHandler := handlers.NewSpProductHandler(
-				factory.GetSpProductService(),
-				factory.GetSpCategoryService(),
-				factory.GetSpProductContentService(),
-				factory.GetSpProductPropertyService(),
-				factory.GetSpSkuService(),
-				factory.GetSpSkuIndexService(),
-				factory.GetShopTagIndexService(),
-				factory.GetShopTagService(),
-				factory.GetSpProdAttributesValueService(),
-			)
+			
 			productGroup := adminAuth.Group("/shop/product")
 			{
 				productGroup.POST("/create", productHandler.CreateProduct)
@@ -86,6 +90,10 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spAttrGroup.POST("/create", spAttrHandler.CreateAttribute)
 				spAttrGroup.GET("/info", spAttrHandler.GetAttribute)
 				spAttrGroup.POST("/modify", spAttrHandler.UpdateAttribute)
+			}
+			spAttrValueGroup := adminAuth.Group("/shop/prodAttributesValue")
+			{
+				spAttrValueGroup.POST("/list", spAttrValueHandler.GetValuesByAttribute)
 			}
 			tagGroup := adminAuth.Group("/shop/tag")
 			{
@@ -354,16 +362,16 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		}
 
 		// 产品路由组
-		productHandler := handlers.NewMpProductHandler(factory.GetMpProductService())
-		productGroup := api.Group("/mp/products")
+		mpProductHandler := handlers.NewMpProductHandler(factory.GetMpProductService())
+		mpProductGroup := api.Group("/mp/products")
 		{
-			productGroup.POST("", productHandler.CreateProduct)
-			productGroup.PUT("/:id", productHandler.UpdateProduct)
-			productGroup.GET("/:id", productHandler.GetProduct)
-			productGroup.GET("/type", productHandler.GetProductsByType)
-			productGroup.GET("/terminal", productHandler.GetProductsByTerminal)
-			productGroup.GET("/code", productHandler.GetProductByCode)
-			productGroup.PATCH("/:id/state", productHandler.UpdateProductState)
+			mpProductGroup.POST("", mpProductHandler.CreateProduct)
+			mpProductGroup.PUT("/:id", mpProductHandler.UpdateProduct)
+			mpProductGroup.GET("/:id", mpProductHandler.GetProduct)
+			mpProductGroup.GET("/type", mpProductHandler.GetProductsByType)
+			mpProductGroup.GET("/terminal", mpProductHandler.GetProductsByTerminal)
+			mpProductGroup.GET("/code", mpProductHandler.GetProductByCode)
+			mpProductGroup.PATCH("/:id/state", mpProductHandler.UpdateProductState)
 		}
 
 		// 密码重置令牌路由组
@@ -515,8 +523,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spAttrGroup.DELETE("/:id", spAttrHandler.DeleteAttribute)
 		}
 
-		// SP商品属性值路由组
-		spAttrValueHandler := handlers.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
+		
 		spAttrValueGroup := api.Group("/sp/attribute-values")
 		{
 			spAttrValueGroup.POST("", spAttrValueHandler.CreateAttributeValue)
