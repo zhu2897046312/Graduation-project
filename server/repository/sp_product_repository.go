@@ -137,3 +137,8 @@ func (r *SpProductRepository) IncrementSoldNum(id uint, num uint16) error {
 		Where("id = ?", id).
 		Update("sold_num", gorm.Expr("sold_num + ?", num)).Error
 }
+
+// 软删除商品（GORM 自动处理）
+func (r *SpProductRepository) SoftDelete(id uint) error {
+    return r.db.Delete(&sp.SpProduct{}, id).Error
+}

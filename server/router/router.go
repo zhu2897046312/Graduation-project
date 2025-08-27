@@ -71,6 +71,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				productGroup.GET("/info", productHandler.GetProduct)
 				productGroup.POST("/list", productHandler.ListProducts)
 				productGroup.PATCH("/:id/stock", productHandler.UpdateStock)
+				productGroup.GET("/del",productHandler.SoftDeleteProduct)
 			}
 			spCategoryGroup := adminAuth.Group("/shop/category")
 			{

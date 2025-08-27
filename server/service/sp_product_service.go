@@ -133,3 +133,15 @@ func (s *SpProductService) IncrementSoldNum(id uint, num uint16) error {
 	}
 	return s.repoFactory.GetSpProductRepository().IncrementSoldNum(id, num)
 }
+
+// SoftDeleteProduct 软删除商品
+func (s *SpProductService) SoftDeleteProduct(id uint) error {
+	// 检查商品是否存在
+	_, err := s.repoFactory.GetSpProductRepository().FindByID(id)
+	if err != nil {
+		return errors.New("商品不存在")
+	}
+
+	// 调用 Repository 软删除
+	return s.repoFactory.GetSpProductRepository().SoftDelete(id)
+}

@@ -543,3 +543,20 @@ func (h *SpProductHandler) UpdateStock(c *gin.Context) {
 
 	Success(c, nil)
 }
+
+// SoftDeleteProduct 软删除商品
+func (h *SpProductHandler) SoftDeleteProduct(c *gin.Context) {
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
+		return
+	}
+
+	if err := h.service.SoftDeleteProduct(uintId); err != nil {
+		Error(c, 3105, err.Error())
+		return
+	}
+
+	Success(c, nil)
+}
