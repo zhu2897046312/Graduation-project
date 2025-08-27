@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
 	"server/service"
+	"server/utils"
 	"strconv"
 )
 
@@ -22,16 +23,26 @@ type SpProdAttributesHandler struct {
 	service *service.SpProdAttributesService
 }
 
+type SpProdAttributesCreateRequest struct {
+	Title string `json:"title"`
+	SortNum uint16 `json:"sort_num"`
+}
+
 func NewSpProdAttributesHandler(service *service.SpProdAttributesService) *SpProdAttributesHandler {
 	return &SpProdAttributesHandler{service: service}
 }
 
 // 创建商品属性
 func (h *SpProdAttributesHandler) CreateAttribute(c *gin.Context) {
-	var attr sp.SpProdAttributes
-	if err := c.ShouldBindJSON(&attr); err != nil {
+	var req SpProdAttributesCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
+	}
+	
+	attr := sp.SpProdAttributes{
+		Title: req.Title,
+		SortNum: req.SortNum,
 	}
 
 	if err := h.service.CreateAttribute(&attr); err != nil {
@@ -44,18 +55,16 @@ func (h *SpProdAttributesHandler) CreateAttribute(c *gin.Context) {
 
 // 更新商品属性
 func (h *SpProdAttributesHandler) UpdateAttribute(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
+	var req sp.SpProdAttributes
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	var attr sp.SpProdAttributes
-	if err := c.ShouldBindJSON(&attr); err != nil {
-		InvalidParams(c)
-		return
+	attr := sp.SpProdAttributes{
+		ID: req.ID,
+		Title: req.Title,
+		SortNum: req.SortNum,
 	}
-	attr.ID = uint(id)
 
 	if err := h.service.UpdateAttribute(&attr); err != nil {
 		Error(c, 28002, err.Error())
@@ -67,13 +76,14 @@ func (h *SpProdAttributesHandler) UpdateAttribute(c *gin.Context) {
 
 // 获取属性详情
 func (h *SpProdAttributesHandler) GetAttribute(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
 		return
 	}
 
-	attr, err := h.service.GetAttributeByID(uint(id))
+	attr, err := h.service.GetAttributeByID(uintId)
 	if err != nil {
 		Error(c, 28003, "属性不存在")
 		return

@@ -22,7 +22,7 @@ func (r *SpProdAttributesRepository) Create(attr *sp.SpProdAttributes) error {
 
 // 更新商品属性
 func (r *SpProdAttributesRepository) Update(attr *sp.SpProdAttributes) error {
-	return r.db.Save(attr).Error
+	return r.db.Updates(attr).Error
 }
 
 // 根据ID获取属性

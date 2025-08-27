@@ -83,6 +83,9 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spAttrGroup := adminAuth.Group("/shop/prodAttributes")
 			{
 				spAttrGroup.POST("/list", spAttrHandler.GetAttributesByPage)
+				spAttrGroup.POST("/create", spAttrHandler.CreateAttribute)
+				spAttrGroup.GET("/info", spAttrHandler.GetAttribute)
+				spAttrGroup.POST("/modify", spAttrHandler.UpdateAttribute)
 			}
 			tagGroup := adminAuth.Group("/shop/tag")
 			{
