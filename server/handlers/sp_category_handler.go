@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
 	"server/service"
+	"server/utils"
 	"strconv"
 )
 // import "github.com/go-playground/validator/v10"
@@ -95,13 +96,14 @@ func (h *SpCategoryHandler) UpdateCategory(c *gin.Context) {
 
 // 获取分类详情
 func (h *SpCategoryHandler) GetCategory(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
 		return
 	}
 
-	category, err := h.service.GetCategoryByID(uint(id))
+	category, err := h.service.GetCategoryByID(uintId)
 	if err != nil {
 		Error(c, 22003, "分类不存在")
 		return
