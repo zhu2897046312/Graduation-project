@@ -22,7 +22,7 @@ func (r *SpCategoryRepository) Create(category *sp.SpCategory) error {
 
 // 更新分类
 func (r *SpCategoryRepository) Update(category *sp.SpCategory) error {
-	return r.db.Save(category).Error
+	return r.db.Updates(category).Error
 }
 
 // 根据ID获取分类

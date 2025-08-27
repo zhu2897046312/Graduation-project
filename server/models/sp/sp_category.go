@@ -18,7 +18,7 @@ type SpCategory struct {
 	SeoKeyword     string     `gorm:"size:200;not null;default:''" json:"seo_keyword"`
 	SeoDescription string     `gorm:"size:200;not null;default:''" json:"seo_description"`
 	CreatedTime    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
-	UpdatedTime    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
+	UpdatedTime    time.Time  `gorm:"autoUpdateTime default:CURRENT_TIMESTAMP" json:"updated_time"`
 	DeletedTime    *time.Time `json:"deleted_time"`
 	//Children      []SpCategory `gorm:"-" json:"children"` // 添加Children字段，gorm:"-"表示忽略数据库映射
 }

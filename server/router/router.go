@@ -78,6 +78,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spCategoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
 				spCategoryGroup.POST("/create", spCategoryHandler.CreateCategory)
 				spCategoryGroup.GET("/info", spCategoryHandler.GetCategory)
+				spCategoryGroup.POST("/modify", spCategoryHandler.UpdateCategory)
 			}
 			spAttrGroup := adminAuth.Group("/shop/prodAttributes")
 			{

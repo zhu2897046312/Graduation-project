@@ -1,12 +1,14 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"server/models/sp"
 	"server/service"
 	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
+
 // import "github.com/go-playground/validator/v10"
 type SpCategoryHandler struct {
 	service *service.SpCategoryService
@@ -21,18 +23,40 @@ type CategoryTreeResult struct {
 }
 
 type SpProductCreateReq struct {
-	PID           uint   `json:"pid"`                     // 父级ID（可选）
-	Title         string `json:"title"`      // 商品名称（必填，长度1-200）
-	Code          string `json:"code"`              // 商品编码（可选，长度≤50）
-	State         uint8  `json:"state"`         // 状态（0下架/1上架，默认为1）
-	Icon          string `json:"icon"`                 // 图标URL（可选，需为URL格式）
-	Picture       string `json:"picture"`              // 主图URL（可选，需为URL格式）
-	Description   string `json:"description"`     // 描述（可选，长度≤500）
-	SEOTitle      string `json:"seo_title"`       // SEO标题（可选，长度≤100）
-	SEOKeyword    string `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
+	PID            uint   `json:"pid"`             // 父级ID（可选）
+	Title          string `json:"title"`           // 商品名称（必填，长度1-200）
+	Code           string `json:"code"`            // 商品编码（可选，长度≤50）
+	State          uint8  `json:"state"`           // 状态（0下架/1上架，默认为1）
+	Icon           string `json:"icon"`            // 图标URL（可选，需为URL格式）
+	Picture        string `json:"picture"`         // 主图URL（可选，需为URL格式）
+	Description    string `json:"description"`     // 描述（可选，长度≤500）
+	SEOTitle       string `json:"seo_title"`       // SEO标题（可选，长度≤100）
+	SEOKeyword     string `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
 	SEODescription string `json:"seo_description"` // SEO描述（可选，长度≤300）
-	SortNum       uint16 `json:"sort_num"`                // 排序值（可选） validate:"omitempty"
+	SortNum        uint16 `json:"sort_num"`        // 排序值（可选） validate:"omitempty"
 }
+
+// SpProductUpdateReq 更新商品的请求参数
+type SpProductUpdateReq struct {
+	ID             uint   `json:"id"`              // 商品ID（必填）
+	PID            uint   `json:"pid"`             // 父级ID（可选）
+	Title          string `json:"title"`           // 商品名称（必填，长度1-200）
+	Code           string `json:"code"`            // 商品编码（可选，长度≤50）
+	State          uint8  `json:"state"`           // 状态（0下架/1上架，默认为1）
+	Icon           string `json:"icon"`            // 图标URL（可选，需为URL格式）
+	Picture        string `json:"picture"`         // 主图URL（可选，需为URL格式）
+	Description    string `json:"description"`     // 描述（可选，长度≤500）
+	SEOTitle       string `json:"seo_title"`       // SEO标题（可选，长度≤100）
+	SEOKeyword     string `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
+	SEODescription string `json:"seo_description"` // SEO描述（可选，长度≤300）
+	SortNum        uint16 `json:"sort_num"`        // 排序值（可选）
+}
+
+// // Validate 自定义验证逻辑
+// func (r *SpProductUpdateReq) Validate() error {
+// 	validate := validator.New()
+// 	return validate.Struct(r)
+// }
 // // Validate 自定义验证逻辑
 // func (r *SpProductCreateReq) Validate() error {
 // 	validate := validator.New()
@@ -51,17 +75,17 @@ func (h *SpCategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 	category := sp.SpCategory{
-		Pid:          req.PID,
-		Title:        req.Title,
-		Code:         req.Code,
-		State:        req.State,
-		Icon:         req.Icon,
-		Picture:      req.Picture,
-		Description:  req.Description,
-		SeoTitle:     req.SEOTitle,
-		SeoKeyword:   req.SEOKeyword,
+		Pid:            req.PID,
+		Title:          req.Title,
+		Code:           req.Code,
+		State:          req.State,
+		Icon:           req.Icon,
+		Picture:        req.Picture,
+		Description:    req.Description,
+		SeoTitle:       req.SEOTitle,
+		SeoKeyword:     req.SEOKeyword,
 		SeoDescription: req.SEODescription,
-		SortNum:      req.SortNum,
+		SortNum:        req.SortNum,
 	}
 	if err := h.service.CreateCategory(&category); err != nil {
 		Error(c, 22001, err.Error())
@@ -73,25 +97,30 @@ func (h *SpCategoryHandler) CreateCategory(c *gin.Context) {
 
 // 更新分类
 func (h *SpCategoryHandler) UpdateCategory(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
+	var req SpProductUpdateReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		Error(c, 22002, "参数校验失败: "+err.Error())
 		return
 	}
-
-	var category sp.SpCategory
-	if err := c.ShouldBindJSON(&category); err != nil {
-		InvalidParams(c)
-		return
+	category := sp.SpCategory{
+		ID:             req.ID,
+		Pid:            req.PID,
+		Title:          req.Title,
+		Code:           req.Code,
+		State:          req.State,
+		Icon:           req.Icon,
+		Picture:        req.Picture,
+		Description:    req.Description,
+		SeoTitle:       req.SEOTitle,
+		SeoKeyword:     req.SEOKeyword,
+		SeoDescription: req.SEODescription,
+		SortNum:        req.SortNum,
 	}
-	category.ID = uint(id)
-
 	if err := h.service.UpdateCategory(&category); err != nil {
 		Error(c, 22002, err.Error())
 		return
 	}
-
-	Success(c, category)
+	Success(c, nil)
 }
 
 // 获取分类详情
@@ -159,7 +188,7 @@ func (h *SpCategoryHandler) GetCategoryTree(c *gin.Context) {
 // 递归构建树形结构
 func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid uint, state *uint8) []CategoryTreeResult {
 	var tree []CategoryTreeResult
-	
+
 	for _, category := range categories {
 		if category.Pid == pid && (state == nil || category.State == *state) {
 			treeResult := CategoryTreeResult{
@@ -167,7 +196,7 @@ func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid uint, sta
 				Value: category.ID,
 				Node:  *category,
 			}
-			
+
 			// 递归获取子节点
 			children := h.buildTree(categories, category.ID, state)
 			if len(children) > 0 {
@@ -175,11 +204,11 @@ func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid uint, sta
 			} else {
 				treeResult.Children = nil
 			}
-			
+
 			tree = append(tree, treeResult)
 		}
 	}
-	
+
 	return tree
 }
 
