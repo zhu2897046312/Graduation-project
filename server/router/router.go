@@ -76,6 +76,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spCategoryGroup := adminAuth.Group("/shop/category")
 			{
 				spCategoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
+				spCategoryGroup.POST("/create", spCategoryHandler.CreateCategory)
 			}
 			spAttrGroup := adminAuth.Group("/shop/prodAttributes")
 			{
@@ -89,7 +90,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 
 		spCategoryGroup := api.Group("/sp/categories")
 		{
-			spCategoryGroup.POST("", spCategoryHandler.CreateCategory)
 			spCategoryGroup.PUT("/:id", spCategoryHandler.UpdateCategory)
 			spCategoryGroup.GET("/:id", spCategoryHandler.GetCategory)
 			spCategoryGroup.GET("", spCategoryHandler.GetSubCategories)

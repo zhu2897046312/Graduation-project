@@ -6,7 +6,7 @@ import (
 	"server/service"
 	"strconv"
 )
-
+// import "github.com/go-playground/validator/v10"
 type SpCategoryHandler struct {
 	service *service.SpCategoryService
 }
@@ -19,18 +19,49 @@ type CategoryTreeResult struct {
 	Children []CategoryTreeResult `json:"children"`
 }
 
+type SpProductCreateReq struct {
+	PID           uint   `json:"pid"`                     // 父级ID（可选）
+	Title         string `json:"title"`      // 商品名称（必填，长度1-200）
+	Code          string `json:"code"`              // 商品编码（可选，长度≤50）
+	State         uint8  `json:"state"`         // 状态（0下架/1上架，默认为1）
+	Icon          string `json:"icon"`                 // 图标URL（可选，需为URL格式）
+	Picture       string `json:"picture"`              // 主图URL（可选，需为URL格式）
+	Description   string `json:"description"`     // 描述（可选，长度≤500）
+	SEOTitle      string `json:"seo_title"`       // SEO标题（可选，长度≤100）
+	SEOKeyword    string `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
+	SEODescription string `json:"seo_description"` // SEO描述（可选，长度≤300）
+	SortNum       uint16 `json:"sort_num"`                // 排序值（可选） validate:"omitempty"
+}
+// // Validate 自定义验证逻辑
+// func (r *SpProductCreateReq) Validate() error {
+// 	validate := validator.New()
+// 	return validate.Struct(r)
+// }
+
 func NewSpCategoryHandler(service *service.SpCategoryService) *SpCategoryHandler {
 	return &SpCategoryHandler{service: service}
 }
 
 // 创建分类
 func (h *SpCategoryHandler) CreateCategory(c *gin.Context) {
-	var category sp.SpCategory
-	if err := c.ShouldBindJSON(&category); err != nil {
+	var req SpProductCreateReq
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
+	category := sp.SpCategory{
+		Pid:          req.PID,
+		Title:        req.Title,
+		Code:         req.Code,
+		State:        req.State,
+		Icon:         req.Icon,
+		Picture:      req.Picture,
+		Description:  req.Description,
+		SeoTitle:     req.SEOTitle,
+		SeoKeyword:   req.SEOKeyword,
+		SeoDescription: req.SEODescription,
+		SortNum:      req.SortNum,
+	}
 	if err := h.service.CreateCategory(&category); err != nil {
 		Error(c, 22001, err.Error())
 		return
