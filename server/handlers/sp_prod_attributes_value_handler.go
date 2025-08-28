@@ -10,7 +10,7 @@ import (
 )
 
 type ListProdAttributesRequest struct {
-	ProdAttributesID string   `json:"prod_attributes_id"`
+	ProdAttributesID interface{}   `json:"prod_attributes_id"`
 	Title            string `json:"title"`
 	Page             int    `json:"page_no"`
 	PageSize         int    `json:"page_size"`

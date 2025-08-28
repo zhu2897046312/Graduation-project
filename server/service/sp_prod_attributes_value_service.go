@@ -49,7 +49,7 @@ func (s *SpProdAttributesValueService) GetValuesByAttributeID(attrID uint) ([]sp
 	if attrID == 0 {
 		return nil, errors.New("无效的属性ID")
 	}
-	return s.repoFactory.GetSpProdAttributesValueRepository().FindByAttributeID(attrID)
+	return s.repoFactory.GetSpProdAttributesValueRepository().FindByIDList(attrID)
 }
 
 // GetValueByID 根据ID获取属性值

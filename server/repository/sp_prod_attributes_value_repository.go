@@ -41,6 +41,14 @@ func (r *SpProdAttributesValueRepository) FindByID(id uint) (*sp.SpProdAttribute
 	return &value, err
 }
 
+func (r *SpProdAttributesValueRepository) FindByIDList(attrID uint) ([]sp.SpProdAttributesValue, error) {
+	var values []sp.SpProdAttributesValue
+	err := r.db.Where("id = ?", attrID).
+		Order("sort_num ASC").
+		Find(&values).Error
+	return values, err
+}
+
 // 批量创建属性值
 func (r *SpProdAttributesValueRepository) BatchCreate(values []sp.SpProdAttributesValue) error {
 	return r.db.Create(&values).Error

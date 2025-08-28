@@ -22,36 +22,63 @@ type ListProductsRequest struct {
 	PageSize   int         `json:"page_size"`
 }
 type CreateProductPropertyRequest struct {
-	Title     string `json:"title"`
+	Title    string `json:"title"`
 	Value    string `json:"value"`
 	Sort_Num int    `json:"sort_num"`
-	Key string `json:"_key"`
+	Key      string `json:"_key"`
 }
 
 // CreateProductRequest 创建商品的请求结构体
+// Request
 type CreateProductRequest struct {
-	CategoryID     uint                           `json:"category_id"`
-	Title          string                         `json:"title"`
-	State          int                            `json:"state"`
-	Price          float64                        `json:"price"`
-	OriginalPrice  float64                         `json:"original_price"`
-	CostPrice      float64                         `json:"cost_price"`
-	Stock          int                            `json:"stock"`
-	Picture        string                         `json:"picture"`
-	PictureGallery []string                       `json:"picture_gallery"`
-	Description    string                         `json:"description"`
-	SoldNum        int                            `json:"sold_num"`
-	SortNum        int                            `json:"sort_num"`
-	PutawayTime    string                         `json:"putaway_time"`
-	Content        string                         `json:"content"`
-	SeoTitle       string                         `json:"seo_title"`
-	SeoKeyword     string                         `json:"seo_keyword"`
-	SeoDescription string                         `json:"seo_description"`
-	PropertyList   []CreateProductPropertyRequest `json:"property_list"`
-	OpenSku        int                            `json:"open_sku"`
-	SkuList        []sp.SpSku                     `json:"sku_list"`
-	Tags           []int                          `json:"tags"`
-	Hot            int                            `json:"hot"`
+	CategoryID     int64          `json:"category_id"`
+	Content        string         `json:"content"`
+	CostPrice      interface{}    `json:"cost_price"`
+	Description    string         `json:"description"`
+	Hot            int64          `json:"hot"`
+	OpenSku        int64          `json:"open_sku"`
+	OriginalPrice  interface{}    `json:"original_price"`
+	Picture        string         `json:"picture"`
+	PictureGallery []string       `json:"picture_gallery"`
+	Price          interface{}    `json:"price"`
+	PropertyList   []PropertyList `json:"property_list"`
+	PutawayTime    string         `json:"putaway_time"`
+	SEODescription string         `json:"seo_description"`
+	SEOKeyword     string         `json:"seo_keyword"`
+	SEOTitle       string         `json:"seo_title"`
+	SkuList        []SkuList      `json:"sku_list"`
+	SoldNum        int64          `json:"sold_num"`
+	SortNum        int64          `json:"sort_num"`
+	State          int64          `json:"state"`
+	Stock          int64          `json:"stock"`
+	Tags           []int        `json:"tags"`
+	Title          string         `json:"title"`
+}
+
+type PropertyList struct {
+	Key     string `json:"_key"`
+	Name    string  `json:"name"`
+	SortNum int64   `json:"sort_num"`
+	Title   string `json:"title"`
+	Value   string  `json:"value"`
+}
+
+type SkuList struct {
+	Pord          []Pord  `json:"_pord"`
+	CostPrice     int64  `json:"cost_price"`
+	DefaultShow   int64  `json:"default_show"`
+	ID            int64  `json:"id"`
+	OriginalPrice int64  `json:"original_price"`
+	Price         int64  `json:"price"`
+	SkuCode       string `json:"sku_code"`
+	State         int64  `json:"state"`
+	Stock         int64  `json:"stock"`
+	Title         string `json:"title"`
+}
+
+type Pord struct {
+	Label string `json:"label"`
+	Value int64  `json:"value"`
 }
 
 type SpProductHandler struct {
@@ -101,7 +128,7 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 
 	// 检查分类是否存在
 	if req.CategoryID != 0 {
-		category, err := h.categoryService.GetCategoryByID(req.CategoryID)
+		category, err := h.categoryService.GetCategoryByID(uint(req.CategoryID))
 		if err != nil || category == nil {
 			Error(c, 3105, "分类不存在")
 			return
@@ -127,14 +154,27 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 
 	rawJSON, _ := json.Marshal(req.PictureGallery)
 	PictureGallery := json.RawMessage(rawJSON)
+	Price := float64(utils.ConvertToUint(req.Price))
+	OriginalPrice := float64(utils.ConvertToUint(req.OriginalPrice))
+	CostPrice := float64(utils.ConvertToUint(req.CostPrice))
+	if Price == 0 || OriginalPrice == 0 || CostPrice == 0 {
+		for i := range req.SkuList {
+			if utils.ConvertToUint(req.SkuList[i].State) == 1 {
+				Price = float64(utils.ConvertToUint(req.SkuList[i].Price))
+				OriginalPrice = float64(utils.ConvertToUint(req.SkuList[i].OriginalPrice))
+				CostPrice = float64(utils.ConvertToUint(req.SkuList[i].CostPrice))
+				break
+			}
+		}
+	}
 	// 创建商品基本信息
 	product := sp.SpProduct{
-		CategoryID:     req.CategoryID,
+		CategoryID:     uint(req.CategoryID),
 		Title:          req.Title,
 		State:          uint8(req.State),
-		Price:          req.Price,
-		OriginalPrice:  req.OriginalPrice,
-		CostPrice:      req.CostPrice,
+		Price:          Price,
+		OriginalPrice:  OriginalPrice,
+		CostPrice:      CostPrice,
 		Stock:          uint(req.Stock),
 		OpenSku:        uint8(req.OpenSku),
 		Picture:        req.Picture,
@@ -147,19 +187,19 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 		Hot:            uint8(req.Hot),
 	}
 
-	pro,err := h.service.CreateProduct(&product)
+	pro, err := h.service.CreateProduct(&product)
 	// 创建商品基本信息
 	if err != nil {
 		Error(c, 3101, err.Error())
 		return
-	} 
+	}
 
 	content := sp.SpProductContent{
 		ProductID:      pro.ID,
 		Content:        req.Content,
-		SeoTitle:       req.SeoTitle,
-		SeoKeyword:     req.SeoKeyword,
-		SeoDescription: req.SeoDescription,
+		SeoTitle:       req.SEOTitle,
+		SeoKeyword:     req.SEOKeyword,
+		SeoDescription: req.SEODescription,
 	}
 
 	if err := h.contentService.CreateContent(&content); err != nil {
@@ -209,13 +249,13 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 }
 
 // saveProperties 保存商品属性
-func (h *SpProductHandler) saveProperties(productID uint, properties []CreateProductPropertyRequest) error {
+func (h *SpProductHandler) saveProperties(productID uint, properties []PropertyList) error {
 	for i := range properties {
 		property := sp.SpProductProperty{
 			ProductID: productID,
-			Title:   properties[i].Title,
-			Value:   properties[i].Value,
-			SortNum: uint16(properties[i].Sort_Num),
+			Title:     properties[i].Title,
+			Value:     properties[i].Value,
+			SortNum:   uint16(properties[i].SortNum),
 		}
 		if err := h.propertyService.CreateProperty(&property); err != nil {
 			return err
@@ -225,10 +265,21 @@ func (h *SpProductHandler) saveProperties(productID uint, properties []CreatePro
 }
 
 // saveSkus 保存SKU
-func (h *SpProductHandler) saveSkus(productID uint, skus []sp.SpSku) error {
+func (h *SpProductHandler) saveSkus(productID uint, skus []SkuList) error {
 	for i := range skus {
-		skus[i].ProductID = productID
-		if err := h.skuService.CreateSku(&skus[i]); err != nil {
+		sku := sp.SpSku{
+			ProductID: productID,
+			SkuCode:   skus[i].SkuCode,
+			Title:     skus[i].Title,
+			Price:     float64(utils.ConvertToUint(skus[i].Price)),
+			OriginalPrice: float64(utils.ConvertToUint(skus[i].OriginalPrice)),
+			CostPrice: float64(utils.ConvertToUint(skus[i].CostPrice)),
+			Stock:     uint(skus[i].Stock),
+			DefaultShow: uint8(skus[i].DefaultShow),
+			State:     uint8(skus[i].State),
+			Version:    0,
+		}
+		if err := h.skuService.CreateSku(&sku); err != nil {
 			return err
 		}
 	}
@@ -247,40 +298,46 @@ func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
 	if err := h.skuIndexService.DeleteByProductID(productID); err != nil {
 		return fmt.Errorf("删除旧SKU索引失败: %v", err)
 	}
-
+	
 	// 3. 如果SKU列表不为空，处理新的索引
 	if len(skus) > 0 {
-		// 收集所有属性值ID
-		prodValueIds := make(map[string]struct{})
+		// 遍历所有SKU
 		for _, sku := range skus {
-			// 分割SKU编码（Java中是分号分隔）
+			// 分割SKU编码（分隔）
 			splitCodes := strings.Split(sku.SkuCode, ";")
+			
+			// 为当前SKU的每个属性值创建索引
 			for _, code := range splitCodes {
-				if code != "" {
-					prodValueIds[code] = struct{}{}
+				if code == "" {
+					continue
 				}
-			}
-		}
-
-		// 逐个查询属性值信息
-		for valueID := range prodValueIds {
-			parsedValue, err := strconv.ParseUint(valueID, 10, 32)
-			if err != nil {
-				return nil
-			}
-			attrValue, err := h.ProdAttributesValues.GetValuesByAttributeID(uint(parsedValue))
-			if err != nil {
-				return fmt.Errorf("查询属性值失败(ID=%s): %v", valueID, err)
-			}
-
-			// 创建SKU索引
-			index := &sp.SpSkuIndex{
-				ProductID:             productID,
-				ProdAttributesID:      attrValue[0].ProdAttributesID,
-				ProdAttributesValueID: attrValue[0].ID,
-			}
-			if err := h.skuIndexService.CreateIndex(index); err != nil {
-				return fmt.Errorf("创建SKU索引失败: %v", err)
+				
+				// 解析属性值ID
+				parsedValue, err := strconv.ParseUint(code, 10, 32)
+				if err != nil {
+					return fmt.Errorf("解析属性值ID失败(%s): %v", code, err)
+				}
+				
+				// 获取属性值信息
+				attrValue, err := h.ProdAttributesValues.GetValuesByAttributeID(uint(parsedValue))
+				if err != nil {
+					return fmt.Errorf("查询属性值失败(ID=%s): %v", code, err)
+				}
+				if len(attrValue) == 0 {
+					return fmt.Errorf("属性值不存在(ID=%s)", code)
+				}
+				
+				// 创建SKU索引，使用当前SKU的ID作为SkuID
+				index := &sp.SpSkuIndex{
+					SkuID:                 sku.ID, // 这里填充当前SKU的ID
+					ProductID:             productID,
+					ProdAttributesID:      attrValue[0].ProdAttributesID,
+					ProdAttributesValueID: attrValue[0].ID,
+				}
+				
+				if err := h.skuIndexService.CreateIndex(index); err != nil {
+					return fmt.Errorf("创建SKU索引失败: %v", err)
+				}
 			}
 		}
 	}
