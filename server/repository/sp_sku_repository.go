@@ -81,3 +81,8 @@ func (r *SpSkuRepository) SetDefaultSku(id uint, productID uint) error {
 		Where("id = ?", id).
 		Update("default_show", 1).Error
 }
+
+func (r *SpSkuRepository) DeleteByProductID(productID uint) error {
+	return r.db.Where("product_id = ?", productID).
+		Delete(&sp.SpSku{}).Error
+}

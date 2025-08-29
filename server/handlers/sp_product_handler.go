@@ -51,20 +51,46 @@ type CreateProductRequest struct {
 	SortNum        int64          `json:"sort_num"`
 	State          int64          `json:"state"`
 	Stock          int64          `json:"stock"`
-	Tags           []int        `json:"tags"`
+	Tags           []int          `json:"tags"`
+	Title          string         `json:"title"`
+}
+
+type UpdateProductRequest struct {
+	ProductID      interface{}    `json:"id"`
+	CategoryID     int64          `json:"category_id"`
+	Content        string         `json:"content"`
+	CostPrice      interface{}    `json:"cost_price"`
+	Description    string         `json:"description"`
+	Hot            int64          `json:"hot"`
+	OpenSku        int64          `json:"open_sku"`
+	OriginalPrice  interface{}    `json:"original_price"`
+	Picture        string         `json:"picture"`
+	PictureGallery []string       `json:"picture_gallery"`
+	Price          interface{}    `json:"price"`
+	PropertyList   []PropertyList `json:"property_list"`
+	PutawayTime    string         `json:"putaway_time"`
+	SEODescription string         `json:"seo_description"`
+	SEOKeyword     string         `json:"seo_keyword"`
+	SEOTitle       string         `json:"seo_title"`
+	SkuList        []SkuList      `json:"sku_list"`
+	SoldNum        int64          `json:"sold_num"`
+	SortNum        int64          `json:"sort_num"`
+	State          int64          `json:"state"`
+	Stock          int64          `json:"stock"`
+	Tags           []int          `json:"tags"`
 	Title          string         `json:"title"`
 }
 
 type PropertyList struct {
 	Key     string `json:"_key"`
-	Name    string  `json:"name"`
-	SortNum int64   `json:"sort_num"`
+	Name    string `json:"name"`
+	SortNum int64  `json:"sort_num"`
 	Title   string `json:"title"`
-	Value   string  `json:"value"`
+	Value   string `json:"value"`
 }
 
 type SkuList struct {
-	Pord          []Pord  `json:"_pord"`
+	Pord          []Pord `json:"_pord"`
 	CostPrice     int64  `json:"cost_price"`
 	DefaultShow   int64  `json:"default_show"`
 	ID            int64  `json:"id"`
@@ -266,18 +292,21 @@ func (h *SpProductHandler) saveProperties(productID uint, properties []PropertyL
 
 // saveSkus 保存SKU
 func (h *SpProductHandler) saveSkus(productID uint, skus []SkuList) error {
+	if err := h.skuService.DeleteByProductID(productID); err != nil {
+		return err
+	}
 	for i := range skus {
 		sku := sp.SpSku{
-			ProductID: productID,
-			SkuCode:   skus[i].SkuCode,
-			Title:     skus[i].Title,
-			Price:     float64(utils.ConvertToUint(skus[i].Price)),
+			ProductID:     productID,
+			SkuCode:       skus[i].SkuCode,
+			Title:         skus[i].Title,
+			Price:         float64(utils.ConvertToUint(skus[i].Price)),
 			OriginalPrice: float64(utils.ConvertToUint(skus[i].OriginalPrice)),
-			CostPrice: float64(utils.ConvertToUint(skus[i].CostPrice)),
-			Stock:     uint(skus[i].Stock),
-			DefaultShow: uint8(skus[i].DefaultShow),
-			State:     uint8(skus[i].State),
-			Version:    0,
+			CostPrice:     float64(utils.ConvertToUint(skus[i].CostPrice)),
+			Stock:         uint(skus[i].Stock),
+			DefaultShow:   uint8(skus[i].DefaultShow),
+			State:         uint8(skus[i].State),
+			Version:       0,
 		}
 		if err := h.skuService.CreateSku(&sku); err != nil {
 			return err
@@ -298,26 +327,26 @@ func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
 	if err := h.skuIndexService.DeleteByProductID(productID); err != nil {
 		return fmt.Errorf("删除旧SKU索引失败: %v", err)
 	}
-	
+
 	// 3. 如果SKU列表不为空，处理新的索引
 	if len(skus) > 0 {
 		// 遍历所有SKU
 		for _, sku := range skus {
 			// 分割SKU编码（分隔）
 			splitCodes := strings.Split(sku.SkuCode, ";")
-			
+
 			// 为当前SKU的每个属性值创建索引
 			for _, code := range splitCodes {
 				if code == "" {
 					continue
 				}
-				
+
 				// 解析属性值ID
 				parsedValue, err := strconv.ParseUint(code, 10, 32)
 				if err != nil {
 					return fmt.Errorf("解析属性值ID失败(%s): %v", code, err)
 				}
-				
+
 				// 获取属性值信息
 				attrValue, err := h.ProdAttributesValues.GetValuesByAttributeID(uint(parsedValue))
 				if err != nil {
@@ -326,7 +355,7 @@ func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
 				if len(attrValue) == 0 {
 					return fmt.Errorf("属性值不存在(ID=%s)", code)
 				}
-				
+
 				// 创建SKU索引，使用当前SKU的ID作为SkuID
 				index := &sp.SpSkuIndex{
 					SkuID:                 sku.ID, // 这里填充当前SKU的ID
@@ -334,7 +363,7 @@ func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
 					ProdAttributesID:      attrValue[0].ProdAttributesID,
 					ProdAttributesValueID: attrValue[0].ID,
 				}
-				
+
 				if err := h.skuIndexService.CreateIndex(index); err != nil {
 					return fmt.Errorf("创建SKU索引失败: %v", err)
 				}
@@ -417,25 +446,125 @@ func (h *SpProductHandler) getFullProductInfo(productID uint) (gin.H, error) {
 
 // UpdateProduct 更新商品
 func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
+
+	var req UpdateProductRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	var product sp.SpProduct
-	if err := c.ShouldBindJSON(&product); err != nil {
-		InvalidParams(c)
-		return
-	}
-	product.ID = uint(id)
-
-	if err := h.service.UpdateProduct(&product); err != nil {
-		Error(c, 3102, err.Error())
-		return
+	fmt.Println(req)
+	// 检查分类是否存在
+	if req.CategoryID != 0 {
+		category, err := h.categoryService.GetCategoryByID(uint(req.CategoryID))
+		if err != nil || category == nil {
+			Error(c, 3105, "分类不存在")
+			return
+		}
 	}
 
-	Success(c, product)
+	// 解析上架时间
+	var putawayTime time.Time
+	if req.PutawayTime != "" {
+		var err error
+		putawayTime, err = time.Parse(time.RFC3339, req.PutawayTime)
+		if err != nil {
+			// 如果解析失败，使用当前时间
+			putawayTime = time.Now()
+		}
+	} else {
+		putawayTime = time.Now()
+	}
+
+	// price, _ := strconv.ParseFloat(req.Price, 64)
+	// originalPrice, _ := strconv.ParseFloat(req.OriginalPrice, 64)
+	// costPrice, _ := strconv.ParseFloat(req.CostPrice, 64)
+
+	rawJSON, _ := json.Marshal(req.PictureGallery)
+	PictureGallery := json.RawMessage(rawJSON)
+	Price := float64(utils.ConvertToUint(req.Price))
+	OriginalPrice := float64(utils.ConvertToUint(req.OriginalPrice))
+	CostPrice := float64(utils.ConvertToUint(req.CostPrice))
+	if Price == 0 || OriginalPrice == 0 || CostPrice == 0 {
+		for i := range req.SkuList {
+			if utils.ConvertToUint(req.SkuList[i].State) == 1 {
+				Price = float64(utils.ConvertToUint(req.SkuList[i].Price))
+				OriginalPrice = float64(utils.ConvertToUint(req.SkuList[i].OriginalPrice))
+				CostPrice = float64(utils.ConvertToUint(req.SkuList[i].CostPrice))
+				break
+			}
+		}
+	}
+	productID := utils.ConvertToUint(req.ProductID)
+	// 创建商品基本信息
+	product := sp.SpProduct{
+		ID:             productID,
+		CategoryID:     uint(req.CategoryID),
+		Title:          req.Title,
+		State:          uint8(req.State),
+		Price:          Price,
+		OriginalPrice:  OriginalPrice,
+		CostPrice:      CostPrice,
+		Stock:          uint(req.Stock),
+		OpenSku:        uint8(req.OpenSku),
+		Picture:        req.Picture,
+		PictureGallery: PictureGallery,
+		Description:    req.Description,
+		SoldNum:        uint16(req.SoldNum),
+		Version:        0,
+		SortNum:        uint16(req.SortNum),
+		PutawayTime:    &putawayTime,
+		Hot:            uint8(req.Hot),
+	}
+
+	err := h.service.UpdateProduct(&product)
+	// 创建商品基本信息
+	if err != nil {
+		Error(c, 3101, err.Error())
+		return
+	}
+
+	content := sp.SpProductContent{
+		ProductID:      productID,
+		Content:        req.Content,
+		SeoTitle:       req.SEOTitle,
+		SeoKeyword:     req.SEOKeyword,
+		SeoDescription: req.SEODescription,
+	}
+
+	if err := h.contentService.UpdateContent(&content); err != nil {
+		Error(c, 3101, err.Error())
+		return
+	}
+	// 保存商品属性
+	if len(req.PropertyList) > 0 {
+		if err := h.saveProperties(productID, req.PropertyList); err != nil {
+			Error(c, 3101, "保存商品属性失败: "+err.Error())
+			return
+		}
+	}
+
+	// 保存SKU
+	if len(req.SkuList) > 0 {
+		if err := h.saveSkus(productID, req.SkuList); err != nil {
+			Error(c, 3101, "保存SKU失败: "+err.Error())
+			return
+		}
+
+		// 同步SKU配置
+		if err := h.syncProductSkuConfig(productID); err != nil {
+			Error(c, 3101, "同步SKU配置失败: "+err.Error())
+			return
+		}
+	}
+
+	// 保存标签
+	if len(req.Tags) > 0 {
+		if err := h.saveTags(productID, req.Tags); err != nil {
+			Error(c, 3101, "保存标签失败: "+err.Error())
+			return
+		}
+	}
+	Success(c, nil)
 }
 
 // GetProduct 获取商品详情

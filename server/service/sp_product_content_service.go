@@ -23,9 +23,6 @@ func (s *SpProductContentService) CreateContent(content *sp.SpProductContent) er
 
 // UpdateContent 更新商品内容
 func (s *SpProductContentService) UpdateContent(content *sp.SpProductContent) error {
-	if content.ID == 0 {
-		return errors.New("内容ID不能为空")
-	}
 	if content.ProductID == 0 {
 		return errors.New("商品ID不能为空")
 	}

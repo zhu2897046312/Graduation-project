@@ -22,7 +22,7 @@ func (r *SpProductContentRepository) Create(content *sp.SpProductContent) error 
 
 // 更新商品内容
 func (r *SpProductContentRepository) Update(content *sp.SpProductContent) error {
-	return r.db.Save(content).Error
+	return r.db.Where("product_id = ?", content.ProductID).Updates(content).Error
 }
 
 // 根据商品ID获取内容

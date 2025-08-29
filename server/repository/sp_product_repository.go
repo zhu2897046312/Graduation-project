@@ -29,7 +29,7 @@ func (r *SpProductRepository) Create(product *sp.SpProduct) (*sp.SpProduct, erro
 
 // 更新商品
 func (r *SpProductRepository) Update(product *sp.SpProduct) error {
-	return r.db.Save(product).Error
+	return r.db.Updates(product).Error
 }
 
 // 根据ID获取商品

@@ -98,3 +98,14 @@ func (s *SpSkuService) SetDefaultSku(id uint, productID uint) error {
 	}
 	return s.repoFactory.GetSpSkuRepository().SetDefaultSku(id, productID)
 }
+
+func (s *SpSkuService) DeleteByProductID(productID uint) error  {
+	if productID == 0 {
+		return errors.New("无效的SKU ID")
+	}
+	sku , _ := s.repoFactory.GetSpSkuRepository().FindByProductID(productID)
+	if sku != nil {
+		s.repoFactory.GetSpSkuRepository().DeleteByProductID(productID)
+	}
+	return nil
+}
