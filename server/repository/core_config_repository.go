@@ -22,7 +22,7 @@ func (r *CoreConfigRepository) Create(config *core.CoreConfig) error {
 
 // 更新配置项
 func (r *CoreConfigRepository) Update(config *core.CoreConfig) error {
-	return r.db.Save(config).Error
+	return r.db.Updates(config).Error
 }
 
 // 根据Key获取配置

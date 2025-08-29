@@ -21,21 +21,11 @@ func (s *CoreConfigService) CreateConfig(config *core.CoreConfig) error {
 	if config.ConfigValue == "" {
 		return errors.New("配置值不能为空")
 	}
-	
-	// 检查配置键是否已存在
-	existing, _ := s.repoFactory.GetCoreConfigRepository().FindByKey(config.ConfigKey)
-	if existing != nil {
-		return errors.New("配置键已存在")
-	}
-	
 	return s.repoFactory.GetCoreConfigRepository().Create(config)
 }
 
 // UpdateConfig 更新配置项
 func (s *CoreConfigService) UpdateConfig(config *core.CoreConfig) error {
-	if config.ID <= 0 {
-		return errors.New("无效的配置ID")
-	}
 	if config.ConfigKey == "" {
 		return errors.New("配置键不能为空")
 	}
@@ -49,17 +39,15 @@ func (s *CoreConfigService) UpdateConfig(config *core.CoreConfig) error {
 	return s.repoFactory.GetCoreConfigRepository().Update(config)
 }
 
+func (s *CoreConfigService) GetAllConfigs() ([]core.CoreConfig, error) {
+	return s.repoFactory.GetCoreConfigRepository().FindAll()
+}
 // GetConfigByKey 根据Key获取配置
 func (s *CoreConfigService) GetConfigByKey(key string) (*core.CoreConfig, error) {
 	if key == "" {
 		return nil, errors.New("配置键不能为空")
 	}
 	return s.repoFactory.GetCoreConfigRepository().FindByKey(key)
-}
-
-// GetAllConfigs 获取所有配置项
-func (s *CoreConfigService) GetAllConfigs() ([]core.CoreConfig, error) {
-	return s.repoFactory.GetCoreConfigRepository().FindAll()
 }
 
 // BatchUpdateConfigs 批量更新配置

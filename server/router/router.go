@@ -39,7 +39,9 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetShopTagService(),
 			factory.GetSpProdAttributesValueService(),
 		)
-		
+		// 系统配置路由组
+		configHandler := handlers.NewCoreConfigHandler(factory.GetCoreConfigService())
+
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -70,7 +72,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
-			
+
 			productGroup := adminAuth.Group("/shop/product")
 			{
 				productGroup.POST("/create", productHandler.CreateProduct)
@@ -78,7 +80,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				productGroup.GET("/info", productHandler.GetProduct)
 				productGroup.POST("/list", productHandler.ListProducts)
 				productGroup.POST("/modify", productHandler.UpdateProduct)
-				productGroup.GET("/del",productHandler.SoftDeleteProduct)
+				productGroup.GET("/del", productHandler.SoftDeleteProduct)
 			}
 			spCategoryGroup := adminAuth.Group("/shop/category")
 			{
@@ -102,6 +104,11 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			tagGroup := adminAuth.Group("/shop/tag")
 			{
 				tagGroup.POST("/list", tagHandler.ListTags)
+			}
+			configGroup := adminAuth.Group("/shop/marketSetting")
+			{
+				configGroup.POST("/siteInfo", configHandler.GetSiteInfo)
+				configGroup.POST("/saveSiteInfo", configHandler.SaveSiteInfo)
 			}
 		}
 
@@ -285,17 +292,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			adminRoleGroup.DELETE("", adminRoleHandler.DeleteAdminRole)
 			adminRoleGroup.GET("/admin/:admin_id", adminRoleHandler.GetAdminRoles)
 			adminRoleGroup.DELETE("/admin/:admin_id/all", adminRoleHandler.DeleteAllAdminRoles)
-		}
-
-		// 系统配置路由组
-		configHandler := handlers.NewCoreConfigHandler(factory.GetCoreConfigService())
-		configGroup := api.Group("/core/configs")
-		{
-			configGroup.POST("", configHandler.CreateConfig)
-			configGroup.PUT("/:id", configHandler.UpdateConfig)
-			configGroup.GET("", configHandler.GetConfigByKey)
-			configGroup.GET("/all", configHandler.GetAllConfigs)
-			configGroup.PUT("/batch", configHandler.BatchUpdateConfigs)
 		}
 
 		// 部门路由组
@@ -527,7 +523,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spAttrGroup.DELETE("/:id", spAttrHandler.DeleteAttribute)
 		}
 
-		
 		spAttrValueGroup := api.Group("/sp/attribute-values")
 		{
 			spAttrValueGroup.POST("", spAttrValueHandler.CreateAttributeValue)
