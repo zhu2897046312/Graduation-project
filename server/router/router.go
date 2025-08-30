@@ -93,7 +93,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			{
 				spAttrGroup.POST("/list", spAttrHandler.GetAttributesByPage)
 				spAttrGroup.POST("/create", spAttrHandler.CreateAttribute)
-				spAttrGroup.GET("/info", spAttrHandler.GetAttribute)
+				spAttrGroup.GET("/info", spAttrHandler.GetAllAttributes)
 				spAttrGroup.POST("/modify", spAttrHandler.UpdateAttribute)
 				spAttrGroup.GET("/del", spAttrHandler.DeleteAttribute)
 			}
@@ -109,6 +109,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			{
 				configGroup.POST("/siteInfo", configHandler.GetSiteInfo)
 				configGroup.POST("/saveSiteInfo", configHandler.SaveSiteInfo)
+				configGroup.POST("/saveMarketSetting", configHandler.SaveMarketSetting)
+				configGroup.POST("/info", configHandler.GetMarketInfo)
 			}
 		}
 

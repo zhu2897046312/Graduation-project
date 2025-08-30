@@ -1,11 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"server/models/sp"
 	"server/service"
 	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type SpProdAttributesPageRequest struct {
@@ -86,7 +88,7 @@ func (h *SpProdAttributesHandler) GetAttribute(c *gin.Context) {
 		InvalidParams_1(c, uintId)
 		return
 	}
-
+	fmt.Println(uintId)
 	attr, err := h.service.GetAttributeByID(uintId)
 	if err != nil {
 		Error(c, 28003, "属性不存在")
