@@ -30,14 +30,38 @@ func (s *CmsDocumentService) GetPopularDocuments(limit int) ([]cms.CmsDocument, 
 }
 
 // ListDocuments 分页获取文档
-func (s *CmsDocumentService) ListDocuments(page, pageSize int) ([]cms.CmsDocument, int64, error) {
-	// 验证分页参数
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 || pageSize > 100 {
-		pageSize = 20
-	}
-	
-	return s.repoFactory.GetCmsDocumentRepository().ListWithPagination(page, pageSize)
+func (s *CmsDocumentService) ListDocuments(page, pageSize int,title string) ([]cms.CmsDocument, int64, error) {	
+	return s.repoFactory.GetCmsDocumentRepository().ListWithPagination(page, pageSize,title)
+}// cms_document_service.go
+// 在文件末尾添加以下方法
+
+// CreateDocument 创建文档
+func (s *CmsDocumentService) CreateDocument(document *cms.CmsDocument) error {
+    if document == nil {
+        return errors.New("文档不能为空")
+    }
+    return s.repoFactory.GetCmsDocumentRepository().Create(document)
+}
+
+// UpdateDocument 更新文档
+func (s *CmsDocumentService) UpdateDocument(document *cms.CmsDocument) error {
+    if document == nil || document.ID <= 0 {
+        return errors.New("无效的文档ID")
+    }
+    return s.repoFactory.GetCmsDocumentRepository().Update(document)
+}
+
+// GetDocumentByID 根据ID获取文档
+func (s *CmsDocumentService) GetDocumentByID(id int64) (*cms.CmsDocument, error) {
+    if id <= 0 {
+        return nil, errors.New("无效的文档ID")
+    }
+    return s.repoFactory.GetCmsDocumentRepository().FindByID(id)
+}
+
+func (s *CmsDocumentService) DeleteByID(id int64) error {
+    if id <= 0 {
+        return errors.New("无效的文档ID")
+    }
+    return s.repoFactory.GetCmsDocumentRepository().DeleteByID(id)
 }

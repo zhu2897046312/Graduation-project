@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"server/models/cms"
 )
 
@@ -45,4 +46,12 @@ func (s *CmsDocumentArchiveService) GetArchiveByDocumentID(documentID int64) (*c
 		return nil, errors.New("无效的文档ID")
 	}
 	return s.repoFactory.GetCmsDocumentArchiveRepository().FindByDocumentID(documentID)
+}
+
+func (s *CmsDocumentArchiveService) DeleteByDocumetnID(id int64) error {
+	_,err := s.repoFactory.GetCmsDocumentArchiveRepository().FindByDocumentID(id)
+	if err == gorm.ErrRecordNotFound {
+		return errors.New("存档不存在")
+	}
+    return s.repoFactory.GetCmsDocumentArchiveRepository().DeleteByDocumentID(id)
 }

@@ -42,6 +42,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 系统配置路由组
 		configHandler := handlers.NewCoreConfigHandler(factory.GetCoreConfigService())
 
+		// 文档路由组
+		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService(),factory.GetCmsDocumentArchiveService())
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -111,6 +113,13 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				configGroup.POST("/saveSiteInfo", configHandler.SaveSiteInfo)
 				configGroup.POST("/saveMarketSetting", configHandler.SaveMarketSetting)
 				configGroup.POST("/info", configHandler.GetMarketInfo)
+			}
+			documentGroup := adminAuth.Group("/shop/document")
+			{
+				documentGroup.POST("/create", documentHandler.SaveDocument)
+				documentGroup.POST("/update", documentHandler.SaveDocument)
+				documentGroup.POST("/list", documentHandler.ListDocuments)
+				documentGroup.GET("/delete", documentHandler.DeleteDocument)
 			}
 		}
 
@@ -191,15 +200,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			archiveGroup.POST("/:document_id", archiveHandler.CreateArchive)
 			archiveGroup.PUT("/:document_id", archiveHandler.UpdateArchive)
 			archiveGroup.GET("/:document_id", archiveHandler.GetArchive)
-		}
-
-		// 文档路由组
-		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService())
-		documentGroup := api.Group("/cms/documents")
-		{
-			documentGroup.GET("/category/:category_id", documentHandler.GetByCategoryID)
-			documentGroup.GET("/popular", documentHandler.GetPopular)
-			documentGroup.GET("", documentHandler.ListDocuments)
 		}
 
 		// 文档标签路由组
