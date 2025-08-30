@@ -22,7 +22,7 @@ func (r *ShopTagMateRepository) Create(mate *shop.ShopTagMate) error {
 
 // 更新标签元数据
 func (r *ShopTagMateRepository) Update(mate *shop.ShopTagMate) error {
-	return r.db.Save(mate).Error
+	return r.db.Updates(mate).Error
 }
 
 // 根据ID获取元数据
@@ -48,4 +48,8 @@ func (r *ShopTagMateRepository) UpdateContent(id int, content string) error {
 	return r.db.Model(&shop.ShopTagMate{}).
 		Where("id = ?", id).
 		Update("content", content).Error
+}
+
+func (r *ShopTagMateRepository) DeleteByID(id int) error{
+	return r.db.Where("id = ?", id).Delete(&shop.ShopTagMate{}).Error
 }

@@ -24,7 +24,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpProdAttributesValueService(),
 		)
 		// 商品标签路由组
-		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService())
+		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService(),factory.GetShopTagMateService())
 		// SP商品属性值路由组
 		spAttrValueHandler := handlers.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
 		//商品路由组
@@ -106,6 +106,10 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			tagGroup := adminAuth.Group("/shop/tag")
 			{
 				tagGroup.POST("/list", tagHandler.ListTags)
+				tagGroup.GET("/info", tagHandler.GetTag)
+				tagGroup.POST("/create", tagHandler.CreateTag)
+				tagGroup.POST("/modify", tagHandler.UpdateTag)
+				tagGroup.GET("/delete", tagHandler.DeleteTag)
 			}
 			configGroup := adminAuth.Group("/shop/marketSetting")
 			{

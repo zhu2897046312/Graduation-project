@@ -66,3 +66,10 @@ func (s *ShopTagMateService) UpdateTagContent(id int, content string) error {
 	}
 	return s.repoFactory.GetShopTagMateRepository().UpdateContent(id, content)
 }
+
+func (s *ShopTagMateService) DeleteTagMate(id int) error {
+	if id == 0 {
+		return errors.New("元数据ID不能为空")
+	}
+	return s.repoFactory.GetShopTagMateRepository().DeleteByID(id)
+}	

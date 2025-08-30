@@ -1,14 +1,19 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"server/models/shop"
 	"server/service"
+	"server/utils"
 	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ShopTagHandler struct {
 	service *service.ShopTagService
+	tagMateService *service.ShopTagMateService
 }
 
 type ListTagsRequest struct {
@@ -19,64 +24,152 @@ type ListTagsRequest struct {
 	PageSize   int `json:"page_size"`
 }
 
-func NewShopTagHandler(service *service.ShopTagService) *ShopTagHandler {
-	return &ShopTagHandler{service: service}
+type CreaeteTagRequest struct {
+	Code           string `json:"code"`
+	MatchWord      string `json:"match_word"`
+	ReadNum        interface{} `json:"read_num"`
+	SEODescription string `json:"seo_description"`
+	SEOKeyword     string `json:"seo_keyword"`
+	SEOTitle       string `json:"seo_title"`
+	SortNum        interface{} `json:"sort_num"`
+	State          interface{}  `json:"state"`
+	Thumb          string `json:"thumb"`
+	Title          string `json:"title"`
+}
+
+type UpdateTagRequest struct {
+	ID             int `json:"id"`
+	Code           string `json:"code"`
+	MatchWord      string `json:"match_word"`
+	ReadNum        interface{} `json:"read_num"`
+	SEODescription string `json:"seo_description"`
+	SEOKeyword     string `json:"seo_keyword"`
+	SEOTitle       string `json:"seo_title"`
+	SortNum        interface{} `json:"sort_num"`
+	State          interface{}  `json:"state"`
+	Thumb          string `json:"thumb"`
+	Title          string `json:"title"`
+}
+
+func NewShopTagHandler(service *service.ShopTagService,tagMateService *service.ShopTagMateService) *ShopTagHandler {
+	return &ShopTagHandler{
+		service: service,
+		tagMateService: tagMateService,
+	}
 }
 
 // 创建商品标签
 func (h *ShopTagHandler) CreateTag(c *gin.Context) {
-	var tag shop.ShopTag
-	if err := c.ShouldBindJSON(&tag); err != nil {
+	var req CreaeteTagRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
+	
+	tag := shop.ShopTag{
+		Code:           req.Code,
+		MatchWord:      req.MatchWord,
+		ReadNum:        int(utils.ConvertToUint(req.ReadNum)),
+		SortNum:        int(utils.ConvertToUint(req.SortNum)),
+		State:          int8(utils.ConvertToUint(req.State)),
+		Thumb:          req.Thumb,
+		Title:          req.Title,
+		CreatedTime: time.Now(),
+		UpdatedTime: time.Now(),
+	}
+	tagMate := shop.ShopTagMate{
+		Content: req.MatchWord,
+		SeoTitle: req.SEOTitle,
+		SeoDescription: req.SEODescription,
+		SeoKeyword: req.SEOKeyword,
+		CreatedTime: time.Now(),
+		UpdatedTime: time.Now(),
+	}
 	if err := h.service.CreateTag(&tag); err != nil {
 		Error(c, 21001, err.Error())
 		return
 	}
+	tagMate.ID = tag.ID
+	fmt.Println(tag)
+	if err := h.tagMateService.CreateTagMate(&tagMate); err != nil {
+		Error(c, 21001, err.Error())
+		return
+	}
 
-	Success(c, tag)
+	Success(c, nil)
 }
 
 // 更新商品标签
 func (h *ShopTagHandler) UpdateTag(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil || id == 0 {
+	var req UpdateTagRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	var tag shop.ShopTag
-	if err := c.ShouldBindJSON(&tag); err != nil {
-		InvalidParams(c)
-		return
+	
+	tag := shop.ShopTag{
+		Code:           req.Code,
+		MatchWord:      req.MatchWord,
+		ReadNum:        int(utils.ConvertToUint(req.ReadNum)),
+		SortNum:        int(utils.ConvertToUint(req.SortNum)),
+		State:          int8(utils.ConvertToUint(req.State)),
+		Thumb:          req.Thumb,
+		Title:          req.Title,
+		ID:             req.ID,
+		UpdatedTime: time.Now(),
 	}
-	tag.ID = id
-
+	tagMate := shop.ShopTagMate{
+		ID:             req.ID,
+		Content: req.MatchWord,
+		SeoTitle: req.SEOTitle,
+		SeoDescription: req.SEODescription,
+		SeoKeyword: req.SEOKeyword,
+		UpdatedTime: time.Now(),
+	}
 	if err := h.service.UpdateTag(&tag); err != nil {
-		Error(c, 21002, err.Error())
+		Error(c, 21001, err.Error())
+		return
+	}
+	if err := h.tagMateService.UpdateTagMate(&tagMate); err != nil {
+		Error(c, 21001, err.Error())
 		return
 	}
 
-	Success(c, tag)
+	Success(c, nil)
 }
 
 // 获取标签详情
 func (h *ShopTagHandler) GetTag(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil || id == 0 {
+	id := c.Query("id")
+	uid := utils.ConvertToUint(id)
+	if uid == 0 {
 		InvalidParams(c)
 		return
 	}
 
-	tag, err := h.service.GetTagByID(id)
+	tag, err := h.service.GetTagByID(int(uid))
 	if err != nil {
 		Error(c, 21003, "标签不存在")
 		return
 	}
-
-	Success(c, tag)
+	tagMate , err_ := h.tagMateService.GetTagMateByID(int(uid))
+	if err_ != nil {
+		Error(c, 21003, "标签不存在")
+		return
+	}
+	resonse := gin.H{
+		"seo_title": tagMate.SeoTitle,	
+		"seo_description": tagMate.SeoDescription,
+		"seo_keyword": tagMate.SeoKeyword,
+		"match_word": tagMate.Content,
+		"code": tag.Code,	
+		"read_num": tag.ReadNum,
+		"sort_num": tag.SortNum,
+		"state": tag.State,
+		"thumb": tag.Thumb,
+		"title": tag.Title,
+	}
+	Success(c, resonse)
 }
 
 // 根据状态获取标签列表
@@ -153,3 +246,22 @@ func (h *ShopTagHandler) ListTags(c *gin.Context) {
 		"total": total,
 	})
 }
+
+func (h *ShopTagHandler) DeleteTag(c *gin.Context) {
+	id := c.Query("id")
+	uid := utils.ConvertToUint(id)
+	if uid == 0 {
+		InvalidParams(c)
+		return
+	}
+	if err := h.service.DeleteTagByID(int(uid)); err != nil{
+		Error(c, 21008, "删除标签失败")
+		return
+	}
+	if err := h.tagMateService.DeleteTagMate(int(uid)); err != nil{
+		Error(c, 21008, "删除标签失败")
+		return
+	}
+
+	Success(c, nil)
+}		

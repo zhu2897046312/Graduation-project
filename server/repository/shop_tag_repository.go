@@ -22,7 +22,7 @@ func (r *ShopTagRepository) Create(tag *shop.ShopTag) error {
 
 // 更新商品标签shop
 func (r *ShopTagRepository) Update(tag *shop.ShopTag) error {
-	return r.db.Save(tag).Error
+	return r.db.Updates(tag).Error
 }
 
 // 根据ID获取标签
@@ -105,4 +105,8 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 		Find(&tags).Error
 
 	return tags, total, err
+}
+
+func (r *ShopTagRepository) DeleteByID(id int) error {
+	return r.db.Delete(&shop.ShopTag{}, id).Error
 }

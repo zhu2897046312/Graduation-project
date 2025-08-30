@@ -92,3 +92,10 @@ func (s *ShopTagService) ListTags(params shop.TagQueryParams) ([]shop.ShopTag, i
 	
 	return s.repoFactory.GetShopTagRepository().ListWithPagination(params)
 }
+
+func (s *ShopTagService) DeleteTagByID(id int) error {
+	if id == 0 {
+		return errors.New("标签ID不能为空")
+	}
+	return s.repoFactory.GetShopTagRepository().DeleteByID(id)
+}
