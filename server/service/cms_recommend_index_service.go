@@ -32,8 +32,8 @@ func (s *CmsRecommendIndexService) UpdateRecommendIndex(index *cms.CmsRecommendI
 	}
 	
 	// 检查索引是否存在
-	existing, err := s.repoFactory.GetCmsRecommendIndexRepository().FindByRecommendID(index.RecommendID)
-	if err != nil || len(existing) == 0 {
+	_, err := s.repoFactory.GetCmsRecommendIndexRepository().FindByID(index.ID)
+	if err != nil  {
 		return errors.New("推荐索引不存在")
 	}
 	
@@ -66,4 +66,11 @@ func (s *CmsRecommendIndexService) DeleteRecommendIndex(id int) error {
 
 func (s *CmsRecommendIndexService) ListRecommendsIndex(prarams cms.RecommendIndexQueryParams) ([]cms.CmsRecommendIndex, int64, error) {
 	return s.repoFactory.GetCmsRecommendIndexRepository().ListWithPagination(prarams)
+}
+
+func (s *CmsRecommendIndexService) GetRecommendIndexByID(id int) (*cms.CmsRecommendIndex, error) {
+	if id <= 0 {
+		return nil, errors.New("无效的索引ID")
+	}
+	return s.repoFactory.GetCmsRecommendIndexRepository().FindByID(id)
 }

@@ -46,7 +46,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
 
 		// 推荐路由组
-		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService())
+		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService(),factory.GetCmsRecommendIndexService())
 
 		// 推荐索引路由组
 		recIndexHandler := handlers.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
@@ -135,18 +135,19 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			recommendGroup := adminAuth.Group("/shop/recommend")
 			{
 				recommendGroup.POST("/list", recommendHandler.ListRecommends)
-				recommendGroup.PUT("/:id", recommendHandler.UpdateRecommend)
-				recommendGroup.GET("/active", recommendHandler.GetActiveRecommends)
-				recommendGroup.GET("", recommendHandler.GetRecommendsByState)
+				recommendGroup.POST("/modify", recommendHandler.UpdateRecommend)
+				recommendGroup.POST("/create", recommendHandler.CreateRecommend)
+				recommendGroup.GET("/delete", recommendHandler.DeleteRecommendByID)
+				recommendGroup.GET("/info", recommendHandler.GetRecommendByID)
 			}
 
 			recIndexGroup := adminAuth.Group("/shop/recommendIndex")
 			{
 				recIndexGroup.POST("/list", recIndexHandler.ListRecommendsIndex)
-				recIndexGroup.PUT("/:id", recIndexHandler.UpdateIndex)
-				recIndexGroup.GET("/recommend/:recommend_id", recIndexHandler.GetByRecommendID)
-				recIndexGroup.GET("/state", recIndexHandler.GetByState)
-				recIndexGroup.DELETE("/:id", recIndexHandler.DeleteIndex)
+				recIndexGroup.POST("/modify", recIndexHandler.UpdateIndex)
+				recIndexGroup.POST("/create", recIndexHandler.CreateIndex)
+				recIndexGroup.GET("/info", recIndexHandler.GetRecommendIndexByID)
+				recIndexGroup.GET("/delete", recIndexHandler.DeleteRecommendIndexByID)
 			}
 		}
 

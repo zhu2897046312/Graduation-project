@@ -2,6 +2,7 @@ package repository
 
 import (
 	"server/models/cms"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -23,7 +24,21 @@ func (r *CmsRecommendIndexRepository) Create(index *cms.CmsRecommendIndex) error
 
 // 更新推荐索引
 func (r *CmsRecommendIndexRepository) Update(index *cms.CmsRecommendIndex) error {
-	return r.db.Save(index).Error
+	return r.db.Updates(index).Error
+}
+
+func (r *CmsRecommendIndexRepository) FindByID(id int) (*cms.CmsRecommendIndex, error) {
+	var index cms.CmsRecommendIndex
+	err := r.db.First(&index, id).Error
+	return &index, err
+}
+
+func (r *CmsRecommendIndexRepository) Delete(id int) error {
+	result := r.db.Model(&cms.CmsRecommendIndex{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }
 
 // 根据推荐ID获取索引项
@@ -44,11 +59,6 @@ func (r *CmsRecommendIndexRepository) FindByState(state int8) ([]cms.CmsRecommen
 	return indices, err
 }
 
-// 删除推荐索引
-func (r *CmsRecommendIndexRepository) Delete(id int) error {
-	return r.db.Delete(&cms.CmsRecommendIndex{}, id).Error
-}
-
 // 分页获取商品（带过滤选项）
 func (r *CmsRecommendIndexRepository) ListWithPagination(params cms.RecommendIndexQueryParams) ([]cms.CmsRecommendIndex, int64, error) {
 	var recommends []cms.CmsRecommendIndex
@@ -62,6 +72,10 @@ func (r *CmsRecommendIndexRepository) ListWithPagination(params cms.RecommendInd
 	// 应用过滤条件
 	if params.RecommendID != 0 {
 		query = query.Where("recommend_id = ?", params.RecommendID)
+	}
+
+	if params.Title != "" {
+		query = query.Where("title LIKE ?", "%"+params.Title+"%")
 	}
 
 	// 获取总数

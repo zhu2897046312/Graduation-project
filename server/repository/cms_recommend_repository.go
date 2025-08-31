@@ -1,8 +1,10 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"server/models/cms"
+	"time"
+
+	"gorm.io/gorm"
 )
 
 type CmsRecommendRepository struct {
@@ -22,7 +24,21 @@ func (r *CmsRecommendRepository) Create(recommend *cms.CmsRecommend) error {
 
 // 更新推荐内容
 func (r *CmsRecommendRepository) Update(recommend *cms.CmsRecommend) error {
-	return r.db.Save(recommend).Error
+	return r.db.Updates(recommend).Error
+}
+
+func (r *CmsRecommendRepository) Delete(id int) error {
+	result := r.db.Model(&cms.CmsRecommend{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
+}
+
+func (r *CmsRecommendRepository) FindByID(id int) (*cms.CmsRecommend, error) {
+	var recommend cms.CmsRecommend
+	err := r.db.First(&recommend, id).Error
+	return &recommend, err
 }
 
 // 获取推荐列表
@@ -54,11 +70,11 @@ func (r *CmsRecommendRepository) ListWithPagination(params cms.RecommendQueryPar
 		return nil, 0, err
 	}
 
-	 // 如果 pageSize <= 0，返回全部数据
-	 if params.PageSize <= 0 {
-        err := query.Order("created_time DESC").Find(&recommends).Error
-        return recommends, total, err
-    }
+	// 如果 pageSize <= 0，返回全部数据
+	if params.PageSize <= 0 {
+		err := query.Order("created_time DESC").Find(&recommends).Error
+		return recommends, total, err
+	}
 
 	// 获取分页数据
 	err := query.Offset(offset).

@@ -40,7 +40,7 @@ func (s *CmsRecommendService) UpdateRecommend(recommend *cms.CmsRecommend) error
 	}
 	
 	// 检查推荐是否存在
-	_, err := s.GetActiveRecommends()
+	_, err := s.repoFactory.GetCmsRecommendRepository().FindByID(recommend.ID)
 	if err != nil {
 		return errors.New("推荐内容不存在")
 	}
@@ -63,4 +63,18 @@ func (s *CmsRecommendService) GetRecommendsByState(state int8) ([]cms.CmsRecomme
 
 func (s *CmsRecommendService) ListRecommends(prarams cms.RecommendQueryParams) ([]cms.CmsRecommend, int64, error) {
 	return s.repoFactory.GetCmsRecommendRepository().ListWithPagination(prarams)
+}
+
+func (s *CmsRecommendService) DeleteRecommendByID(id int) error {
+	if id <= 0 {
+		return errors.New("无效的推荐ID")
+	}
+	return s.repoFactory.GetCmsRecommendRepository().Delete(id)
+}
+
+func (s *CmsRecommendService) GetRecommendByID(id int) (*cms.CmsRecommend, error) {
+	if id <= 0 {
+		return nil, errors.New("无效的推荐ID")
+	}
+	return s.repoFactory.GetCmsRecommendRepository().FindByID(id)
 }
