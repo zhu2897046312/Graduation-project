@@ -1,14 +1,23 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"server/service"
 	"server/models/cms"
+	"server/service"
+	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CmsRecommendIndexHandler struct {
 	service *service.CmsRecommendIndexService
+}
+
+type ListRecommendsIndexRequest struct {
+	RecommendID interface{}    `json:"recommend_id"`
+	Title       string `json:"title"`
+	Page        int    `json:"page_no"`
+	PageSize    int    `json:"page_size"`
 }
 
 func NewCmsRecommendIndexHandler(service *service.CmsRecommendIndexService) *CmsRecommendIndexHandler {
@@ -102,4 +111,28 @@ func (h *CmsRecommendIndexHandler) DeleteIndex(c *gin.Context) {
 	}
 
 	Success(c, nil)
+}
+
+func (h *CmsRecommendIndexHandler) ListRecommendsIndex(c *gin.Context) {
+	var req ListRecommendsIndexRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
+	recommend_id:= utils.ConvertToUint(req.RecommendID)
+	recommends, total, err := h.service.ListRecommendsIndex(cms.RecommendIndexQueryParams{
+		Title:     req.Title,
+		RecommendID: int(recommend_id),
+		Page:     req.Page,
+		PageSize: req.PageSize,
+	})
+	if err != nil {
+		ServerError(c, err)
+		return
+	}
+
+	Success(c, gin.H{
+		"list":  recommends,
+		"total": total,
+	})
 }

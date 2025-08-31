@@ -7,6 +7,11 @@ import (
 	"strconv"
 )
 
+type ListRecommendsRequest struct{
+	Page       int         `json:"page_no"`
+	PageSize   int         `json:"page_size"`
+}
+
 type CmsRecommendHandler struct {
 	service *service.CmsRecommendService
 }
@@ -80,4 +85,25 @@ func (h *CmsRecommendHandler) GetRecommendsByState(c *gin.Context) {
 	}
 
 	Success(c, recommends)
+}
+
+func (h *CmsRecommendHandler) ListRecommends(c *gin.Context) {
+	var req ListRecommendsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
+	recommends, total, err := h.service.ListRecommends(cms.RecommendQueryParams{
+		Page:       req.Page,
+		PageSize:   req.PageSize,
+	})
+	if err != nil {
+		ServerError(c, err)
+		return
+	}	
+
+	Success(c, gin.H{
+		"list":  recommends,
+		"total": total,
+	})
 }

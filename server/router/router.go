@@ -24,7 +24,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpProdAttributesValueService(),
 		)
 		// 商品标签路由组
-		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService(),factory.GetShopTagMateService())
+		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService(), factory.GetShopTagMateService())
 		// SP商品属性值路由组
 		spAttrValueHandler := handlers.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
 		//商品路由组
@@ -43,7 +43,13 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		configHandler := handlers.NewCoreConfigHandler(factory.GetCoreConfigService())
 
 		// 文档路由组
-		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService(),factory.GetCmsDocumentArchiveService())
+		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
+
+		// 推荐路由组
+		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService())
+
+		// 推荐索引路由组
+		recIndexHandler := handlers.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -124,6 +130,23 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				documentGroup.POST("/update", documentHandler.SaveDocument)
 				documentGroup.POST("/list", documentHandler.ListDocuments)
 				documentGroup.GET("/delete", documentHandler.DeleteDocument)
+			}
+
+			recommendGroup := adminAuth.Group("/shop/recommend")
+			{
+				recommendGroup.POST("/list", recommendHandler.ListRecommends)
+				recommendGroup.PUT("/:id", recommendHandler.UpdateRecommend)
+				recommendGroup.GET("/active", recommendHandler.GetActiveRecommends)
+				recommendGroup.GET("", recommendHandler.GetRecommendsByState)
+			}
+
+			recIndexGroup := adminAuth.Group("/shop/recommendIndex")
+			{
+				recIndexGroup.POST("/list", recIndexHandler.ListRecommendsIndex)
+				recIndexGroup.PUT("/:id", recIndexHandler.UpdateIndex)
+				recIndexGroup.GET("/recommend/:recommend_id", recIndexHandler.GetByRecommendID)
+				recIndexGroup.GET("/state", recIndexHandler.GetByState)
+				recIndexGroup.DELETE("/:id", recIndexHandler.DeleteIndex)
 			}
 		}
 
@@ -232,27 +255,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			fileGroup.PUT("/:id", fileHandler.UpdateFile)
 			fileGroup.GET("/:id", fileHandler.GetFile)
 			fileGroup.GET("/md5", fileHandler.GetFileByMD5)
-		}
-
-		// 推荐索引路由组
-		recIndexHandler := handlers.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
-		recIndexGroup := api.Group("/cms/recommend-indices")
-		{
-			recIndexGroup.POST("", recIndexHandler.CreateIndex)
-			recIndexGroup.PUT("/:id", recIndexHandler.UpdateIndex)
-			recIndexGroup.GET("/recommend/:recommend_id", recIndexHandler.GetByRecommendID)
-			recIndexGroup.GET("/state", recIndexHandler.GetByState)
-			recIndexGroup.DELETE("/:id", recIndexHandler.DeleteIndex)
-		}
-
-		// 推荐路由组
-		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService())
-		recommendGroup := api.Group("/cms/recommends")
-		{
-			recommendGroup.POST("", recommendHandler.CreateRecommend)
-			recommendGroup.PUT("/:id", recommendHandler.UpdateRecommend)
-			recommendGroup.GET("/active", recommendHandler.GetActiveRecommends)
-			recommendGroup.GET("", recommendHandler.GetRecommendsByState)
 		}
 
 		// 景点路由组

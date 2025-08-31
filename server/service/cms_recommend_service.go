@@ -60,3 +60,7 @@ func (s *CmsRecommendService) GetRecommendsByState(state int8) ([]cms.CmsRecomme
 	}
 	return s.repoFactory.GetCmsRecommendRepository().FindByState(state)
 }
+
+func (s *CmsRecommendService) ListRecommends(prarams cms.RecommendQueryParams) ([]cms.CmsRecommend, int64, error) {
+	return s.repoFactory.GetCmsRecommendRepository().ListWithPagination(prarams)
+}

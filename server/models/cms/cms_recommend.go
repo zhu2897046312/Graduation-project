@@ -15,7 +15,10 @@ type CmsRecommend struct {
     UpdatedTime time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
     DeletedTime *time.Time `json:"deletedTime"`
 }
-
+type RecommendQueryParams struct{
+	Page       int         `json:"page_no"`
+	PageSize   int         `json:"page_size"`
+}
 func (CmsRecommend) TableName() string {
 	return "cms_recommend"
 }

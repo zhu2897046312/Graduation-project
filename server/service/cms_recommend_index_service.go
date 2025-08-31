@@ -63,3 +63,7 @@ func (s *CmsRecommendIndexService) DeleteRecommendIndex(id int) error {
 	}
 	return s.repoFactory.GetCmsRecommendIndexRepository().Delete(id)
 }
+
+func (s *CmsRecommendIndexService) ListRecommendsIndex(prarams cms.RecommendIndexQueryParams) ([]cms.CmsRecommendIndex, int64, error) {
+	return s.repoFactory.GetCmsRecommendIndexRepository().ListWithPagination(prarams)
+}
