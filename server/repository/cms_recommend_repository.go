@@ -44,7 +44,8 @@ func (r *CmsRecommendRepository) FindByID(id int) (*cms.CmsRecommend, error) {
 // 获取推荐列表
 func (r *CmsRecommendRepository) FindAll() ([]cms.CmsRecommend, error) {
 	var recommends []cms.CmsRecommend
-	err := r.db.Where("state = 1").Order("created_time DESC").Find(&recommends).Error
+	query := r.db.Model(&cms.CmsRecommend{}).Where("deleted_time IS NULL")
+	err := query.Where("state = 1").Order("created_time DESC").Find(&recommends).Error
 	return recommends, err
 }
 
@@ -63,7 +64,7 @@ func (r *CmsRecommendRepository) ListWithPagination(params cms.RecommendQueryPar
 	offset := (params.Page - 1) * params.PageSize
 
 	// 构建查询
-	query := r.db.Model(&cms.CmsRecommend{})
+	query := r.db.Model(&cms.CmsRecommend{}).Where("deleted_time IS NULL")
 
 	// 获取总数
 	if err := query.Count(&total).Error; err != nil {

@@ -11,6 +11,7 @@ type ShopTagMate struct {
     SeoDescription string    `gorm:"size:200;not null;default:''" json:"seoDescription"`
     CreatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
     UpdatedTime    time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
+    DeletedTime    *time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"deletedTime"`
 }
 func (ShopTagMate) TableName() string {
     return "shop_tag_mate"

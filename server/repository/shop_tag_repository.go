@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/shop"
+	"time"
 )
 
 type ShopTagRepository struct {
@@ -79,7 +80,7 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 	offset := (params.Page - 1) * params.PageSize
 	
 	// 构建查询
-	query := r.db.Model(&shop.ShopTag{})
+	query := r.db.Model(&shop.ShopTag{}).Where("deleted_time IS NULL")
 
 	// 应用过滤条件
 	if params.State != 0 {
@@ -108,5 +109,9 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 }
 
 func (r *ShopTagRepository) DeleteByID(id int) error {
-	return r.db.Delete(&shop.ShopTag{}, id).Error
+	result := r.db.Model(&shop.ShopTag{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }

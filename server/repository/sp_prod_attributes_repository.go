@@ -2,6 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
+	"time"
 	"server/models/sp"
 )
 
@@ -44,7 +45,7 @@ func (r *SpProdAttributesRepository) FindByPage(title string, page, pageSize int
 	var attrs []sp.SpProdAttributes
 	var total int64
 	
-	query := r.db.Model(&sp.SpProdAttributes{})
+	query := r.db.Model(&sp.SpProdAttributes{}).Where("deleted_time IS NULL")
 	if title != "" {
 		query = query.Where("title LIKE ?", "%"+title+"%")
 	}
@@ -74,5 +75,9 @@ func (r *SpProdAttributesRepository) UpdateSortNum(id uint, sortNum uint16) erro
 
 // 删除属性
 func (r *SpProdAttributesRepository) Delete(id uint) error {
-	return r.db.Delete(&sp.SpProdAttributes{}, id).Error
+	result := r.db.Model(&sp.SpProdAttributes{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }

@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 	"server/models/cms"
-
+    "time"
 	"gorm.io/gorm"
 )
 
@@ -37,8 +37,7 @@ func (r *CmsDocumentRepository) ListWithPagination(page, pageSize int, title str
     var documents []cms.CmsDocument
     var total int64
 
-    // 初始化查询构建器
-    query := r.db.Model(&cms.CmsDocument{})
+    query := r.db.Model(&cms.CmsDocument{}).Where("deleted_time IS NULL")
 
     // 如果 title 不为空，添加模糊查询条件
     if title != "" {
@@ -94,5 +93,9 @@ func (r *CmsDocumentRepository) FindByID(id int64) (*cms.CmsDocument, error) {
 }
 
 func (r *CmsDocumentRepository) DeleteByID(id int64) error {
-    return r.db.Delete(&cms.CmsDocument{}, id).Error
+    result := r.db.Model(&cms.CmsDocument{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }

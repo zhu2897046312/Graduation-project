@@ -16,6 +16,7 @@ type CmsRecommendIndex struct {
 	SortNum     int       `gorm:"not null;default:0" json:"sortNum"`
 	CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
 	UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
+	DeletedTime *time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"deletedTime"`
 }
 type RecommendIndexQueryParams struct {
 	Title       string `json:"title"`

@@ -81,7 +81,7 @@ func (r *SpProductRepository) ListWithPagination(params sp.ProductQueryParams) (
 	offset := (params.Page - 1) * params.PageSize
 
 	// 构建查询
-	query := r.db.Model(&sp.SpProduct{})
+	query := r.db.Model(&sp.SpProduct{}).Where("deleted_time IS NULL")
 
 	// 应用过滤条件
 	if params.CategoryID != 0 {

@@ -44,7 +44,8 @@ func (r *CmsRecommendIndexRepository) Delete(id int) error {
 // 根据推荐ID获取索引项
 func (r *CmsRecommendIndexRepository) FindByRecommendID(recommendID int) ([]cms.CmsRecommendIndex, error) {
 	var indices []cms.CmsRecommendIndex
-	err := r.db.Where("recommend_id = ?", recommendID).
+	query := r.db.Model(&cms.CmsRecommendIndex{}).Where("deleted_time IS NULL")
+	err := query.Where("recommend_id = ?", recommendID).
 		Order("sort_num ASC").
 		Find(&indices).Error
 	return indices, err
@@ -53,7 +54,8 @@ func (r *CmsRecommendIndexRepository) FindByRecommendID(recommendID int) ([]cms.
 // 根据状态获取推荐索引
 func (r *CmsRecommendIndexRepository) FindByState(state int8) ([]cms.CmsRecommendIndex, error) {
 	var indices []cms.CmsRecommendIndex
-	err := r.db.Where("state = ?", state).
+	query := r.db.Model(&cms.CmsRecommendIndex{}).Where("deleted_time IS NULL")
+	err := query.Where("state = ?", state).
 		Order("sort_num ASC").
 		Find(&indices).Error
 	return indices, err
@@ -67,7 +69,7 @@ func (r *CmsRecommendIndexRepository) ListWithPagination(params cms.RecommendInd
 	offset := (params.Page - 1) * params.PageSize
 
 	// 构建查询
-	query := r.db.Model(&cms.CmsRecommendIndex{})
+	query := r.db.Model(&cms.CmsRecommendIndex{}).Where("deleted_time IS NULL")
 
 	// 应用过滤条件
 	if params.RecommendID != 0 {

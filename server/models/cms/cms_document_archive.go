@@ -2,6 +2,7 @@ package cms
 
 import (
 	"encoding/json"
+	"time"
 )
 
 type CmsDocumentArchive struct {
@@ -11,6 +12,7 @@ type CmsDocumentArchive struct {
 	SeoTitle       string          `gorm:"type:varchar(255)" json:"seo_title"`
 	SeoKeyword     string          `gorm:"type:varchar(255)" json:"seo_keyword"`
 	SeoDescription string          `gorm:"type:varchar(255)" json:"seo_description"`
+	DeletedTime       *time.Time `json:"deletedTime"`
 }
 
 func (CmsDocumentArchive) TableName() string {

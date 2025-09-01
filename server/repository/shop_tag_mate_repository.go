@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/shop"
+	"time"
 )
 
 type ShopTagMateRepository struct {
@@ -51,5 +52,11 @@ func (r *ShopTagMateRepository) UpdateContent(id int, content string) error {
 }
 
 func (r *ShopTagMateRepository) DeleteByID(id int) error{
-	return r.db.Where("id = ?", id).Delete(&shop.ShopTagMate{}).Error
+	//return r.db.Where("id = ?", id).Delete(&shop.ShopTagMate{}).Error
+	result := r.db.Model(&shop.ShopTagMate{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
+	
 }

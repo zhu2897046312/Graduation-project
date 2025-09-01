@@ -2,6 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
+	"time"
 	"server/models/cms"
 )
 
@@ -32,5 +33,9 @@ func (r *CmsDocumentArchiveRepository) FindByDocumentID(documentID int64) (*cms.
 	return &archive, err
 }
 func (r *CmsDocumentArchiveRepository) DeleteByDocumentID(documentID int64) error {
-    return r.db.Where("document_id = ?", documentID).Delete(&cms.CmsDocumentArchive{}).Error
+    result := r.db.Model(&cms.CmsDocumentArchive{}).
+		Where("document_id = ?", documentID).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }

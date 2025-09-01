@@ -75,7 +75,7 @@ func (r *SpProdAttributesValueRepository) ListWithPagination(params sp.SpProdAtt
 	offset := (params.Page - 1) * params.PageSize
 
 	// 构建查询
-	query := r.db.Model(&sp.SpProdAttributesValue{})
+	query := r.db.Model(&sp.SpProdAttributesValue{}).Where("deleted_time IS NULL")
 
 	// 应用过滤条件
 	if params.ProdAttributesID != 0 {

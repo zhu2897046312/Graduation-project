@@ -2,6 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
+	"time"
 	"server/models/cms"
 )
 
@@ -87,5 +88,9 @@ func (r *CmsCategoryRepository) UpdateSortNum(id int64, sortNum int) error {
 
 // 删除分类
 func (r *CmsCategoryRepository) Delete(id int64) error {
-	return r.db.Delete(&cms.CmsCategory{}, id).Error
+	result := r.db.Model(&cms.CmsCategory{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }
