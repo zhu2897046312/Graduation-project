@@ -1,0 +1,87 @@
+package cms
+
+import (
+	"server/models/cms"
+	"server/repository/base"
+	"time"
+
+	"gorm.io/gorm"
+)
+
+type CmsRecommendRepository struct {
+	*base.BaseRepository
+}
+
+func NewCmsRecommendRepository(DB *gorm.DB) *CmsRecommendRepository {
+	return &CmsRecommendRepository{
+		BaseRepository: base.NewBaseRepository(DB),
+	}
+}
+
+// 创建推荐内容
+func (r *CmsRecommendRepository) Create(recommend *cms.CmsRecommend) error {
+	return r.DB.Create(recommend).Error
+}
+
+// 更新推荐内容
+func (r *CmsRecommendRepository) Update(recommend *cms.CmsRecommend) error {
+	return r.DB.Updates(recommend).Error
+}
+
+func (r *CmsRecommendRepository) Delete(id int) error {
+	result := r.DB.Model(&cms.CmsRecommend{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
+}
+
+func (r *CmsRecommendRepository) FindByID(id int) (*cms.CmsRecommend, error) {
+	var recommend cms.CmsRecommend
+	err := r.DB.First(&recommend, id).Error
+	return &recommend, err
+}
+
+// 获取推荐列表
+func (r *CmsRecommendRepository) FindAll() ([]cms.CmsRecommend, error) {
+	var recommends []cms.CmsRecommend
+	query := r.DB.Model(&cms.CmsRecommend{}).Where("deleted_time IS NULL")
+	err := query.Where("state = 1").Order("created_time DESC").Find(&recommends).Error
+	return recommends, err
+}
+
+// 根据状态获取推荐内容
+func (r *CmsRecommendRepository) FindByState(state int8) ([]cms.CmsRecommend, error) {
+	var recommends []cms.CmsRecommend
+	err := r.DB.Where("state = ?", state).Order("created_time DESC").Find(&recommends).Error
+	return recommends, err
+}
+
+// 分页获取商品（带过滤选项）
+func (r *CmsRecommendRepository) ListWithPagination(params cms.RecommendQueryParams) ([]cms.CmsRecommend, int64, error) {
+	var recommends []cms.CmsRecommend
+	var total int64
+
+	offset := (params.Page - 1) * params.PageSize
+
+	// 构建查询
+	query := r.DB.Model(&cms.CmsRecommend{}).Where("deleted_time IS NULL")
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 如果 pageSize <= 0，返回全部数据
+	if params.PageSize <= 0 {
+		err := query.Order("created_time DESC").Find(&recommends).Error
+		return recommends, total, err
+	}
+
+	// 获取分页数据
+	err := query.Offset(offset).
+		Limit(params.PageSize).
+		Find(&recommends).Error
+
+	return recommends, total, err
+}
