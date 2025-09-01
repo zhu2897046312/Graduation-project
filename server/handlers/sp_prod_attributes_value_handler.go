@@ -16,6 +16,11 @@ type ListProdAttributesRequest struct {
 	PageSize         int    `json:"page_size"`
 }
 
+type SpProdAttributesValueCreateRequest struct {
+	Title string `json:"title"`
+	SortNum interface{} `json:"sort_num"`
+}
+
 type SpProdAttributesValueHandler struct {
 	service *service.SpProdAttributesValueService
 }
@@ -26,12 +31,15 @@ func NewSpProdAttributesValueHandler(service *service.SpProdAttributesValueServi
 
 // 创建属性值
 func (h *SpProdAttributesValueHandler) CreateAttributeValue(c *gin.Context) {
-	var value sp.SpProdAttributesValue
-	if err := c.ShouldBindJSON(&value); err != nil {
+	var req SpProdAttributesValueCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
+	value := sp.SpProdAttributesValue{
+		Title: req.Title,
+		SortNum: uint16(utils.ConvertToUint(req.SortNum)),
+	}
 	if err := h.service.CreateAttributeValue(&value); err != nil {
 		Error(c, 29001, err.Error())
 		return

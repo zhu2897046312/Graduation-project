@@ -15,9 +15,6 @@ func NewSpProdAttributesValueService(base *Service) *SpProdAttributesValueServic
 
 // CreateAttributeValue 创建属性值
 func (s *SpProdAttributesValueService) CreateAttributeValue(value *sp.SpProdAttributesValue) error {
-	if value.ProdAttributesID == 0 {
-		return errors.New("属性ID不能为空")
-	}
 	if value.Title == "" {
 		return errors.New("属性值不能为空")
 	}
