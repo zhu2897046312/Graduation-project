@@ -91,6 +91,9 @@ func (s *SpOrderService) GetOrdersByState(state uint8) ([]sp.SpOrder, error) {
 	return s.repoFactory.GetSpOrderRepository().FindByState(state)
 }
 
+func (s *SpOrderService) List(param sp.ListOrdersQueryParam) ([]sp.SpOrder,int64, error) {
+	return s.repoFactory.GetSpOrderRepository().ListWithPagination(param)
+}
 // UpdateOrderState 更新订单状态
 func (s *SpOrderService) UpdateOrderState(id uint, state uint8) error {
 	if state != 1 && state != 2 && state != 3 && state != 4 && state != 5 {

@@ -88,3 +88,49 @@ func (r *SpOrderRepository) UpdateDeliveryInfo(id uint, company, sn string) erro
 			"delivery_sn":      sn,
 		}).Error
 }
+
+func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) ([]sp.SpOrder, int64, error) {
+	var products []sp.SpOrder
+	var total int64
+
+	// 设置默认值
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.PageSize < 1 || params.PageSize > 100 {
+		params.PageSize = 10
+	}
+	offset := (params.Page - 1) * params.PageSize
+
+	// 构建查询
+	query := r.db.Model(&sp.SpOrder{}).Where("deleted_time IS NULL")
+
+	// 应用过滤条件
+	if params.NikeName != "" {
+		query = query.Where("nickname LIKE ?", "%"+params.NikeName+"%")
+	}
+
+	if params.State != 0 {
+		query = query.Where("state = ?", params.State)
+	}
+
+	if params.Code != "" {
+		query = query.Where("Code LIKE ?", "%"+params.Code+"%")
+	}
+
+	if params.Email != "" {
+		query = query.Where("email LIKE ?", "%"+params.Email+"%")
+	}
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取分页数据
+	err := query.Offset(offset).
+		Limit(params.PageSize).
+		Find(&products).Error
+
+	return products, total, err
+}

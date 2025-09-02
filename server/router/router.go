@@ -46,10 +46,17 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
 
 		// 推荐路由组
-		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService(),factory.GetCmsRecommendIndexService())
+		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService(), factory.GetCmsRecommendIndexService())
 
 		// 推荐索引路由组
 		recIndexHandler := handlers.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
+
+		// SP订单路由组
+		spOrderHandler := handlers.NewSpOrderHandler(
+			factory.GetSpOrderService(),
+			factory.GetSpOrderItemService(),
+			factory.GetSpOrderReceiveAddressService(),
+		)
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -149,6 +156,18 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				recIndexGroup.POST("/create", recIndexHandler.CreateIndex)
 				recIndexGroup.GET("/info", recIndexHandler.GetRecommendIndexByID)
 				recIndexGroup.GET("/delete", recIndexHandler.DeleteRecommendIndexByID)
+			}
+
+			spOrderGroup := adminAuth.Group("/shop/order")
+			{
+				spOrderGroup.POST("", spOrderHandler.CreateOrder)
+				spOrderGroup.PUT("/:id", spOrderHandler.UpdateOrder)
+				spOrderGroup.GET("/info", spOrderHandler.GetOrder)
+				spOrderGroup.GET("/code/:code", spOrderHandler.GetOrderByCode)
+				spOrderGroup.GET("/user/:user_id", spOrderHandler.GetOrdersByUser)
+				spOrderGroup.GET("", spOrderHandler.GetOrdersByState)
+				spOrderGroup.PATCH("/:id/state", spOrderHandler.UpdateOrderState)
+				spOrderGroup.POST("/list", spOrderHandler.ListOrders)
 			}
 		}
 
@@ -507,20 +526,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spRefundGroup.GET("/:refund_no", spRefundHandler.GetRefundByRefundNo)
 			spRefundGroup.PATCH("/:id/status", spRefundHandler.UpdateRefundStatus)
 			spRefundGroup.PATCH("/:id/amount", spRefundHandler.UpdateRefundAmount)
-		}
-
-		// SP订单路由组
-		spOrderHandler := handlers.NewSpOrderHandler(factory.GetSpOrderService())
-		spOrderGroup := api.Group("/sp/orders")
-		{
-			spOrderGroup.POST("", spOrderHandler.CreateOrder)
-			spOrderGroup.PUT("/:id", spOrderHandler.UpdateOrder)
-			spOrderGroup.GET("/:id", spOrderHandler.GetOrder)
-			spOrderGroup.GET("/code/:code", spOrderHandler.GetOrderByCode)
-			spOrderGroup.GET("/user/:user_id", spOrderHandler.GetOrdersByUser)
-			spOrderGroup.GET("", spOrderHandler.GetOrdersByState)
-			spOrderGroup.PATCH("/:id/state", spOrderHandler.UpdateOrderState)
-			spOrderGroup.PATCH("/:id/delivery", spOrderHandler.UpdateDeliveryInfo)
 		}
 
 		spAttrGroup := api.Group("/sp/attributes")
