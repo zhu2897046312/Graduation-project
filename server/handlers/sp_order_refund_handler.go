@@ -62,7 +62,7 @@ func (h *SpOrderRefundHandler) GetRefundByOrder(c *gin.Context) {
 		return
 	}
 
-	refund, err := h.service.GetRefundByOrderID(uint(orderID))
+	refund,_, err := h.service.GetRefundByOrderID(uint(orderID))
 	if err != nil {
 		Error(c, 26003, "退款记录不存在")
 		return

@@ -23,7 +23,7 @@ func (r *SpOrderRepository) Create(order *sp.SpOrder) error {
 
 // 更新订单
 func (r *SpOrderRepository) Update(order *sp.SpOrder) error {
-	return r.db.Save(order).Error
+	return r.db.Updates(order).Error
 }
 
 // 根据ID获取订单
@@ -59,8 +59,11 @@ func (r *SpOrderRepository) FindByState(state uint8) ([]sp.SpOrder, error) {
 }
 
 // 更新订单状态
-func (r *SpOrderRepository) UpdateState(id uint, state uint8) error {
-	updates := map[string]interface{}{"state": state}
+func (r *SpOrderRepository) UpdateState(id uint, state uint8,remark string) error {
+	updates := map[string]interface{}{
+		"state": state,
+		"remark": remark,
+	}
 	
 	switch state {
 	case 2: // 已支付

@@ -60,3 +60,26 @@ func (r *SpOrderRefundRepository) UpdateRefundAmount(id uint, amount float64) er
 		Where("id = ?", id).
 		Update("refund_amount", amount).Error
 }
+
+func (r *SpOrderRefundRepository) ListWithPagination(orderID uint) ([]sp.SpOrderRefund, int64, error) {
+	var products []sp.SpOrderRefund
+	var total int64
+
+	// 构建查询
+	query := r.db.Model(&sp.SpOrderRefund{}).Where("deleted_time IS NULL")
+
+	// 应用过滤条件
+	if orderID != 0 {
+		query = query.Where("order_id = ?", orderID)
+	}
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取分页数据
+	err := query.Find(&products).Error
+
+	return products, total, err
+}

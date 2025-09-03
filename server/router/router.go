@@ -56,6 +56,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpOrderService(),
 			factory.GetSpOrderItemService(),
 			factory.GetSpOrderReceiveAddressService(),
+			factory.GetSpOrderRefundService(),
 		)
 		// 公开路由（不需要认证）
 		public := api.Group("")
@@ -164,10 +165,14 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spOrderGroup.PUT("/:id", spOrderHandler.UpdateOrder)
 				spOrderGroup.GET("/info", spOrderHandler.GetOrder)
 				spOrderGroup.GET("/code/:code", spOrderHandler.GetOrderByCode)
-				spOrderGroup.GET("/user/:user_id", spOrderHandler.GetOrdersByUser)
+				spOrderGroup.POST("/updateState", spOrderHandler.UpdateOrderState)
 				spOrderGroup.GET("", spOrderHandler.GetOrdersByState)
-				spOrderGroup.PATCH("/:id/state", spOrderHandler.UpdateOrderState)
+				spOrderGroup.POST("/delivery", spOrderHandler.UpdateDeliveryInfo)
 				spOrderGroup.POST("/list", spOrderHandler.ListOrders)
+			}
+			refundGroup := adminAuth.Group("/payment/paypal")
+			{
+				refundGroup.POST("/refund", spOrderHandler.OrderRefund)
 			}
 		}
 

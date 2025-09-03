@@ -4,6 +4,8 @@ import (
 	"errors"
 	"server/models/sp"
 	"time"
+	"math/rand"
+	"fmt"
 )
 
 type SpOrderRefundService struct {
@@ -19,16 +21,16 @@ func (s *SpOrderRefundService) CreateRefund(refund *sp.SpOrderRefund) error {
 	if refund.OrderID == 0 {
 		return errors.New("订单ID不能为空")
 	}
-	if refund.RefundNo == "" {
-		return errors.New("退款单号不能为空")
-	}
 	if refund.RefundAmount <= 0 {
 		return errors.New("退款金额必须大于0")
 	}
-	if refund.Status != 1 && refund.Status != 2 && refund.Status != 3 {
-		return errors.New("无效的退款状态")
-	}
+
+	// 生成退款单号：yyMMdd + 6位随机数（不足补零）
+	datePart := time.Now().Format("060102") // yyMMdd 格式
+	randomPart := fmt.Sprintf("%06d", rand.Intn(999999)) // 6位随机数
+	refund.RefundNo = datePart + randomPart
 	
+	refund.RefundTime = time.Now()
 	refund.CreatedTime = time.Now()
 	refund.UpdatedTime = time.Now()
 	
@@ -60,11 +62,11 @@ func (s *SpOrderRefundService) UpdateRefund(refund *sp.SpOrderRefund) error {
 }
 
 // GetRefundByOrderID 根据订单ID获取退款记录
-func (s *SpOrderRefundService) GetRefundByOrderID(orderID uint) (*sp.SpOrderRefund, error) {
+func (s *SpOrderRefundService) GetRefundByOrderID(orderID uint) ([]sp.SpOrderRefund,int64, error) {
 	if orderID == 0 {
-		return nil, errors.New("无效的订单ID")
+		return nil,0, errors.New("无效的订单ID")
 	}
-	return s.repoFactory.GetSpOrderRefundRepository().FindByOrderID(orderID)
+	return s.repoFactory.GetSpOrderRefundRepository().ListWithPagination(orderID)
 }
 
 // GetRefundByRefundNo 根据退款单号获取退款记录

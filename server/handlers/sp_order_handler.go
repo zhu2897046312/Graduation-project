@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"server/models/sp"
 	"server/service"
 	"server/utils"
@@ -44,16 +45,23 @@ type ListOrdersRequest struct {
 	PageSize int    `json:"page_size"`
 }
 type SpOrderHandler struct {
-	service *service.SpOrderService
-	orderItemService *service.SpOrderItemService
+	service              *service.SpOrderService
+	orderItemService     *service.SpOrderItemService
 	orederReceiveService *service.SpOrderReceiveAddressService
+	orderRefundService   *service.SpOrderRefundService
 }
 
-func NewSpOrderHandler(service *service.SpOrderService,orderItemService *service.SpOrderItemService,orederReceiveService *service.SpOrderReceiveAddressService) *SpOrderHandler {
+func NewSpOrderHandler(
+	service *service.SpOrderService,
+	orderItemService *service.SpOrderItemService,
+	orederReceiveService *service.SpOrderReceiveAddressService,
+	orderRefundService *service.SpOrderRefundService,
+) *SpOrderHandler {
 	return &SpOrderHandler{
-		service: service,
-		orderItemService: orderItemService,
+		service:              service,
+		orderItemService:     orderItemService,
 		orederReceiveService: orederReceiveService,
+		orderRefundService:   orderRefundService,
 	}
 }
 
@@ -75,25 +83,18 @@ func (h *SpOrderHandler) CreateOrder(c *gin.Context) {
 
 // 更新订单
 func (h *SpOrderHandler) UpdateOrder(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
+	var req sp.SpOrder
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
 
-	var order sp.SpOrder
-	if err := c.ShouldBindJSON(&order); err != nil {
-		InvalidParams(c)
-		return
-	}
-	order.ID = uint(id)
-
-	if err := h.service.UpdateOrder(&order); err != nil {
+	if err := h.service.UpdateOrder(&req); err != nil {
 		Error(c, 27002, err.Error())
 		return
 	}
 
-	Success(c, order)
+	Success(c, nil)
 }
 
 // 获取订单详情
@@ -120,12 +121,11 @@ func (h *SpOrderHandler) GetOrder(c *gin.Context) {
 		return
 	}
 	Success(c, gin.H{
-		"order": order,
-		"items": items,
+		"order":           order,
+		"items":           items,
 		"receive_address": receiveAddress,
 	})
 }
-
 
 // 根据订单号获取订单
 func (h *SpOrderHandler) GetOrderByCode(c *gin.Context) {
@@ -180,21 +180,21 @@ func (h *SpOrderHandler) GetOrdersByState(c *gin.Context) {
 
 // 更新订单状态
 func (h *SpOrderHandler) UpdateOrderState(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
 	var req struct {
-		State uint8 `json:"state"`
+		ID     interface{} `json:"id"`
+		Remark string      `json:"remark"`
+		State  uint8       `json:"state"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	if err := h.service.UpdateOrderState(uint(id), req.State); err != nil {
+	orderID := utils.ConvertToUint(req.ID)
+	if orderID == 0 {
+		InvalidParams(c)
+		return
+	}
+	if err := h.service.UpdateOrderState(orderID, req.State, req.Remark); err != nil {
 		Error(c, 27007, err.Error())
 		return
 	}
@@ -204,26 +204,26 @@ func (h *SpOrderHandler) UpdateOrderState(c *gin.Context) {
 
 // 更新物流信息
 func (h *SpOrderHandler) UpdateDeliveryInfo(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
 
 	var req struct {
-		Company string `json:"company"`
-		SN      string `json:"sn"`
+		ID      interface{} `json:"id"`
+		Company string      `json:"delivery_company"`
+		SN      string      `json:"delivery_sn"`
 	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	if err := h.service.UpdateDeliveryInfo(uint(id), req.Company, req.SN); err != nil {
+	orderID := utils.ConvertToUint(req.ID)
+	if err := h.service.UpdateDeliveryInfo(orderID, req.Company, req.SN); err != nil {
 		Error(c, 27008, err.Error())
 		return
 	}
-
+	if err := h.service.UpdateOrderState(orderID, 3, ""); err != nil {
+		Error(c, 27007, err.Error())
+		return
+	}
 	Success(c, nil)
 }
 
@@ -247,37 +247,96 @@ func (h *SpOrderHandler) ListOrders(c *gin.Context) {
 		return
 	}
 	var orderList []SpOrderListVo
-    for _, order := range orders {
-        orderVo := SpOrderListVo{
-            ID:              order.ID,
-            Code:            order.Code,
-            UserID:          order.UserID,
-            Nickname:        order.Nickname,
-            Email:           order.Email,
-            TotalAmount:     order.TotalAmount,
-            PayAmount:       order.PayAmount,
-            State:           order.State,
-            PaymentTime:     order.PaymentTime,
-            DeliveryTime:    order.DeliveryTime,
-            ReceiveTime:     order.ReceiveTime,
-            DeliveryCompany: order.DeliveryCompany,
-            DeliverySn:      order.DeliverySn,
-            Remark:          order.Remark,
-            Freight:         order.Freight,
-            CreatedTime:     order.CreatedTime,
-        }
+	for _, order := range orders {
+		orderVo := SpOrderListVo{
+			ID:              order.ID,
+			Code:            order.Code,
+			UserID:          order.UserID,
+			Nickname:        order.Nickname,
+			Email:           order.Email,
+			TotalAmount:     order.TotalAmount,
+			PayAmount:       order.PayAmount,
+			State:           order.State,
+			PaymentTime:     order.PaymentTime,
+			DeliveryTime:    order.DeliveryTime,
+			ReceiveTime:     order.ReceiveTime,
+			DeliveryCompany: order.DeliveryCompany,
+			DeliverySn:      order.DeliverySn,
+			Remark:          order.Remark,
+			Freight:         order.Freight,
+			CreatedTime:     order.CreatedTime,
+		}
 		items, err := h.orderItemService.GetItemsByOrderID(order.ID)
-		if err != nil {	
+		if err != nil {
 			Error(c, 27010, err.Error())
 			return
 		}
 		orderVo.Items = items
 
-        orderList = append(orderList, orderVo)
-    }
-	
-	Success(c, gin.H{	
+		orderList = append(orderList, orderVo)
+	}
+
+	Success(c, gin.H{
 		"total": total,
-		"list": orderList,
+		"list":  orderList,
 	})
+}
+
+func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
+	var req struct {
+		OrderID      interface{} `json:"order_id"`
+		Reason       string      `json:"reason"`
+		RefundAmount float64     `json:"refund_amount"`
+		ImagesReq      []string    `json:"images"`
+	}
+	imagesJson, _ := json.Marshal(req.ImagesReq)
+	images := json.RawMessage(imagesJson)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
+	orderID := utils.ConvertToUint(req.OrderID)
+	if orderID == 0 {
+		InvalidParams(c)
+		return
+	}
+	order, err := h.service.GetOrderByID(orderID)
+	if err != nil {
+		Error(c, 27011, err.Error())
+		return
+	}
+	if order.State == 1 {
+		Error(c, 27012, "订单未支付，不能退款")
+		return
+	}
+	if req.RefundAmount <= 0 {
+		Error(c, 27013, "退款金额必须大于0")
+		return
+	}
+
+	refunds, _, err_1 := h.orderRefundService.GetRefundByOrderID(orderID)
+	if err_1 != nil {
+		Error(c, 27015, err_1.Error())
+		return
+	}
+	var refundAmount float64
+	for _, refund := range refunds {
+		refundAmount += refund.RefundAmount
+	}
+	if refundAmount >= order.PayAmount {
+		Error(c, 27014, "退款金额不能大于订单支付金额")
+		return
+	}
+	refund := sp.SpOrderRefund{
+		OrderID:      orderID,
+		Reason:       req.Reason,
+		RefundAmount: req.RefundAmount,
+		Images:       images,
+		Status: 2,
+	}
+	if err := h.orderRefundService.CreateRefund(&refund); err != nil {
+		Error(c, 27015, err.Error())
+		return
+	}
+	Success(c, nil)
 }
