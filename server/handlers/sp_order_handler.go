@@ -289,8 +289,7 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 		RefundAmount float64     `json:"refund_amount"`
 		ImagesReq      []string    `json:"images"`
 	}
-	imagesJson, _ := json.Marshal(req.ImagesReq)
-	images := json.RawMessage(imagesJson)
+	
 	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
@@ -323,10 +322,12 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 	for _, refund := range refunds {
 		refundAmount += refund.RefundAmount
 	}
-	if refundAmount >= order.PayAmount {
+	if refundAmount > order.PayAmount {
 		Error(c, 27014, "退款金额不能大于订单支付金额")
 		return
 	}
+	imagesJson, _ := json.Marshal(req.ImagesReq)
+	images := json.RawMessage(imagesJson)
 	refund := sp.SpOrderRefund{
 		OrderID:      orderID,
 		Reason:       req.Reason,

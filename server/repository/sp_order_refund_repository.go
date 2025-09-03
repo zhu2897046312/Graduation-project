@@ -61,7 +61,39 @@ func (r *SpOrderRefundRepository) UpdateRefundAmount(id uint, amount float64) er
 		Update("refund_amount", amount).Error
 }
 
-func (r *SpOrderRefundRepository) ListWithPagination(orderID uint) ([]sp.SpOrderRefund, int64, error) {
+func (r *SpOrderRefundRepository) ListWithPagination(ordersID []uint, refundNo string, status uint) ([]sp.SpOrderRefund, int64, error) {
+	var products []sp.SpOrderRefund
+	var total int64
+
+	// 构建查询
+	query := r.db.Model(&sp.SpOrderRefund{}).Where("deleted_time IS NULL")
+
+	// 应用过滤条件
+	// 订单ID列表匹配（如果提供了订单ID列表）
+	if len(ordersID) > 0 {
+		query = query.Where("order_id IN (?)", ordersID)
+	}
+	// 退款单号模糊匹配（如果提供了退款单号）
+	if refundNo != "" {
+		query = query.Where("refund_no LIKE ?", "%"+refundNo+"%")
+	}
+	// 状态精确匹配（如果提供了状态值）
+	if status != 0 {
+		query = query.Where("status = ?", status)
+	}
+
+	// 获取符合条件的总记录数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取匹配的退款记录列表
+	err := query.Find(&products).Error
+
+	return products, total, err
+}
+
+func (r *SpOrderRefundRepository) ListByOrderID(orderID uint) ([]sp.SpOrderRefund, int64, error) {
 	var products []sp.SpOrderRefund
 	var total int64
 

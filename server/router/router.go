@@ -58,6 +58,12 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpOrderReceiveAddressService(),
 			factory.GetSpOrderRefundService(),
 		)
+
+		// SP订单退款路由组
+		spRefundHandler := handlers.NewSpOrderRefundHandler(
+			factory.GetSpOrderRefundService(),
+			factory.GetSpOrderService(),
+		)
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -170,9 +176,20 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spOrderGroup.POST("/delivery", spOrderHandler.UpdateDeliveryInfo)
 				spOrderGroup.POST("/list", spOrderHandler.ListOrders)
 			}
+
 			refundGroup := adminAuth.Group("/payment/paypal")
 			{
 				refundGroup.POST("/refund", spOrderHandler.OrderRefund)
+			}
+
+			spRefundGroup := adminAuth.Group("/shop/refund")
+			{
+				spRefundGroup.POST("/list", spRefundHandler.ListSpOrderRefund)
+				spRefundGroup.PUT("/:id", spRefundHandler.UpdateRefund)
+				spRefundGroup.GET("/info", spRefundHandler.GetRefundByOrder)
+				spRefundGroup.GET("/:refund_no", spRefundHandler.GetRefundByRefundNo)
+				spRefundGroup.PATCH("/:id/status", spRefundHandler.UpdateRefundStatus)
+				spRefundGroup.PATCH("/:id/amount", spRefundHandler.UpdateRefundAmount)
 			}
 		}
 
@@ -519,18 +536,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spAddressGroup.PUT("/:id", spAddressHandler.UpdateAddress)
 			spAddressGroup.GET("/order/:order_id", spAddressHandler.GetAddressByOrder)
 			spAddressGroup.GET("/email/:email", spAddressHandler.GetAddressesByEmail)
-		}
-
-		// SP订单退款路由组
-		spRefundHandler := handlers.NewSpOrderRefundHandler(factory.GetSpOrderRefundService())
-		spRefundGroup := api.Group("/sp/refunds")
-		{
-			spRefundGroup.POST("", spRefundHandler.CreateRefund)
-			spRefundGroup.PUT("/:id", spRefundHandler.UpdateRefund)
-			spRefundGroup.GET("/order/:order_id", spRefundHandler.GetRefundByOrder)
-			spRefundGroup.GET("/:refund_no", spRefundHandler.GetRefundByRefundNo)
-			spRefundGroup.PATCH("/:id/status", spRefundHandler.UpdateRefundStatus)
-			spRefundGroup.PATCH("/:id/amount", spRefundHandler.UpdateRefundAmount)
 		}
 
 		spAttrGroup := api.Group("/sp/attributes")

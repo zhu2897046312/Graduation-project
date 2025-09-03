@@ -61,12 +61,18 @@ func (s *SpOrderRefundService) UpdateRefund(refund *sp.SpOrderRefund) error {
 	return s.repoFactory.GetSpOrderRefundRepository().Update(refund)
 }
 
+func (s *SpOrderRefundService) GetRefundByOrderIDOne(orderID uint) (*sp.SpOrderRefund, error) {
+	if orderID == 0 {
+		return nil, errors.New("无效的订单ID")
+	}
+	return s.repoFactory.GetSpOrderRefundRepository().FindByOrderID(orderID)
+}
 // GetRefundByOrderID 根据订单ID获取退款记录
 func (s *SpOrderRefundService) GetRefundByOrderID(orderID uint) ([]sp.SpOrderRefund,int64, error) {
 	if orderID == 0 {
 		return nil,0, errors.New("无效的订单ID")
 	}
-	return s.repoFactory.GetSpOrderRefundRepository().ListWithPagination(orderID)
+	return s.repoFactory.GetSpOrderRefundRepository().ListByOrderID(orderID)
 }
 
 // GetRefundByRefundNo 根据退款单号获取退款记录
@@ -91,4 +97,8 @@ func (s *SpOrderRefundService) UpdateRefundAmount(id uint, amount float64) error
 		return errors.New("退款金额必须大于0")
 	}
 	return s.repoFactory.GetSpOrderRefundRepository().UpdateRefundAmount(id, amount)
+}
+
+func (s *SpOrderRefundService) ListWithPagination(ordersID []uint, refundNo string, status uint) ([]sp.SpOrderRefund, int64, error) {
+	return s.repoFactory.GetSpOrderRefundRepository().ListWithPagination(ordersID, refundNo, status)
 }
