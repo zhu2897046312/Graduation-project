@@ -82,5 +82,6 @@ func (s *CoreRoleService) List(page int, pageSize int) ([]core.CoreRole, int64, 
 }
 
 func (s *CoreRoleService) GetAllRolesByAdminID(adminID int64) ([]core.CoreRole, error) {
+	
  return s.repoFactory.GetCoreRoleRepository().FindByAdminID(adminID)
 }

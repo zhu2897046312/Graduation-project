@@ -109,6 +109,10 @@ func (r *CoreRoleRepository) FindByAdminID(id int64) ([]core.CoreRole, error) {
 	var products []core.CoreRole
 	// 构建查询
 	query := r.db.Model(&core.CoreRole{}).Where("deleted_time IS NULL")
+
+	if id != 0 {
+		query = query.Where("admin_id = ?", id)
+	}
 	// 获取分页数据
 	err := query.Find(&products).Error
 

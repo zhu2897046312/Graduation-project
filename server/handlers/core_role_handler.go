@@ -153,7 +153,7 @@ func (h *CoreRoleHandler) List(c *gin.Context) {
 	if req.PageSize <= 0 {
 		req.PageSize = 10
 	}
-
+	
 	roles, total, err := h.service.List(req.Page, req.PageSize)
 	if err != nil {
 		Error(c, 10008, "获取角色列表失败")

@@ -73,7 +73,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetCoreAdminService(),
 			factory.GetCoreDeptService(),
 			factory.GetCoreRoleService(),
-			rdb,
+			factory.GetCoreAdminRoleIndexService(),
+			rdb,	
 		)
 
 		// 管理员角色路由组
@@ -107,7 +108,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			adminGroup := adminAuth.Group("/core/admin")
 			{
 				adminGroup.POST("/list", adminHandler.List)
-				adminGroup.PUT("/:id", adminHandler.UpdateAdmin)
+				adminGroup.POST("/create", adminHandler.CreateAdmin)
 				adminGroup.GET("/info", adminHandler.GetAdmin)
 				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)

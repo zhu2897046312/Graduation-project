@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"server/models/core"
+	"time"
 )
 
 type CoreAdminService struct {
@@ -25,11 +26,13 @@ func (s *CoreAdminService) CreateAdmin(admin *core.CoreAdmin) error {
 	}
 	
 	// 检查账号是否已存在
-	existing, _ := s.repoFactory.GetCoreAdminRepository().FindByAccount(admin.Account)
-	if existing != nil {
+	_, err := s.repoFactory.GetCoreAdminRepository().FindByAccount(admin.Account)
+	if err == nil {
 		return errors.New("管理员账号已存在")
 	}
-	
+	admin.CreatedTime = time.Now()
+	admin.UpdatedTime = time.Now()
+
 	return s.repoFactory.GetCoreAdminRepository().Create(admin)
 }
 
