@@ -3,24 +3,41 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"server/middleware"
 	"server/models/core"
 	"server/service"
 	"server/utils"
 	"strconv"
-	"server/middleware"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
 
+type ListCoreAdminRequest struct {
+	Nickname    string      `json:"nickname"`
+	Account     string      `json:"account"`
+	AdminStatus interface{} `json:"admin_status"`
+	Page        interface{} `json:"page_no"`
+	PageSize    interface{} `json:"page_size"`
+}
 type CoreAdminHandler struct {
-	service *service.CoreAdminService
-	rdb     *redis.Client // 添加Redis客户端
+	service  *service.CoreAdminService
+	coreDept *service.CoreDeptService
+	coreRole *service.CoreRoleService
+	rdb      *redis.Client // 添加Redis客户端
 }
 
-func NewCoreAdminHandler(service *service.CoreAdminService, rdb *redis.Client) *CoreAdminHandler {
+func NewCoreAdminHandler(
+	service *service.CoreAdminService,
+	coreDept *service.CoreDeptService,
+	coreRole *service.CoreRoleService,
+	rdb *redis.Client,
+) *CoreAdminHandler {
 	return &CoreAdminHandler{
-		service: service,
-		rdb:     rdb, // 初始化Redis客户端
+		service:  service,
+		rdb:      rdb, // 初始化Redis客户端
+		coreDept: coreDept,
+		coreRole: coreRole,
 	}
 }
 
@@ -65,19 +82,45 @@ func (h *CoreAdminHandler) UpdateAdmin(c *gin.Context) {
 
 // 获取管理员详情
 func (h *CoreAdminHandler) GetAdmin(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
+	req := c.Query("id")
+	if req == "" {
 		InvalidParams(c)
 		return
 	}
+	adminID := utils.ConvertToUint(req)
 
-	admin, err := h.service.GetAdminByID(id)
+	admin, err := h.service.GetAdminByID(int64(adminID))
 	if err != nil {
 		Error(c, 5003, "管理员不存在")
 		return
 	}
+	admin.Pwd = ""
 
-	Success(c, admin)
+	dept,err  := h.coreDept.GetDeptByID(admin.DeptID)
+	if err != nil {
+		Error(c, 5003, "部门不存在")
+		return
+	}
+
+	roles,err := h.coreRole.GetAllRolesByAdminID(int64(adminID))
+	if err != nil {
+		Error(c, 5003, "角色不存在")
+		return
+	}
+	
+	Success(c, gin.H{
+		"roles": roles,
+		"dept": dept,
+		"id": admin.ID,
+		"nickname": admin.Nickname,
+		"account": admin.Account,
+		"mobile": admin.Mobile,
+		"admin_status": admin.AdminStatus,
+		"dept_id": admin.DeptID,
+		"last_pwd": admin.LastPwd,
+		"created_time": admin.CreatedTime,
+		"updated_time": admin.UpdatedTime,
+	})
 }
 
 // 更新管理员状态
@@ -161,11 +204,11 @@ func (h *CoreAdminHandler) LoginAdmin(c *gin.Context) {
 
 	// 创建会话信息
 	sessionInfo := &utils.CoreLoginUserInfoModel{
-		ID: admin.ID,
-		Nickname: admin.Nickname,
+		ID:         admin.ID,
+		Nickname:   admin.Nickname,
 		Permission: string(admin.Permission),
-		Avatar: "",
-		DeptID: admin.DeptID,
+		Avatar:     "",
+		DeptID:     admin.DeptID,
 	}
 
 	// 存储到Redis并获取token
@@ -176,11 +219,11 @@ func (h *CoreAdminHandler) LoginAdmin(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"result": token,
-		"error": nil,
+		"code":    0,
+		"result":  token,
+		"error":   nil,
 		"message": nil,
-		"time": 1755765633795,
+		"time":    1755765633795,
 	})
 }
 
@@ -201,11 +244,39 @@ func (h *CoreAdminHandler) GetAdminInfo(c *gin.Context) {
 		Error(c, 5006, "获取管理员信息失败")
 		return
 	}
-	
+
 	Success(c, admin)
 }
 
 func (h *CoreAdminHandler) GetEnumDict(c *gin.Context) {
 	utils.GetEnumDict()
 	c.JSON(http.StatusOK, utils.GetEnumDict())
+}
+
+func (h *CoreAdminHandler) List(c *gin.Context) {
+	var req ListCoreAdminRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
+	page := utils.ConvertToUint(req.Page)
+	pageSize := utils.ConvertToUint(req.PageSize)
+	adminStatus := utils.ConvertToUint(req.AdminStatus)
+
+	params := core.CoreAdminQueryParam{
+		Page:        int(page),
+		PageSize:    int(pageSize),
+		AdminStatus: int8(adminStatus),
+		Account:     req.Account,
+		Nickname:    req.Nickname,
+	}
+	admins, total, err := h.service.List(params)
+	if err != nil {
+		Error(c, 5006, "获取管理员列表失败")
+		return
+	}
+	Success(c, gin.H{
+		"list":  admins,
+		"total": total,
+	})
 }

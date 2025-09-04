@@ -105,3 +105,7 @@ func (s *CoreAdminService) UpdateAdminPassword(id int64, newPwd string) error {
 	
 	return s.repoFactory.GetCoreAdminRepository().UpdatePassword(id, newPwd)
 }
+
+func (s *CoreAdminService) List(params core.CoreAdminQueryParam) ([]core.CoreAdmin,int64, error) {
+	return s.repoFactory.GetCoreAdminRepository().List(params)
+}

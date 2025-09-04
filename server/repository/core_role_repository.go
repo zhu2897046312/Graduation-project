@@ -52,3 +52,65 @@ func (r *CoreRoleRepository) UpdatePermissions(id int64, permissions []byte) err
 		Where("id = ?", id).
 		Update("permission", permissions).Error
 }
+
+// 分页获取商品（带过滤选项）
+func (r *CoreRoleRepository) List(page int, pageSize int) ([]core.CoreRole, int64, error) {
+	var products []core.CoreRole
+	var total int64
+
+	// 设置默认值
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+	pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 构建查询
+	query := r.db.Model(&core.CoreRole{}).Where("deleted_time IS NULL")
+
+	// // 应用过滤条件
+	// if params.CategoryID != 0 {
+	// 	query = query.Where("category_id = ?", params.CategoryID)
+	// }
+
+	// if params.State != 0 {
+	// 	query = query.Where("state = ?", params.State)
+	// }
+
+	// if params.Title != "" {
+	// 	query = query.Where("title LIKE ?", "%"+params.Title+"%")
+	// }
+
+	// if params.Hot != nil {
+	// 	query = query.Where("hot = ?", *params.Hot)
+	// }
+
+	// // 设置排序
+	// orderClause := params.SortBy + " " + params.SortOrder
+	// query = query.Order(orderClause)
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取分页数据
+	err := query.Offset(offset).
+		Limit(pageSize).
+		Find(&products).Error
+
+	return products, total, err
+}
+
+func (r *CoreRoleRepository) FindByAdminID(id int64) ([]core.CoreRole, error) {
+	var products []core.CoreRole
+	// 构建查询
+	query := r.db.Model(&core.CoreRole{}).Where("deleted_time IS NULL")
+	// 获取分页数据
+	err := query.Find(&products).Error
+
+	return products, err
+}

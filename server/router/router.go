@@ -64,19 +64,37 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpOrderRefundService(),
 			factory.GetSpOrderService(),
 		)
+
+		// 部门路由组
+		deptHandler := handlers.NewCoreDeptHandler(factory.GetCoreDeptService())
+
+		// 获取当前管理员信息
+		adminHandler := handlers.NewCoreAdminHandler(
+			factory.GetCoreAdminService(),
+			factory.GetCoreDeptService(),
+			factory.GetCoreRoleService(),
+			rdb,
+		)
+
+		// 管理员角色路由组
+		adminRoleHandler := handlers.NewCoreAdminRoleIndexHandler(factory.GetCoreAdminRoleIndexService())
+
+		// 角色路由组
+		roleHandler := handlers.NewCoreRoleHandler(factory.GetCoreRoleService())
+
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
-			// 管理员登录
-			adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
+			// // 管理员登录
+			// adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
 			public.POST("/manage/core/auth/login", adminHandler.LoginAdmin)
 		}
+
 		// 管理员认证路由
 		adminAuth := api.Group("/manage")
 		adminAuth.Use(middleware.AuthMiddleware(rdb)) // 添加管理员认证中间件
 		{
-			// 获取当前管理员信息
-			adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
+
 			adminAuth.GET("/core/auth/info", adminHandler.GetAdminInfo)
 			adminAuth.GET("/core/auth/enumDict", adminHandler.GetEnumDict)
 			adminOssGroup := adminAuth.Group("/core/oss")
@@ -86,11 +104,11 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminOssGroup.DELETE("/deleteFile", ossHandler.DeleteFile)
 				adminOssGroup.GET("/fileInfo", ossHandler.GetFileInfo)
 			}
-			adminGroup := adminAuth.Group("/core/admins")
+			adminGroup := adminAuth.Group("/core/admin")
 			{
-				adminGroup.POST("", adminHandler.CreateAdmin)
+				adminGroup.POST("/list", adminHandler.List)
 				adminGroup.PUT("/:id", adminHandler.UpdateAdmin)
-				adminGroup.GET("/:id", adminHandler.GetAdmin)
+				adminGroup.GET("/info", adminHandler.GetAdmin)
 				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
@@ -172,7 +190,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spOrderGroup.GET("/info", spOrderHandler.GetOrder)
 				spOrderGroup.GET("/code/:code", spOrderHandler.GetOrderByCode)
 				spOrderGroup.POST("/updateState", spOrderHandler.UpdateOrderState)
-				spOrderGroup.GET("", spOrderHandler.GetOrdersByState)
+				spOrderGroup.GET("/infoByCode", spRefundHandler.GetOrderInfoByOrderCode)
 				spOrderGroup.POST("/delivery", spOrderHandler.UpdateDeliveryInfo)
 				spOrderGroup.POST("/list", spOrderHandler.ListOrders)
 			}
@@ -180,6 +198,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			refundGroup := adminAuth.Group("/payment/paypal")
 			{
 				refundGroup.POST("/refund", spOrderHandler.OrderRefund)
+
 			}
 
 			spRefundGroup := adminAuth.Group("/shop/refund")
@@ -190,6 +209,25 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				spRefundGroup.GET("/:refund_no", spRefundHandler.GetRefundByRefundNo)
 				spRefundGroup.PATCH("/:id/status", spRefundHandler.UpdateRefundStatus)
 				spRefundGroup.PATCH("/:id/amount", spRefundHandler.UpdateRefundAmount)
+			}
+
+			deptGroup := adminAuth.Group("/core/dept")
+			{
+				deptGroup.GET("/tree", deptHandler.Tree)
+				deptGroup.PUT("/:id", deptHandler.UpdateDept)
+				deptGroup.GET("/:id", deptHandler.GetDept)
+				deptGroup.GET("", deptHandler.GetSubDepts)
+				deptGroup.DELETE("/:id", deptHandler.DeleteDept)
+			}
+
+			roleGroup := adminAuth.Group("/core/role")
+			{
+				roleGroup.POST("/list", roleHandler.List)
+				roleGroup.PUT("/:id", roleHandler.UpdateRole)
+				roleGroup.GET("/:id", roleHandler.GetRole)
+				roleGroup.GET("", roleHandler.GetAllRoles)
+				roleGroup.PATCH("/:id/status", roleHandler.UpdateRoleStatus)
+				roleGroup.PATCH("/:id/permissions", roleHandler.UpdateRolePermissions)
 			}
 		}
 
@@ -335,27 +373,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			likeHistoryGroup.GET("/count/document/:document_id", likeHistoryHandler.GetLikeCount)
 		}
 
-		// 管理员角色路由组
-		adminRoleHandler := handlers.NewCoreAdminRoleIndexHandler(factory.GetCoreAdminRoleIndexService())
-		adminRoleGroup := api.Group("/core/admin-roles")
-		{
-			adminRoleGroup.POST("", adminRoleHandler.CreateAdminRole)
-			adminRoleGroup.DELETE("", adminRoleHandler.DeleteAdminRole)
-			adminRoleGroup.GET("/admin/:admin_id", adminRoleHandler.GetAdminRoles)
-			adminRoleGroup.DELETE("/admin/:admin_id/all", adminRoleHandler.DeleteAllAdminRoles)
-		}
-
-		// 部门路由组
-		deptHandler := handlers.NewCoreDeptHandler(factory.GetCoreDeptService())
-		deptGroup := api.Group("/core/depts")
-		{
-			deptGroup.POST("", deptHandler.CreateDept)
-			deptGroup.PUT("/:id", deptHandler.UpdateDept)
-			deptGroup.GET("/:id", deptHandler.GetDept)
-			deptGroup.GET("", deptHandler.GetSubDepts)
-			deptGroup.DELETE("/:id", deptHandler.DeleteDept)
-		}
-
 		// 权限路由组
 		permissionHandler := handlers.NewCorePermissionHandler(factory.GetCorePermissionService())
 		permissionGroup := api.Group("/core/permissions")
@@ -374,17 +391,12 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			logGroup.GET("/ip/:ip", requestLogHandler.GetLogsByIP)
 			logGroup.DELETE("/cleanup", requestLogHandler.CleanupOldLogs)
 		}
-
-		// 角色路由组
-		roleHandler := handlers.NewCoreRoleHandler(factory.GetCoreRoleService())
-		roleGroup := api.Group("/core/roles")
+		adminRoleGroup := api.Group("/cores/roles")
 		{
-			roleGroup.POST("", roleHandler.CreateRole)
-			roleGroup.PUT("/:id", roleHandler.UpdateRole)
-			roleGroup.GET("/:id", roleHandler.GetRole)
-			roleGroup.GET("", roleHandler.GetAllRoles)
-			roleGroup.PATCH("/:id/status", roleHandler.UpdateRoleStatus)
-			roleGroup.PATCH("/:id/permissions", roleHandler.UpdateRolePermissions)
+			adminRoleGroup.POST("/list", adminRoleHandler.CreateAdminRole)
+			adminRoleGroup.DELETE("", adminRoleHandler.DeleteAdminRole)
+			adminRoleGroup.GET("/admin/:admin_id", adminRoleHandler.GetAdminRoles)
+			adminRoleGroup.DELETE("/admin/:admin_id/all", adminRoleHandler.DeleteAllAdminRoles)
 		}
 
 		// 订单路由组

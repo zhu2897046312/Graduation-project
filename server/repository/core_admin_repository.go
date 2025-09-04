@@ -63,3 +63,39 @@ func (r *CoreAdminRepository) UpdatePassword(id int64, newPwd string) error {
 			"last_pwd":  gorm.Expr("CURRENT_TIMESTAMP"),
 		}).Error
 }
+
+func (r *CoreAdminRepository) List(params core.CoreAdminQueryParam) ([]core.CoreAdmin,int64, error) {
+	var coreAdmins []core.CoreAdmin
+	var total int64
+
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.PageSize < 1 || params.PageSize > 100 {
+		params.PageSize = 10
+	}
+	offset := (params.Page - 1) * params.PageSize
+
+	// 构建查询
+	query := r.db.Model(&core.CoreAdmin{}).Where("deleted_time IS NULL")
+
+	if params.Nickname != "" {
+		query = query.Where("nickname like ?", "%"+params.Nickname+"%")
+	}
+	if params.Account != "" {
+		query = query.Where("account like ?", "%"+params.Account+"%")
+	}
+	if params.AdminStatus != 0 {
+		query = query.Where("admin_status = ?", params.AdminStatus)
+	}	
+
+	// 获取符合条件的总记录数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取匹配的退款记录列表
+	err := query.Offset(offset).Limit(params.PageSize).Find(&coreAdmins).Error
+
+	return coreAdmins, total, err
+}

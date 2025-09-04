@@ -84,3 +84,11 @@ func (s *CoreDeptService) DeleteDept(id int64) error {
 	
 	return s.repoFactory.GetCoreDeptRepository().Delete(id)
 }
+
+func (s *CoreDeptService) List(pid int64) ([]core.CoreDept, int64, error) {
+	return s.repoFactory.GetCoreDeptRepository().List(pid)
+}
+
+func (s *CoreDeptService) GetAll() ([]*core.CoreDept,int64, error) {
+	return s.repoFactory.GetCoreDeptRepository().FindAll()
+}

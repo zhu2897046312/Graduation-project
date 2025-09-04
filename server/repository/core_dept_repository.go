@@ -71,3 +71,53 @@ func (r *CoreDeptRepository) FindByPid(pid int64) ([]*core.CoreDept, error) {
 func (r *CoreDeptRepository) Delete(id int64) error {
 	return r.db.Delete(&core.CoreDept{}, id).Error
 }
+
+func (r *CoreDeptRepository) List(pid int64) ([]core.CoreDept,int64, error) {
+	var coreDepts []core.CoreDept
+	var total int64
+
+	// if params.Page < 1 {
+	// 	params.Page = 1
+	// }
+	// if params.PageSize < 1 || params.PageSize > 100 {
+	// 	params.PageSize = 10
+	// }
+	// offset := (params.Page - 1) * params.PageSize
+
+	// 构建查询
+	query := r.db.Model(&core.CoreDept{}).Where("deleted_time IS NULL")
+
+	// if params.Nickname != "" {
+	// 	query = query.Where("nickname like ?", "%"+params.Nickname+"%")
+	// }
+	// if params.Account != "" {
+	// 	query = query.Where("account like ?", "%"+params.Account+"%")
+	// }
+	// if params.AdminStatus != 0 {
+	// 	query = query.Where("admin_status = ?", params.AdminStatus)
+	// }	
+
+	// 获取符合条件的总记录数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 获取匹配的退款记录列表.Offset(offset).Limit(params.PageSize)
+	err := query.Find(&coreDepts).Error
+
+	return coreDepts, total, err
+}
+
+func (r *CoreDeptRepository) FindAll() ([]*core.CoreDept,int64, error) {
+	var coreDepts []*core.CoreDept
+	var total int64
+
+	query := r.db.Model(&core.CoreDept{}).Where("deleted_time IS NULL")
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := query.Find(&coreDepts).Error
+	return coreDepts,total, err
+}

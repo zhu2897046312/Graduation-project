@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"server/models/core"
 	"server/service"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CoreRoleHandler struct {
@@ -134,4 +135,33 @@ func (h *CoreRoleHandler) UpdateRolePermissions(c *gin.Context) {
 	}
 
 	Success(c, nil)
+}
+
+func (h *CoreRoleHandler) List(c *gin.Context) {
+	var req struct {
+		Page     int `json:"page"`
+		PageSize int `json:"page_size"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		InvalidParams(c)
+		return
+	}
+
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	roles, total, err := h.service.List(req.Page, req.PageSize)
+	if err != nil {
+		Error(c, 10008, "获取角色列表失败")
+		return
+	}
+
+	Success(c, gin.H{
+		"list":  roles,
+		"total": total,
+	})
 }
