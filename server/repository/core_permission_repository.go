@@ -25,6 +25,12 @@ func (r *CorePermissionRepository) Update(permission *core.CorePermission) error
 	return r.db.Save(permission).Error
 }
 
+func (r *CorePermissionRepository) FindAll() ([]core.CorePermission, error) {
+	var permissions []core.CorePermission
+	err := r.db.Find(&permissions).Error
+	return permissions, err
+}
+
 // 根据ID获取权限
 func (r *CorePermissionRepository) FindByID(id int64) (*core.CorePermission, error) {
 	var permission core.CorePermission
@@ -66,3 +72,4 @@ func (r *CorePermissionRepository) FindByCode(code string) (*core.CorePermission
 	
 // 	return tree, nil
 // }
+

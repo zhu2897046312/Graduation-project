@@ -74,7 +74,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetCoreDeptService(),
 			factory.GetCoreRoleService(),
 			factory.GetCoreAdminRoleIndexService(),
-			rdb,	
+			rdb,
 		)
 
 		// 管理员角色路由组
@@ -83,6 +83,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 角色路由组
 		roleHandler := handlers.NewCoreRoleHandler(factory.GetCoreRoleService())
 
+		// 权限路由组
+		permissionHandler := handlers.NewCorePermissionHandler(factory.GetCorePermissionService())
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -218,17 +220,25 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				deptGroup.POST("/update", deptHandler.UpdateDept)
 				deptGroup.GET("/info", deptHandler.GetDept)
 				deptGroup.POST("/create", deptHandler.CreateDept)
-				deptGroup.GET("/", deptHandler.DeleteDept)
+				deptGroup.GET("/del", deptHandler.DeleteDept)
 			}
 
 			roleGroup := adminAuth.Group("/core/role")
 			{
 				roleGroup.POST("/list", roleHandler.List)
-				roleGroup.PUT("/:id", roleHandler.UpdateRole)
-				roleGroup.GET("/:id", roleHandler.GetRole)
+				roleGroup.GET("/delete", roleHandler.DeleteRole)
+				roleGroup.GET("/info", roleHandler.GetRole)
 				roleGroup.GET("", roleHandler.GetAllRoles)
-				roleGroup.PATCH("/:id/status", roleHandler.UpdateRoleStatus)
-				roleGroup.PATCH("/:id/permissions", roleHandler.UpdateRolePermissions)
+				roleGroup.POST("/create", roleHandler.CreateRole)
+				roleGroup.POST("/update", roleHandler.UpdateRole)
+			}
+
+			permissionGroup := adminAuth.Group("/core/permission")
+			{
+				permissionGroup.POST("", permissionHandler.CreatePermission)
+				permissionGroup.PUT("/:id", permissionHandler.UpdatePermission)
+				permissionGroup.GET("/list", permissionHandler.List)
+				permissionGroup.GET("/code", permissionHandler.GetPermissionByCode)
 			}
 		}
 
@@ -372,16 +382,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			likeHistoryGroup.GET("/user/:user_id", likeHistoryHandler.GetLikeHistoryByUser)
 			likeHistoryGroup.GET("/check", likeHistoryHandler.CheckUserLiked)
 			likeHistoryGroup.GET("/count/document/:document_id", likeHistoryHandler.GetLikeCount)
-		}
-
-		// 权限路由组
-		permissionHandler := handlers.NewCorePermissionHandler(factory.GetCorePermissionService())
-		permissionGroup := api.Group("/core/permissions")
-		{
-			permissionGroup.POST("", permissionHandler.CreatePermission)
-			permissionGroup.PUT("/:id", permissionHandler.UpdatePermission)
-			permissionGroup.GET("/:id", permissionHandler.GetPermission)
-			permissionGroup.GET("/code", permissionHandler.GetPermissionByCode)
 		}
 
 		// 请求日志路由组

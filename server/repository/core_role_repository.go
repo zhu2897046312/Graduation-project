@@ -22,7 +22,7 @@ func (r *CoreRoleRepository) Create(role *core.CoreRole) error {
 
 // 更新角色
 func (r *CoreRoleRepository) Update(role *core.CoreRole) error {
-	return r.db.Save(role).Error
+	return r.db.Updates(role).Error
 }
 
 // 根据ID获取角色
@@ -117,4 +117,10 @@ func (r *CoreRoleRepository) FindByAdminID(id int64) ([]core.CoreRole, error) {
 	err := query.Find(&products).Error
 
 	return products, err
+}
+
+func (r *CoreRoleRepository) Delete(id int64) error {
+	return r.db.Model(&core.CoreRole{}).
+		Where("id = ?", id).
+		Update("deleted_time", gorm.Expr("NOW()")).Error
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"server/models/core"
 	"server/service"
+	"server/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,20 @@ import (
 type CoreRoleHandler struct {
 	service *service.CoreRoleService
 }
+type RoleCreateRequest struct {
+	Name        string  `json:"role_name"`
+	Status      int8    `json:"role_status"`
+	Permissions []int32 `json:"permission"`
+	Remark      string  `json:"remark"`
+}
+
+type RoleUpdateRequest struct {
+	ID          interface{}   `json:"id"`
+	Name        string  `json:"role_name"`
+	Status      int8    `json:"role_status"`
+	Permissions []int32 `json:"permission"`
+	Remark      string  `json:"remark"`
+}
 
 func NewCoreRoleHandler(service *service.CoreRoleService) *CoreRoleHandler {
 	return &CoreRoleHandler{service: service}
@@ -19,12 +34,19 @@ func NewCoreRoleHandler(service *service.CoreRoleService) *CoreRoleHandler {
 
 // 创建角色
 func (h *CoreRoleHandler) CreateRole(c *gin.Context) {
-	var role core.CoreRole
-	if err := c.ShouldBindJSON(&role); err != nil {
+	var req RoleCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
+	rolePermissions, _ := json.Marshal(req.Permissions)
+	rolePermissionsJson := json.RawMessage(rolePermissions)
+	role := core.CoreRole{
+		RoleName:   req.Name,
+		RoleStatus: req.Status,
+		Permission: rolePermissionsJson,
+		Remark:     req.Remark,
+	}
 	if err := h.service.CreateRole(&role); err != nil {
 		Error(c, 10001, err.Error())
 		return
@@ -35,21 +57,23 @@ func (h *CoreRoleHandler) CreateRole(c *gin.Context) {
 
 // 更新角色
 func (h *CoreRoleHandler) UpdateRole(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
+	var req RoleUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	var role core.CoreRole
-	if err := c.ShouldBindJSON(&role); err != nil {
-		InvalidParams(c)
-		return
+	roleID := utils.ConvertToUint(req.ID)
+	rolePermissions, _ := json.Marshal(req.Permissions)
+	rolePermissionsJson := json.RawMessage(rolePermissions)
+	role := core.CoreRole{
+		ID :         int64(roleID),
+		RoleName:   req.Name,
+		RoleStatus: req.Status,
+		Permission: rolePermissionsJson,
+		Remark:     req.Remark,
 	}
-	role.ID = id
-
 	if err := h.service.UpdateRole(&role); err != nil {
-		Error(c, 10002, err.Error())
+		Error(c, 10001, err.Error())
 		return
 	}
 
@@ -58,13 +82,14 @@ func (h *CoreRoleHandler) UpdateRole(c *gin.Context) {
 
 // 获取角色详情
 func (h *CoreRoleHandler) GetRole(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
+	id := c.Query("id")
+	if id == "" {
 		InvalidParams(c)
 		return
 	}
+	uID := utils.ConvertToUint(id)
 
-	role, err := h.service.GetRoleByID(id)
+	role, err := h.service.GetRoleByID(int64(uID))
 	if err != nil {
 		Error(c, 10003, "角色不存在")
 		return
@@ -153,7 +178,7 @@ func (h *CoreRoleHandler) List(c *gin.Context) {
 	if req.PageSize <= 0 {
 		req.PageSize = 10
 	}
-	
+
 	roles, total, err := h.service.List(req.Page, req.PageSize)
 	if err != nil {
 		Error(c, 10008, "获取角色列表失败")
@@ -164,4 +189,18 @@ func (h *CoreRoleHandler) List(c *gin.Context) {
 		"list":  roles,
 		"total": total,
 	})
+}
+
+func (h *CoreRoleHandler) DeleteRole(c *gin.Context) {
+	id :=  c.Query("id")
+	if id == "" {
+		InvalidParams(c)	
+		return
+	}
+	uID := utils.ConvertToUint(id)
+	if err := h.service.DeleteRole(int64(uID)); err != nil {
+		Error(c, 10009, err.Error())
+		return
+	}	
+	Success(c, nil)
 }

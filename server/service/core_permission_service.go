@@ -75,3 +75,9 @@ func (s *CorePermissionService) GetPermissionByCode(code string) (*core.CorePerm
 	}
 	return s.repoFactory.GetCorePermissionRepository().FindByCode(code)
 }
+
+func (s *CorePermissionService) GetAll() ([]core.CorePermission, error) {
+
+	return s.repoFactory.GetCorePermissionRepository().FindAll()
+
+}

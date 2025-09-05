@@ -27,9 +27,6 @@ func (s *CoreRoleService) UpdateRole(role *core.CoreRole) error {
 	if role.ID <= 0 {
 		return errors.New("无效的角色ID")
 	}
-	if role.RoleName == "" {
-		return errors.New("角色名称不能为空")
-	}
 	
 	// 检查角色是否存在
 	_, err := s.repoFactory.GetCoreRoleRepository().FindByID(role.ID)
@@ -85,3 +82,7 @@ func (s *CoreRoleService) GetAllRolesByAdminID(adminID int64) ([]core.CoreRole, 
 	
  return s.repoFactory.GetCoreRoleRepository().FindByAdminID(adminID)
 }
+
+func (s *CoreRoleService) DeleteRole(ID int64) ( error) {
+	return s.repoFactory.GetCoreRoleRepository().Delete(ID)
+}	
