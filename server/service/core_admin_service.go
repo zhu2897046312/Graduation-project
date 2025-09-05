@@ -52,7 +52,7 @@ func (s *CoreAdminService) UpdateAdmin(admin *core.CoreAdmin) error {
 	if admin.Pwd == "" {
 		admin.Pwd = existing.Pwd
 	}
-	
+	admin.UpdatedTime = time.Now()
 	return s.repoFactory.GetCoreAdminRepository().Update(admin)
 }
 

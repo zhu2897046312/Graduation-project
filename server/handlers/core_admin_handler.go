@@ -36,6 +36,16 @@ type AdminCreateRequest struct {
 	AdminStatus int8    `json:"admin_status"`
 	Roles       []int64 `json:"roles"`
 }
+type AdminUpdateRequest struct {
+	ID          int64   `json:"id"`
+	Nickname    string  `json:"nickname"`
+	Account     string  `json:"account"`
+	Password    string  `json:"pwd"`
+	Mobile      string  `json:"mobile"`
+	DeptID      int64   `json:"dept_id"`
+	AdminStatus int8    `json:"admin_status"`
+	Roles       []int64 `json:"roles"`
+}
 
 func NewCoreAdminHandler(
 	service *service.CoreAdminService,
@@ -101,24 +111,53 @@ func (h *CoreAdminHandler) CreateAdmin(c *gin.Context) {
 
 // 更新管理员
 func (h *CoreAdminHandler) UpdateAdmin(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
+	var req AdminUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
-
-	var admin core.CoreAdmin
-	if err := c.ShouldBindJSON(&admin); err != nil {
-		InvalidParams(c)
+	pwd := utils.HashPwd(req.Password)
+	admin := core.CoreAdmin{
+		ID:          req.ID,
+		Nickname:    req.Nickname,
+		Account:     req.Account,
+		Pwd:         pwd,
+		Mobile:      req.Mobile,
+		DeptID:      req.DeptID,
+		AdminStatus: req.AdminStatus,
+	}
+	fmt.Printf("pwd: %s", admin.Pwd)
+	if _, err := h.coreDept.GetDeptByID(admin.DeptID); err != nil {
+		Error(c, 5001, "部门不存在")
 		return
 	}
-	admin.ID = id
 
+	// 创建管理员
 	if err := h.service.UpdateAdmin(&admin); err != nil {
-		Error(c, 5002, err.Error())
+		Error(c, 5001, err.Error())
 		return
 	}
-
+	if admin.ID == 0 {
+		Error(c, 5001, "创建管理员失败")
+		return
+	}
+	
+	err := h.coreRoleIndex.DeleteAllRolesByAdminID(admin.ID)
+	if err != nil {
+		Error(c, 5001, err.Error())
+		return
+	}
+	// 创建管理员角色关联
+	for _, roleID := range req.Roles {
+		role := core.CoreAdminRoleIndex{
+			AdminID: admin.ID,
+			RoleID:  roleID,
+		}
+		if err := h.coreRoleIndex.CreateAdminRole(&role); err != nil {
+			fmt.Println(err)
+		}
+	}
+	admin.Pwd = ""
 	Success(c, admin)
 }
 

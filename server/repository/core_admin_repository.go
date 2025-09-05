@@ -23,7 +23,7 @@ func (r *CoreAdminRepository) Create(admin *core.CoreAdmin) error {
 
 // 更新管理员
 func (r *CoreAdminRepository) Update(admin *core.CoreAdmin) error {
-	return r.db.Save(admin).Error
+	return r.db.Updates(admin).Error
 }
 
 // 根据账号获取管理员

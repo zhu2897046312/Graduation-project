@@ -110,7 +110,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.POST("/list", adminHandler.List)
 				adminGroup.POST("/create", adminHandler.CreateAdmin)
 				adminGroup.GET("/info", adminHandler.GetAdmin)
-				adminGroup.PATCH("/:id/status", adminHandler.UpdateAdminStatus)
+				adminGroup.POST("/update", adminHandler.UpdateAdmin)
 				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
 
