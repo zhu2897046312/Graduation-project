@@ -22,7 +22,7 @@ func (r *CorePermissionRepository) Create(permission *core.CorePermission) error
 
 // 更新权限
 func (r *CorePermissionRepository) Update(permission *core.CorePermission) error {
-	return r.db.Save(permission).Error
+	return r.db.Updates(permission).Error
 }
 
 func (r *CorePermissionRepository) FindAll() ([]core.CorePermission, error) {
@@ -73,3 +73,8 @@ func (r *CorePermissionRepository) FindByCode(code string) (*core.CorePermission
 // 	return tree, nil
 // }
 
+func (r *CorePermissionRepository) Delete(id int64) error {
+	return r.db.Model(&core.CorePermission{}).
+		Where("id = ?", id).
+		Update("deleted_time", gorm.Expr("NOW()")).Error
+}

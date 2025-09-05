@@ -84,5 +84,12 @@ func (s *CoreRoleService) GetAllRolesByAdminID(adminID int64) ([]core.CoreRole, 
 }
 
 func (s *CoreRoleService) DeleteRole(ID int64) ( error) {
+	if ID <= 0 {
+		return errors.New("无效的角色ID")
+	}
+	_, err := s.repoFactory.GetCoreRoleRepository().FindByID(ID)
+	if err != nil {
+		return errors.New("角色不存在")
+	}
 	return s.repoFactory.GetCoreRoleRepository().Delete(ID)
 }	

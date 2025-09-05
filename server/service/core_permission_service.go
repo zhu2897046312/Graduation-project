@@ -21,13 +21,13 @@ func (s *CorePermissionService) CreatePermission(permission *core.CorePermission
 	if permission.Code == "" {
 		return errors.New("权限代码不能为空")
 	}
-	
+
 	// 检查权限代码是否已存在
-	existing, _ := s.repoFactory.GetCorePermissionRepository().FindByCode(permission.Code)
-	if existing != nil {
+	_, err := s.repoFactory.GetCorePermissionRepository().FindByCode(permission.Code)
+	if err == nil {
 		return errors.New("权限代码已存在")
 	}
-	
+
 	return s.repoFactory.GetCorePermissionRepository().Create(permission)
 }
 
@@ -36,19 +36,13 @@ func (s *CorePermissionService) UpdatePermission(permission *core.CorePermission
 	if permission.ID <= 0 {
 		return errors.New("无效的权限ID")
 	}
-	if permission.Title == "" {
-		return errors.New("权限名称不能为空")
-	}
-	if permission.Code == "" {
-		return errors.New("权限代码不能为空")
-	}
-	
+
 	// 检查权限是否存在
 	existing, err := s.repoFactory.GetCorePermissionRepository().FindByID(permission.ID)
 	if err != nil {
 		return errors.New("权限不存在")
 	}
-	
+
 	// 检查代码冲突
 	if existing.Code != permission.Code {
 		codeCheck, _ := s.repoFactory.GetCorePermissionRepository().FindByCode(permission.Code)
@@ -56,7 +50,7 @@ func (s *CorePermissionService) UpdatePermission(permission *core.CorePermission
 			return errors.New("权限代码已存在")
 		}
 	}
-	
+
 	return s.repoFactory.GetCorePermissionRepository().Update(permission)
 }
 
@@ -80,4 +74,17 @@ func (s *CorePermissionService) GetAll() ([]core.CorePermission, error) {
 
 	return s.repoFactory.GetCorePermissionRepository().FindAll()
 
+}
+
+func (s *CorePermissionService) Delete(id int64) error {
+	if id <= 0 {
+		return errors.New("无效的权限ID")
+	}
+
+	_, err := s.repoFactory.GetCorePermissionRepository().FindByID(id)
+	if err != nil {
+		return errors.New("权限不存在")
+	}
+
+	return s.repoFactory.GetCorePermissionRepository().Delete(id)
 }

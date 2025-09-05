@@ -235,10 +235,11 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 
 			permissionGroup := adminAuth.Group("/core/permission")
 			{
-				permissionGroup.POST("", permissionHandler.CreatePermission)
-				permissionGroup.PUT("/:id", permissionHandler.UpdatePermission)
+				permissionGroup.POST("/create", permissionHandler.CreatePermission)
+				permissionGroup.POST("/update", permissionHandler.UpdatePermission)
 				permissionGroup.GET("/list", permissionHandler.List)
-				permissionGroup.GET("/code", permissionHandler.GetPermissionByCode)
+				permissionGroup.GET("/info", permissionHandler.GetPermission)
+				permissionGroup.GET("/topList", permissionHandler.List)
 			}
 		}
 
