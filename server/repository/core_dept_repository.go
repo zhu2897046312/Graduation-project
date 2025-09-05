@@ -22,7 +22,7 @@ func (r *CoreDeptRepository) Create(dept *core.CoreDept) error {
 
 // 更新部门
 func (r *CoreDeptRepository) Update(dept *core.CoreDept) error {
-	return r.db.Save(dept).Error
+	return r.db.Updates(dept).Error
 }
 
 // 根据ID获取部门
@@ -69,7 +69,9 @@ func (r *CoreDeptRepository) FindByPid(pid int64) ([]*core.CoreDept, error) {
 
 // 删除部门
 func (r *CoreDeptRepository) Delete(id int64) error {
-	return r.db.Delete(&core.CoreDept{}, id).Error
+	return r.db.Model(&core.CoreAdminRoleIndex{}).
+	Where("id = ?", id).
+	Update("deleted_time", gorm.Expr("NOW()")).Error
 }
 
 func (r *CoreDeptRepository) List(pid int64) ([]core.CoreDept,int64, error) {

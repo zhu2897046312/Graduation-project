@@ -215,10 +215,10 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			deptGroup := adminAuth.Group("/core/dept")
 			{
 				deptGroup.GET("/tree", deptHandler.Tree)
-				deptGroup.PUT("/:id", deptHandler.UpdateDept)
-				deptGroup.GET("/:id", deptHandler.GetDept)
-				deptGroup.GET("", deptHandler.GetSubDepts)
-				deptGroup.DELETE("/:id", deptHandler.DeleteDept)
+				deptGroup.POST("/update", deptHandler.UpdateDept)
+				deptGroup.GET("/info", deptHandler.GetDept)
+				deptGroup.POST("/create", deptHandler.CreateDept)
+				deptGroup.GET("/", deptHandler.DeleteDept)
 			}
 
 			roleGroup := adminAuth.Group("/core/role")

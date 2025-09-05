@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/core"
+	"time"
 )
 
 type CoreDeptService struct {
@@ -15,7 +16,7 @@ func NewCoreDeptService(base *Service) *CoreDeptService {
 
 // CreateDept 创建部门
 func (s *CoreDeptService) CreateDept(dept *core.CoreDept) error {
-	if dept.Thumb == "" {
+	if dept.DeptName == "" {
 		return errors.New("部门名称不能为空")
 	}
 	
@@ -23,7 +24,9 @@ func (s *CoreDeptService) CreateDept(dept *core.CoreDept) error {
 	if dept.SortNum == 0 {
 		dept.SortNum = 999
 	}
-	
+	dept.CreatedTime = time.Now()
+
+	dept.UpdatedTime = time.Now()
 	return s.repoFactory.GetCoreDeptRepository().Create(dept)
 }
 
@@ -31,9 +34,6 @@ func (s *CoreDeptService) CreateDept(dept *core.CoreDept) error {
 func (s *CoreDeptService) UpdateDept(dept *core.CoreDept) error {
 	if dept.ID <= 0 {
 		return errors.New("无效的部门ID")
-	}
-	if dept.Thumb == "" {
-		return errors.New("部门名称不能为空")
 	}
 	
 	// 检查部门是否存在
