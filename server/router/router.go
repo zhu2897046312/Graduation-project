@@ -85,6 +85,12 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 
 		// 权限路由组
 		permissionHandler := handlers.NewCorePermissionHandler(factory.GetCorePermissionService())
+
+		marketSettingHandler := handlers.NewSpMarketSettingHandler(
+			factory.GetSpCategoryService(),
+			factory.GetSpProductService(),
+		)
+
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
@@ -242,6 +248,35 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				permissionGroup.GET("/topList", permissionHandler.List)
 			}
 		}
+
+		clientAuth := api.Group("/client")
+		{
+			shopGroup := clientAuth.Group("/shop")
+			{
+				documentGroup := shopGroup.Group("/document")
+				{
+					documentGroup.GET("/list", documentHandler.ListDocuments)
+				}
+
+				productGroup := shopGroup.Group("/product")
+				{
+					productGroup.POST("/list", productHandler.ListProducts)
+					productGroup.GET("/info", productHandler.GetProduct)
+				}
+
+				categoryGroup := shopGroup.Group("/category")
+				{
+					categoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
+				}
+
+				marketGroup := shopGroup.Group("/market")
+				{
+					marketGroup.GET("/siteInfo", configHandler.GetMarketInfo)
+					marketGroup.POST("/breadcrumb",marketSettingHandler.GetBreadcrumb)
+				}
+			}
+		}
+
 
 		spCategoryGroup := api.Group("/sp/categories")
 		{

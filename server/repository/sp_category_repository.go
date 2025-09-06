@@ -61,3 +61,9 @@ func (r *SpCategoryRepository) UpdateSortNum(id uint, sortNum uint16) error {
 		Where("id = ?", id).
 		Update("sort_num", sortNum).Error
 }
+
+func (r *SpCategoryRepository) FindByCode(code string) (*sp.SpCategory, error) {
+	var category sp.SpCategory
+	err := r.db.Where("code = ?", code).First(&category).Error
+	return &category, err
+}
