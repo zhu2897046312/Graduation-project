@@ -11,7 +11,7 @@ type SpProdAttributesValue struct {
 	SortNum          uint16     `gorm:"not null;default:0" json:"sort_num"`
 	CreatedTime      time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
 	UpdatedTime      time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
-	DeletedTime      *time.Time `json:"deleted_time"`
+	DeletedTime      *time.Time `json:"deleted_tcdime"`
 }
 
 func (SpProdAttributesValue) TableName() string {
