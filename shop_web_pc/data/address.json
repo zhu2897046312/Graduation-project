@@ -1,0 +1,106 @@
+{
+    "countries": [
+      {
+        "name": "US",
+        "full_name": "United States",
+        "provinces": [
+          "Alabama", "Alaska", "Arizona", "Arkansas", "California",
+          "Colorado", "Connecticut", "Delaware", "Florida", "Georgia",
+          "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+          "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
+          "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
+          "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+          "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+          "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+          "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+          "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+        ]
+      },
+      {
+        "name": "GB",
+        "full_name": "United Kingdom",
+        "provinces": [
+          "England (including Greater London, Yorkshire and the Humber, North East, North West, East Midlands, West Midlands, East of England, South East, South West)",
+          "Scotland",
+          "Wales",
+          "Northern Ireland"
+        ]
+      },
+      {
+        "name": "CA",
+        "full_name": "Canada",
+        "provinces": [
+          "Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador",
+          "Nova Scotia", "Ontario", "Prince Edward Island", "Quebec", "Saskatchewan",
+          "Northwest Territories", "Nunavut", "Yukon"
+        ]
+      },
+      {
+        "name": "AU",
+        "full_name": "Australia",
+        "provinces": [
+          "New South Wales", "Queensland", "South Australia", "Tasmania", "Victoria",
+          "Western Australia", "Australian Capital Territory", "Northern Territory"
+        ]
+      },
+      {
+        "name": "FR",
+        "full_name": "France",
+        "provinces": [
+          "Île-de-France", "Provence-Alpes-Côte d'Azur", "Auvergne-Rhône-Alpes", "Nouvelle-Aquitaine",
+          "Occitanie", "Bourgogne-Franche-Comté", "Hauts-de-France", "Centre-Val de Loire",
+          "Normandie", "Pays de la Loire", "Brittany", "Grand Est", "Corse"
+        ]
+      },
+      {
+        "name": "DE",
+        "full_name": "Germany",
+        "provinces": [
+          "Baden-Württemberg", "Bavaria", "Berlin", "Brandenburg", "Bremen",
+          "Hamburg", "Hesse", "Lower Saxony", "Mecklenburg-Vorpommern", "North Rhine-Westphalia",
+          "Rhineland-Palatinate", "Saarland", "Saxony", "Saxony-Anhalt", "Schleswig-Holstein",
+          "Thuringia"
+        ]
+      },
+      {
+        "name": "IT",
+        "full_name": "Italy",
+        "provinces": [
+          "Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna",
+          "Friuli-Venezia Giulia", "Lazio", "Liguria", "Lombardy", "Marche",
+          "Molise", "Piedmont", "Apulia", "Sardinia", "Sicily",
+          "Tuscany", "Trentino-Alto Adige/Südtirol", "Umbria", "Veneto", "Valle d'Aosta/Vallée d'Aoste"
+        ]
+      },
+      {
+        "name": "ES",
+        "full_name": "Spain",
+        "provinces": [
+          "Andalusia", "Aragón", "Asturias", "Balearic Islands", "Basque Country",
+          "Canary Islands", "Cantabria", "Castile and León", "Castile-La Mancha", "Catalonia",
+          "Extremadura", "Galicia", "La Rioja", "Madrid", "Murcia",
+          "Navarre", "Community of Valencia"
+        ]
+      },
+      {
+        "name": "NL",
+        "full_name": "Netherlands",
+        "provinces": [
+          "Drenthe", "Flevoland", "Friesland", "Gelderland", "Groningen",
+          "Limburg", "North Brabant", "North Holland", "Overijssel", "Utrecht",
+          "Zeeland", "South Holland"
+        ]
+      },
+      {
+        "name": "SE",
+        "full_name": "Sweden",
+        "provinces": [
+          "Blekinge County", "Dalarna County", "Gotland County", "Gävleborg County", "Hallard County",
+          "Jönköping County", "Kalmar County", "Kronoberg County", "Norrbotten County", "Skåne County",
+          "Stockholm County", "Södermanland County", "Uppsala County", "Värmland County", "Västerbotten County",
+          "Västmanland County", "Västra Götaland County"
+        ]
+      }
+    ]
+  }
+  
