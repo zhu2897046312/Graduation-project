@@ -9,8 +9,8 @@ type SpSkuIndex struct {
     SkuID                  uint      `gorm:"not null" json:"sku_id"`
     ProdAttributesID       uint      `gorm:"not null" json:"prod_attributes_id"`
     ProdAttributesValueID  uint      `gorm:"not null" json:"prod_attributes_value_id"`
-    CreatedTime            time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
-    UpdatedTime            time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
+    CreatedTime            time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
+    UpdatedTime            time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
 }
 func (SpSkuIndex) TableName() string {
     return "sp_sku_index"
