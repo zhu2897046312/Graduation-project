@@ -746,3 +746,66 @@ func (h *SpProductHandler) SoftDeleteProduct(c *gin.Context) {
 
 	Success(c, nil)
 }
+
+// GetProductFrontInfo 获取前端商品详情
+func (h *SpProductHandler) GetProductFrontInfo(c *gin.Context) {
+    id := c.Query("id")
+    uintId := utils.ConvertToUint(id)
+    if uintId == 0 {
+        InvalidParams_1(c, uintId)
+        return
+    }
+
+    // 获取完整的商品信息
+    fullInfo, err := h.getFullProductInfo(uintId)
+    if err != nil {
+        Error(c, 3103, "商品不存在")
+        return
+    }
+
+    // 转换为前端需要的格式
+    frontInfo := h.convertToFrontInfo(fullInfo)
+    Success(c, frontInfo)
+}
+
+// convertToFrontInfo 将内部数据结构转换为前端需要的格式
+func (h *SpProductHandler) convertToFrontInfo(fullInfo gin.H) gin.H {
+    product := fullInfo["product"].(*sp.SpProduct)
+    content := fullInfo["content"].(*sp.SpProductContent)
+    properties := fullInfo["property_list"].([]sp.SpProductProperty)
+    skus := fullInfo["sku_list"].([]sp.SpSku)
+    skuConfig := fullInfo["sku_config_list"].([]sp.SpSkuIndex)
+    tags := fullInfo["tags"].([]shop.ShopTag)
+
+    // 处理图片集
+    var pictureGallery []string
+    if product.PictureGallery != nil {
+        json.Unmarshal(product.PictureGallery, &pictureGallery)
+    }
+
+    // 转换为前端需要的结构
+    return gin.H{
+        "id":             product.ID,
+        "categoryId":     product.CategoryID,
+        "title":          product.Title,
+        "state":          product.State,
+        "price":          product.Price,
+        "originalPrice":  product.OriginalPrice,
+        "stock":          product.Stock,
+        "picture":        product.Picture,
+        "pictureGallery": pictureGallery,
+        "description":    product.Description,
+        "soldNum":        product.SoldNum,
+        "openSku":        product.OpenSku,
+        "sortNum":        product.SortNum,
+        "putawayTime":    product.PutawayTime,
+        "content":        content.Content,
+        "seoTitle":       content.SeoTitle,
+        "seoKeyword":     content.SeoKeyword,
+        "seoDescription": content.SeoDescription,
+        "propertyList":   properties,
+        "skuList":        skus,
+        "skuConfig":      skuConfig,
+        "tags":           tags,
+    }
+}
