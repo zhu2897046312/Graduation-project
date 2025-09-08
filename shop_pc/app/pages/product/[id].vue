@@ -242,7 +242,6 @@ console.log(info.value)
   </div>
 </template>
 
-
 <style lang="css" scoped>
 .product-header {
   display: flex;

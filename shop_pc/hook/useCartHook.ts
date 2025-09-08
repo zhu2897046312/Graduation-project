@@ -16,7 +16,7 @@ export default function useCart() {
         quantity,
         add: true
       })
-      console.debug('Add to cart success', res)
+      // console.debug('Add to cart success', res)
       dialog.success({
         title: 'Added to Cart',
         content: 'Proceed to checkout now?',
@@ -47,7 +47,7 @@ export default function useCart() {
   const getList = async () => {
     try {
       const res = await api.shop.cart.list()
-      console.debug('Get cart list success', res)
+      // console.debug('Get cart list success', res)
       let count = 0
       res.forEach((it: any) => {
         count += it.quantity

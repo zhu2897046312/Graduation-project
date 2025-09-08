@@ -261,7 +261,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				productGroup := shopGroup.Group("/product")
 				{
 					productGroup.POST("/list", productHandler.ListProducts)
-					productGroup.GET("/info", productHandler.GetProduct)
+					productGroup.GET("/info", productHandler.GetProductFrontInfo)
 				}
 
 				categoryGroup := shopGroup.Group("/category")
