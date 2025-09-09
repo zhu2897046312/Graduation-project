@@ -14,11 +14,12 @@ useSeoMeta({
 const { data: cart_list, refresh } = await useAsyncData(async () => {
   const res: any = await api.shop.cart.list();
   let count = 0
-  res.forEach((it: any) => {
+  console.log("cart list", res.list)
+  res.list.forEach((it: any) => {
     count += it.quantity
   })
   cartNum.value = count
-  return res;
+  return res.list;
 })
 
 

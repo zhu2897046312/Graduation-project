@@ -31,12 +31,12 @@ func (s *SpUserCartService) AddToCart(cart *sp.SpUserCart) error {
 	if cart.Quantity <= 0 {
 		return errors.New("数量必须大于0")
 	}
-	
+
 	cart.CreatedTime = time.Now()
 	cart.UpdatedTime = time.Now()
 	cart.TotalAmount = cart.Price * float64(cart.Quantity)
 	cart.PayAmount = cart.Price * float64(cart.Quantity)
-	
+
 	return s.repoFactory.GetSpUserCartRepository().AddToCart(cart)
 }
 
@@ -51,11 +51,11 @@ func (s *SpUserCartService) UpdateCartItem(cart *sp.SpUserCart) error {
 	if cart.Quantity <= 0 {
 		return errors.New("数量必须大于0")
 	}
-	
+
 	cart.UpdatedTime = time.Now()
 	cart.TotalAmount = cart.Price * float64(cart.Quantity)
 	cart.PayAmount = cart.Price * float64(cart.Quantity)
-	
+
 	return s.repoFactory.GetSpUserCartRepository().Update(cart)
 }
 
@@ -79,14 +79,11 @@ func (s *SpUserCartService) GetCartItemsByUserID(userID uint) ([]sp.SpUserCart, 
 }
 
 // GetCartItemByProduct 根据用户ID和产品ID获取购物车项
-func (s *SpUserCartService) GetCartItemByProduct(userID, productID uint) (*sp.SpUserCart, error) {
-	if userID == 0 {
-		return nil, errors.New("无效的用户ID")
+func (s *SpUserCartService) GetCartItemByProduct(userId uint, fingerprint string, productID uint,skuID uint) (*sp.SpUserCart, error) {
+	if userId == 0  && fingerprint == "" {
+		return nil, errors.New("用户ID或设备指纹必须提供一项")
 	}
-	if productID == 0 {
-		return nil, errors.New("无效的商品ID")
-	}
-	return s.repoFactory.GetSpUserCartRepository().FindByUserAndProduct(userID, productID)
+	return s.repoFactory.GetSpUserCartRepository().FindByUserAndProduct(userId, fingerprint, productID, skuID)
 }
 
 // GetCartItemBySku 根据用户ID和SKU ID获取购物车项
@@ -125,4 +122,11 @@ func (s *SpUserCartService) MergeGuestCart(userID uint, fingerprint string) erro
 		return errors.New("设备指纹不能为空")
 	}
 	return s.repoFactory.GetSpUserCartRepository().MergeGuestCart(userID, fingerprint)
+}
+
+func (s *SpUserCartService) List(userID uint, fingerprint string, productID uint, skuID uint) ([]sp.SpUserCart, int64, error) {
+	if userID == 0 && fingerprint == "" {
+		return nil, 0, errors.New("用户ID或设备指纹必须提供一项")
+	}
+	return s.repoFactory.GetSpUserCartRepository().ListWithPagination(userID, fingerprint)
 }

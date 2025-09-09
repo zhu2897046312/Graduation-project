@@ -39,3 +39,9 @@ func (r *CmsDocumentArchiveRepository) DeleteByDocumentID(documentID int64) erro
 
 	return result.Error
 }
+
+func (r *CmsDocumentArchiveRepository) FindByDocumentCode(documentCode int64) (*cms.CmsDocumentArchive, error) {
+	var archive cms.CmsDocumentArchive
+	err := r.db.Where("document_id = ?", documentCode).First(&archive).Error
+	return &archive, err
+}

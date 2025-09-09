@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     transpile: ['naive-ui','vueuc'],
     
   },
+  css: ['~/assets/css/main.css'],
   imports: {
     autoImport: true // 确保自动导入开启
   },

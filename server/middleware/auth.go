@@ -144,3 +144,48 @@ func GetTokenFromContext(c *gin.Context) string {
 
 	return ""
 }
+
+
+// DeviceFingerprintMiddleware 设备指纹中间件
+func DeviceFingerprintMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 从请求头获取设备指纹
+		deviceFingerprint := c.GetHeader("X-Device-Fingerprint")
+		
+		// 如果头信息中没有，尝试从查询参数获取
+		if deviceFingerprint == "" {
+			deviceFingerprint = c.Query("device_fingerprint")
+		}
+
+		// 如果还是没有，尝试从cookie获取
+		if deviceFingerprint == "" {
+			if cookie, err := c.Cookie("device_fingerprint"); err == nil {
+				deviceFingerprint = cookie
+			}
+		}
+
+		// 将设备指纹存入上下文（无论是否为空）
+		c.Set("device_fingerprint", deviceFingerprint)
+		
+		// 设置响应头，方便前端使用
+		if deviceFingerprint != "" {
+			c.Header("X-Device-Fingerprint", deviceFingerprint)
+		}
+
+		c.Next()
+	}
+}
+
+// GetDeviceFingerprintFromContext 从上下文中获取设备指纹
+func GetDeviceFingerprintFromContext(c *gin.Context) string {
+	fingerprint, exists := c.Get("device_fingerprint")
+	if !exists {
+		return ""
+	}
+
+	if fp, ok := fingerprint.(string); ok {
+		return fp
+	}
+
+	return ""
+}

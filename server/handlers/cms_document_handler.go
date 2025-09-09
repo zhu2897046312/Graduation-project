@@ -69,6 +69,27 @@ func (h *CmsDocumentHandler) GetByCategoryID(c *gin.Context) {
 	Success(c, documents)
 }
 
+func (h *CmsDocumentHandler) GetDocumentByCode(c *gin.Context) {
+	code := c.Query("code")
+
+	documents, err := h.service.GetDocumentByCode(code)
+	if err != nil {
+		ServerError(c, err)
+		return
+	}
+
+	archive , err_1 := h.archiveService.GetArchiveByDocumentID(documents.ID)
+	if err_1 != nil {
+		ServerError(c, err_1)
+		return
+	}
+
+	Success(c, gin.H{
+		"document": documents,
+		"cont": archive,
+	})
+}
+
 // 获取热门文档
 func (h *CmsDocumentHandler) GetPopular(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))

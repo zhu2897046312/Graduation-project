@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"server/models/sp"
+
+	"gorm.io/gorm"
 )
 
 type SpUserCartRepository struct {
@@ -22,7 +23,7 @@ func (r *SpUserCartRepository) AddToCart(cart *sp.SpUserCart) error {
 
 // 更新购物车项
 func (r *SpUserCartRepository) Update(cart *sp.SpUserCart) error {
-	return r.db.Save(cart).Error
+	return r.db.Updates(cart).Error
 }
 
 // 更新购物车项数量
@@ -30,7 +31,7 @@ func (r *SpUserCartRepository) UpdateQuantity(id uint, quantity uint) error {
 	return r.db.Model(&sp.SpUserCart{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{
-			"quantity":    quantity,
+			"quantity":     quantity,
 			"total_amount": gorm.Expr("price * ?", quantity),
 			"pay_amount":   gorm.Expr("price * ?", quantity),
 		}).Error
@@ -46,9 +47,9 @@ func (r *SpUserCartRepository) FindByUserID(userID uint) ([]sp.SpUserCart, error
 }
 
 // 根据用户ID和产品ID获取购物车项
-func (r *SpUserCartRepository) FindByUserAndProduct(userID, productID uint) (*sp.SpUserCart, error) {
+func (r *SpUserCartRepository) FindByUserAndProduct(userId uint, fingerprint string, productID uint,skuID uint) (*sp.SpUserCart, error) {
 	var cartItem sp.SpUserCart
-	err := r.db.Where("user_id = ? AND product_id = ?", userID, productID).
+	err := r.db.Where("user_id = ? AND product_id = ? AND sku_id = ? AND fingerprint = ?", userId, productID, skuID, fingerprint).
 		First(&cartItem).Error
 	return &cartItem, err
 }
@@ -77,4 +78,37 @@ func (r *SpUserCartRepository) MergeGuestCart(userID uint, fingerprint string) e
 	return r.db.Model(&sp.SpUserCart{}).
 		Where("fingerprint = ?", fingerprint).
 		Update("user_id", userID).Error
+}
+
+func (r *SpUserCartRepository) ListWithPagination(userId uint, fingerprint string) ([]sp.SpUserCart, int64, error) {
+	var tags []sp.SpUserCart
+	var total int64
+
+	// 构建查询
+	query := r.db.Model(&sp.SpUserCart{}).Where("deleted_time IS NULL")
+
+	// 应用过滤条件
+	if userId != 0 {
+		query = query.Where("user_id = ?", userId)
+	}
+
+	if fingerprint != "" {
+		query = query.Where("fingerprint LIKE ?", "%"+fingerprint+"%")
+	}
+
+	// if productID != 0 {
+	// 	query = query.Where("product_id = ?", productID)
+	// }
+
+	// if skuID != 0 {
+	// 	query = query.Where("sku_id = ?", skuID)
+	// }
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := query.Find(&tags).Error
+	return tags, total, err
 }

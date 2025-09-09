@@ -78,3 +78,10 @@ func (s *CmsRecommendService) GetRecommendByID(id int) (*cms.CmsRecommend, error
 	}
 	return s.repoFactory.GetCmsRecommendRepository().FindByID(id)
 }
+
+func (s *CmsRecommendService) GetRecommendByCode(recommendCode string) (*cms.CmsRecommend, error) {
+	if recommendCode == "" {
+		return nil, errors.New("无效的推荐ID")
+	}
+	return s.repoFactory.GetCmsRecommendRepository().FindByDocumentCode(recommendCode)
+}

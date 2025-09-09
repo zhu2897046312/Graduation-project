@@ -50,9 +50,9 @@ const { data: recommendedProducts } = await useAsyncData(
   async () => {
     try {
       // 获取当前商品的所有标签ID
-      console.log(productId)
+      console.log('Fetching product recommendedInfo for ID:',productId)
       const tagIds = info.value.tags?.map((tag: any) => tag.id) || []
-      console.log(tagIds)
+      console.log('Fetching tags list',tagIds)
       // 随机选择最多4个标签（如果标签数超过4个）
       const randomTagIds = tagIds
         .sort(() => 0.5 - Math.random())

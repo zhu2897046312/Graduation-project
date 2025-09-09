@@ -92,6 +92,12 @@ func (r *CmsDocumentRepository) FindByID(id int64) (*cms.CmsDocument, error) {
     return &document, nil
 }
 
+func (r *CmsDocumentRepository) FindByDocumentCode(documentCode string) (*cms.CmsDocument, error) {
+	var document cms.CmsDocument
+	err := r.db.Where("code = ?", documentCode).First(&document).Error
+	return &document, err
+}
+
 func (r *CmsDocumentRepository) DeleteByID(id int64) error {
     result := r.db.Model(&cms.CmsDocument{}).
 		Where("id = ?", id).

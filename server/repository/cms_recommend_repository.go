@@ -41,6 +41,12 @@ func (r *CmsRecommendRepository) FindByID(id int) (*cms.CmsRecommend, error) {
 	return &recommend, err
 }
 
+func (r *CmsRecommendRepository) FindByDocumentCode(recommendCode string) (*cms.CmsRecommend, error) {
+	var recommend cms.CmsRecommend
+	err := r.db.Where("code = ?", recommendCode).First(&recommend).Error
+	return &recommend, err
+}
+
 // 获取推荐列表
 func (r *CmsRecommendRepository) FindAll() ([]cms.CmsRecommend, error) {
 	var recommends []cms.CmsRecommend

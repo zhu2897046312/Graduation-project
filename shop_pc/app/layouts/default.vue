@@ -116,12 +116,12 @@ watch(() => route.fullPath, () => {
     <header class="bg-[#FB7F86] py-2 ">
       <div class="container  flex items-center justify-between ">
         <div class="logo flex items-end w-1/3">
-          <!-- <NuxtLink to="/">
+          <NuxtLink to="/">
             <img 
               src="~/assets/logo.png" 
               class="h-16 object-contain"
             />
-          </NuxtLink> -->
+          </NuxtLink>
         </div>
 
         <div class="flex flex-col w-2/3 mt-4">
@@ -150,7 +150,7 @@ watch(() => route.fullPath, () => {
                       bg-transparent hover:bg-white/10 active:bg-white/20
                       transition-colors duration-200 rounded-md"
               >
-                <!-- <img src="~/assets/cart.png" alt="cart" class="w-8 h-8 object-contain"/> -->
+                <img src="~/assets/cart.png" alt="cart" class="w-8 h-8 object-contain"/>
               </button>
               
               <!-- 购物车徽标 -->
@@ -260,7 +260,7 @@ watch(() => route.fullPath, () => {
         </NuxtLink>
       </div>
         <div class="payment-icons flex flex-wrap gap-2 mt-4">
-          <!-- <img class="lazyload ls-is-cached" 
+          <img class="lazyload ls-is-cached" 
               src="~/assets/images/01.svg" 
               
               alt="Visa">
@@ -275,7 +275,7 @@ watch(() => route.fullPath, () => {
                 alt="PayPal">
           <img class="lazyload ls-is-cached" 
               src="~/assets/images/05.svg"
-              alt="Apple Pay"> -->
+              alt="Apple Pay">
         </div>       
         <div class="footer-copyright text-center mt-4 text-sm text-[#878787]">
           <p>Copyright 2025 m.earring18.com All Rights Reserved</p>

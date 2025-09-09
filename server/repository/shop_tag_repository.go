@@ -33,6 +33,14 @@ func (r *ShopTagRepository) FindByID(id int) (*shop.ShopTag, error) {
 	return &tag, err
 }
 
+// 根据ID获取标签
+func (r *ShopTagRepository) FindByCode(code string) (*shop.ShopTag, error) {
+    var tag shop.ShopTag
+    err := r.db.Where("code = ?", code).First(&tag).Error
+    return &tag, err
+}
+
+
 // 根据状态获取标签列表
 func (r *ShopTagRepository) FindByState(state int8) ([]shop.ShopTag, error) {
 	var tags []shop.ShopTag
@@ -77,7 +85,7 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 		params.SortOrder = "ASC"
 	}
 
-	offset := (params.Page - 1) * params.PageSize
+	// offset := (params.Page - 1) * params.PageSize
 	
 	// 构建查询
 	query := r.db.Model(&shop.ShopTag{}).Where("deleted_time IS NULL")
@@ -90,7 +98,9 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 	if params.Title != "" {
 		query = query.Where("title LIKE ?", "%"+params.Title+"%")
 	}
-
+	if params.Code != ""{
+		query = query.Where("code LIKE ?", "%"+params.Code+"%")
+	}
 	// 设置排序
 	orderClause := params.SortBy + " " + params.SortOrder
 	query = query.Order(orderClause)
@@ -100,12 +110,19 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 		return nil, 0, err
 	}
 
-	// 获取分页数据
-	err := query.Offset(offset).
-		Limit(params.PageSize).
-		Find(&tags).Error
-
-	return tags, total, err
+	// 根据PageSize决定是否分页
+	if params.PageSize == 0 {
+		// 不分页，返回全部结果
+		err := query.Find(&tags).Error
+		return tags, total, err
+	} else {
+		// 分页查询
+		offset := (params.Page - 1) * params.PageSize
+		err := query.Offset(offset).
+			Limit(params.PageSize).
+			Find(&tags).Error
+		return tags, total, err
+	}
 }
 
 func (r *ShopTagRepository) DeleteByID(id int) error {

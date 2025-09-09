@@ -59,6 +59,13 @@ func (s *CmsDocumentService) GetDocumentByID(id int64) (*cms.CmsDocument, error)
     return s.repoFactory.GetCmsDocumentRepository().FindByID(id)
 }
 
+func (s *CmsDocumentService) GetDocumentByCode(code string) (*cms.CmsDocument, error) {
+    if code == "" {
+        return nil, errors.New("无效的文档ID")
+    }
+    return s.repoFactory.GetCmsDocumentRepository().FindByDocumentCode(code)
+}
+
 func (s *CmsDocumentService) DeleteByID(id int64) error {
     if id <= 0 {
         return errors.New("无效的文档ID")

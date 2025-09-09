@@ -12,6 +12,7 @@ import (
 func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Client) *gin.Engine {
 	r.Use(
 		middleware.Cors(), // CORS中间件         // 服务注入中间件
+		
 	)
 	api := r.Group("/api")
 	{
@@ -89,6 +90,13 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		marketSettingHandler := handlers.NewSpMarketSettingHandler(
 			factory.GetSpCategoryService(),
 			factory.GetSpProductService(),
+		)
+
+		// 用户购物车路由组
+		cartHandler := handlers.NewSpUserCartHandler(
+			factory.GetSpUserCartService(),
+			factory.GetSpProductService(),
+			factory.GetSpSkuService(),
 		)
 
 		// 公开路由（不需要认证）
@@ -250,12 +258,14 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		}
 
 		clientAuth := api.Group("/client")
+		clientAuth.Use(middleware.DeviceFingerprintMiddleware()) 
 		{
 			shopGroup := clientAuth.Group("/shop")
 			{
 				documentGroup := shopGroup.Group("/document")
 				{
 					documentGroup.GET("/list", documentHandler.ListDocuments)
+					documentGroup.GET("/info", documentHandler.GetDocumentByCode)
 				}
 
 				productGroup := shopGroup.Group("/product")
@@ -267,12 +277,32 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				categoryGroup := shopGroup.Group("/category")
 				{
 					categoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
+					categoryGroup.GET("/info", spCategoryHandler.GetCategory)
+					categoryGroup.GET("/getInfoByCode", spCategoryHandler.GetCategoryByCode)
+					categoryGroup.GET("/getParents", spCategoryHandler.GetCategoryParents)
 				}
 
 				marketGroup := shopGroup.Group("/market")
 				{
 					marketGroup.GET("/siteInfo", configHandler.GetMarketInfo)
 					marketGroup.POST("/breadcrumb",marketSettingHandler.GetBreadcrumb)
+				}
+
+				tagGroup := shopGroup.Group("/tag")
+				{
+					tagGroup.GET("/info",tagHandler.GetTagByCode)
+					tagGroup.POST("/list",tagHandler.ListTags)
+				}
+
+				recommendIndexGrop := shopGroup.Group("/recommendIndex")
+				{
+					recommendIndexGrop.GET("/list", recommendHandler.ListRecommendsIndex)
+				}
+
+				cartGroup := shopGroup.Group("/userCart")
+				{
+					cartGroup.POST("/list", cartHandler.List)
+					cartGroup.POST("/act", cartHandler.CarAction)
 				}
 			}
 		}
@@ -647,8 +677,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			addressGroup.PATCH("/:id/default", addressHandler.SetDefaultAddress)
 		}
 
-		// 用户购物车路由组
-		cartHandler := handlers.NewSpUserCartHandler(factory.GetSpUserCartService())
+		
 		cartGroup := api.Group("/sp/user-carts")
 		{
 			cartGroup.POST("", cartHandler.AddToCart)

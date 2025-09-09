@@ -82,14 +82,6 @@ func (s *ShopTagService) IncrementTagReadNum(id int) error {
 
 // ListTags 获取所有标签（分页）
 func (s *ShopTagService) ListTags(params shop.TagQueryParams) ([]shop.ShopTag, int64, error) {
-	// 验证分页参数
-	if params.Page < 1 {
-		params.Page = 1
-	}
-	if params.PageSize < 1 || params.PageSize > 100 {
-		params.PageSize = 10
-	}
-	
 	return s.repoFactory.GetShopTagRepository().ListWithPagination(params)
 }
 
@@ -98,4 +90,11 @@ func (s *ShopTagService) DeleteTagByID(id int) error {
 		return errors.New("标签ID不能为空")
 	}
 	return s.repoFactory.GetShopTagRepository().DeleteByID(id)
+}
+
+func (s *ShopTagService) GetTagByCode(code string) (*shop.ShopTag, error) {
+	if code == "" {
+		return nil, errors.New("标签ID不能为空")
+	}
+	return s.repoFactory.GetShopTagRepository().FindByCode(code)
 }

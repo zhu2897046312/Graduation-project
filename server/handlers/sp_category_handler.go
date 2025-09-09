@@ -141,6 +141,38 @@ func (h *SpCategoryHandler) GetCategory(c *gin.Context) {
 	Success(c, category)
 }
 
+func (h *SpCategoryHandler) GetCategoryByCode(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		InvalidParams(c)
+		return
+	}
+
+	category, err := h.service.GetCategoryByCode(code)
+	if err != nil {
+		Error(c, 22003, "分类不存在")
+		return
+	}
+
+	Success(c, category)
+}
+
+func (h *SpCategoryHandler) GetCategoryParents(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		InvalidParams(c)
+		return
+	}
+
+	category, err := h.service.GetParents(code)
+	if err != nil {
+		Error(c, 22003, "分类不存在")
+		return
+	}
+
+	Success(c, category)
+}
+
 // 获取子分类
 func (h *SpCategoryHandler) GetSubCategories(c *gin.Context) {
 	pid, err := strconv.ParseUint(c.Query("pid"), 10, 32)
