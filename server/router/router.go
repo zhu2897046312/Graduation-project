@@ -12,7 +12,7 @@ import (
 func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Client) *gin.Engine {
 	r.Use(
 		middleware.Cors(), // CORS中间件         // 服务注入中间件
-		
+
 	)
 	api := r.Group("/api")
 	{
@@ -58,6 +58,9 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpOrderItemService(),
 			factory.GetSpOrderReceiveAddressService(),
 			factory.GetSpOrderRefundService(),
+			factory.GetSpOrderReceiveAddressService(),
+			factory.GetSpProductService(),
+			factory.GetSpUserCartService(),
 		)
 
 		// SP订单退款路由组
@@ -98,6 +101,11 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpProductService(),
 			factory.GetSpSkuService(),
 		)
+
+		// 用户路由组
+		mpUserHandler := handlers.NewMpUserHandler(factory.GetMpUserService(), factory.GetMpUserTokenService())
+
+		payHandler := handlers.NewPaymentHandler(factory.GetSpOrderService())
 
 		// 公开路由（不需要认证）
 		public := api.Group("")
@@ -258,7 +266,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		}
 
 		clientAuth := api.Group("/client")
-		clientAuth.Use(middleware.DeviceFingerprintMiddleware()) 
+		clientAuth.Use(middleware.DeviceFingerprintMiddleware())
+		clientAuth.Use(middleware.OptionalClientAuthMiddleware())
 		{
 			shopGroup := clientAuth.Group("/shop")
 			{
@@ -285,13 +294,13 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				marketGroup := shopGroup.Group("/market")
 				{
 					marketGroup.GET("/siteInfo", configHandler.GetMarketInfo)
-					marketGroup.POST("/breadcrumb",marketSettingHandler.GetBreadcrumb)
+					marketGroup.POST("/breadcrumb", marketSettingHandler.GetBreadcrumb)
 				}
 
 				tagGroup := shopGroup.Group("/tag")
 				{
-					tagGroup.GET("/info",tagHandler.GetTagByCode)
-					tagGroup.POST("/list",tagHandler.ListTags)
+					tagGroup.GET("/info", tagHandler.GetTagByCode)
+					tagGroup.POST("/list", tagHandler.ListTags)
 				}
 
 				recommendIndexGrop := shopGroup.Group("/recommendIndex")
@@ -304,9 +313,36 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 					cartGroup.POST("/list", cartHandler.List)
 					cartGroup.POST("/act", cartHandler.CarAction)
 				}
+
+				mpUserGroup := shopGroup.Group("/userAuth")
+				{
+					mpUserGroup.POST("/login", mpUserHandler.Login)
+					mpUserGroup.POST("/register", mpUserHandler.Register)
+				}
+
+				marketClientGroup := shopGroup.Group("/market")
+				{
+					marketClientGroup.GET("/freight", marketSettingHandler.GetFreight)
+				}
+
+				orderGrop := shopGroup.Group("/order")
+				{
+					orderGrop.POST("/create", spOrderHandler.CreateOrder)
+				}
+
+				paymentGroup := r.Group("/payment")
+				// 模拟支付接口（开发环境使用）
+				paymentGroup.POST("/simulate", payHandler.SimulatePayment)
+				paymentGroup.GET("/simulate", payHandler.SimulatePayment) // 支持GET请求
+
+				// 支付回调页面
+				paymentGroup.GET("/callback", payHandler.PaymentCallback)
+
+				// 支付状态查询
+				paymentGroup.GET("/status/:id", payHandler.GetPaymentStatus)
+
 			}
 		}
-
 
 		spCategoryGroup := api.Group("/sp/categories")
 		{
@@ -320,20 +356,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		userAuth := api.Group("")
 		userAuth.Use(middleware.AuthMiddleware(rdb)) // 添加用户认证中间件
 		{
-			// 用户相关操作
-			// 用户路由组
-			userHandler := handlers.NewMpUserHandler(factory.GetMpUserService())
-			userGroup := api.Group("/mp/users")
-			{
-				userGroup.POST("", userHandler.CreateUser)
-				userGroup.PUT("/:id", userHandler.UpdateUser)
-				userGroup.GET("/:id", userHandler.GetUser)
-				userGroup.GET("/email", userHandler.GetUserByEmail)
-				userGroup.PATCH("/:id/status", userHandler.UpdateUserStatus)
-				userGroup.PATCH("/:id/password", userHandler.UpdateUserPassword)
-				userGroup.PATCH("/:id/verify-email", userHandler.VerifyUserEmail)
-				userGroup.PATCH("/:id/token", userHandler.UpdateUserToken)
-			}
+
 		}
 		// 可选认证路由（游客可访问，但如果有有效token会设置用户信息）
 		optionalAuth := api.Group("")
@@ -677,7 +700,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			addressGroup.PATCH("/:id/default", addressHandler.SetDefaultAddress)
 		}
 
-		
 		cartGroup := api.Group("/sp/user-carts")
 		{
 			cartGroup.POST("", cartHandler.AddToCart)

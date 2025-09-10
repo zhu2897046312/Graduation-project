@@ -69,6 +69,57 @@ func OptionalAuthMiddleware(rdb *redis.Client) gin.HandlerFunc {
 	}
 }
 
+// AuthMiddleware 认证中间件（JWT版本）
+func AuthClientMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 从请求中提取token
+		token := extractToken(c)
+
+		if token == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "未提供认证令牌",
+			})
+			return
+		}
+
+		// 解析JWT token
+		claims, err := utils.ParseToken(token)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "认证令牌无效或已过期",
+			})
+			return
+		}
+
+		// 将用户信息存入上下文
+		c.Set("userID", claims.UserID)
+		c.Set("email", claims.Email)
+		c.Set("token", token)
+
+		c.Next()
+	}
+}
+
+// OptionalAuthMiddleware 可选认证中间件（JWT版本）
+func OptionalClientAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := extractToken(c)
+
+		if token != "" {
+			claims, err := utils.ParseToken(token)
+			if err == nil {
+				c.Set("userID", claims.UserID)
+				c.Set("email", claims.Email)
+				c.Set("token", token)
+			}
+		}
+
+		c.Next()
+	}
+}
+
 // extractToken 从请求中提取token
 // extractToken 从请求中提取token
 // extractToken 从请求中提取token

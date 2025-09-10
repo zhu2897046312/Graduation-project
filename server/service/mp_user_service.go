@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/mp"
+	"time"
 )
 
 type MpUserService struct {
@@ -21,13 +22,16 @@ func (s *MpUserService) CreateUser(user *mp.MpUser) error {
 	if user.Password == "" {
 		return errors.New("密码不能为空")
 	}
-	
+
 	// 检查邮箱是否已注册
-	existing, _ := s.repoFactory.GetMpUserRepository().FindByEmail(user.Email)
-	if existing != nil {
+	_, err := s.repoFactory.GetMpUserRepository().FindByEmail(user.Email)
+	if err == nil {
 		return errors.New("邮箱已被注册")
 	}
 	
+	user.CreatedTime = time.Now()
+	user.UpdatedTime = time.Now()
+
 	return s.repoFactory.GetMpUserRepository().Create(user)
 }
 

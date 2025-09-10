@@ -16,13 +16,19 @@ type SpMarketSettingHandler struct {
 
 type BreadCrumbRequest struct {
 	Mode         interface{} `json:"mode"`
-	ProductID    interface{}  `json:"product_id"`
-	CategoryCode string `json:"category_code"`
+	ProductID    interface{} `json:"product_id"`
+	CategoryCode string      `json:"category_code"`
 }
 
 type BreadcrumbVo struct {
 	Title string `json:"title"`
 	Link  string `json:"link"`
+}
+
+type SpMarketSettingRequest struct {
+	Freight  interface{} `json:"freight"`
+	Exchange interface{} `json:"exchange"`
+	Original interface{} `json:"original"`
 }
 
 func NewSpMarketSettingHandler(
@@ -104,4 +110,8 @@ func (h *SpMarketSettingHandler) GetBreadcrumb(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, out)
+}
+
+func (h *SpMarketSettingHandler) GetFreight(c *gin.Context) {
+	Success(c, "20")
 }

@@ -89,9 +89,10 @@ const handleLogin = async (token: string) => {
 
 callOnce(async () => {
   if (accessToken.value) {
-    const res = await api.shop.cart.list() as []
+    const res = await api.shop.cart.list() 
+    console.log("cart list", res)
     let count = 0
-    res.forEach((it: any) => {
+    res.list.forEach((it: any) => {
       count += it.quantity
     })
     cartNum.value = count

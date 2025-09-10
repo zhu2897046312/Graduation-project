@@ -103,7 +103,9 @@ const provinceOptions = computed(() => {
 
 const { data: products, status } = await useAsyncData(async() =>{
   try {
-    return await api.shop.cart.list()
+    const res = await api.shop.cart.list()
+    console.log("checkout page res : ",res)
+    return res.list
   } catch (err) {
     console.error("购物车数据加载失败:", err)
     throw createError({ 
@@ -170,12 +172,12 @@ const handleCheckout = async () => {
   try {
     const res = await api.shop.order.create(payload)
 
-    const paymentRes = await api.shop.order.getPaymentUrl({
-      orderId: res, 
-      payType: selectedPayType.value.toString()
-    })
+    // const paymentRes = await api.shop.order.getPaymentUrl({
+    //   orderId: res, 
+    //   payType: selectedPayType.value.toString()
+    // })
     
-    window.location.href = paymentRes.approveUrl;
+    // window.location.href = paymentRes.approveUrl;
   } catch (error: any) {
     message.error(error.message)
   } finally {

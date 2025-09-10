@@ -18,8 +18,6 @@ const { data: siteInfo } = await useAsyncData('siteInfo', async () => {
     seo_description: res.seo_description || `Buy ${res.title} at best price. ${res.property_list?.map((p : any) => `${p.title}: ${p.value}`).join('. ') || ''}`
   };
 })
-console.log(hotList)
-console.log(newList)
 </script>
 
 <template>
@@ -57,6 +55,5 @@ console.log(newList)
         :price="item.price"
         :thumb="item.picture" />
     </div>
-
   </div>
 </template>

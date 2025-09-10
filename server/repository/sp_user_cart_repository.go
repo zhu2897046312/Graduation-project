@@ -73,6 +73,11 @@ func (r *SpUserCartRepository) ClearUserCart(userID uint) error {
 		Delete(&sp.SpUserCart{}).Error
 }
 
+func (r *SpUserCartRepository) ClearFingerprintCart(Fingerprint string) error {
+	return r.db.Where("fingerprint = ?", Fingerprint).
+		Delete(&sp.SpUserCart{}).Error
+}
+
 // 合并游客购物车到用户购物车
 func (r *SpUserCartRepository) MergeGuestCart(userID uint, fingerprint string) error {
 	return r.db.Model(&sp.SpUserCart{}).

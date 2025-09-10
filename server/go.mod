@@ -3,10 +3,10 @@ module server
 go 1.22.1
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
-	github.com/redis/go-redis/v9 v9.12.1
 	github.com/spf13/viper v1.20.1
 	golang.org/x/net v0.33.0
 	gorm.io/driver/mysql v1.6.0

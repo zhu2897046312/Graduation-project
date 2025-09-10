@@ -110,7 +110,7 @@ func (h *SpUserCartHandler) ClearCart(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ClearCart(uint(userID)); err != nil {
+	if err := h.service.ClearCartByUserID(uint(userID)); err != nil {
 		Error(c, 3405, err.Error())
 		return
 	}
@@ -140,8 +140,6 @@ func (h *SpUserCartHandler) List(c *gin.Context) {
 }
 
 func (h *SpUserCartHandler) CarAction(c *gin.Context) {
-
-
 	type SpUserCartActRequest struct {
 		ProductID uint `json:"product_id"` // 商品ID
 		SkuID     uint `json:"sku_id"`                        // SKU ID
@@ -161,8 +159,10 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 		Error(c, 3407, "用户未登录且缺少设备指纹")
 		return
 	}
-
 	
+	if userID !=0 {
+		h.service.MergeGuestCart(uint(userID), fingerprint)
+	}
 
 	currentCarts, err := h.service.GetCartItemByProduct(uint(userID), fingerprint, req.ProductID, req.SkuID)
 
@@ -207,7 +207,7 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 			Error(c, 3411, "购物车中无此商品")
 			return
 		}
-		if req.Quantity > currentCarts.Quantity {
+		if req.Quantity >= currentCarts.Quantity {
 			h.service.DeleteCartItem(currentCarts.ID)
 			Success(c, nil)
 		} else {

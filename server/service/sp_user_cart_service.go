@@ -106,11 +106,18 @@ func (s *SpUserCartService) DeleteCartItem(id uint) error {
 }
 
 // ClearCart 清空用户购物车
-func (s *SpUserCartService) ClearCart(userID uint) error {
+func (s *SpUserCartService) ClearCartByUserID(userID uint) error {
 	if userID == 0 {
 		return errors.New("无效的用户ID")
 	}
 	return s.repoFactory.GetSpUserCartRepository().ClearUserCart(userID)
+}
+
+func (s *SpUserCartService) ClearCartByFingerprint(fingerprint string) error {
+	if fingerprint == "0" {
+		return errors.New("无效的用户ID")
+	}
+	return s.repoFactory.GetSpUserCartRepository().ClearFingerprintCart(fingerprint)
 }
 
 // MergeGuestCart 合并游客购物车到用户购物车

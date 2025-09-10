@@ -124,3 +124,14 @@ func (s *SpOrderService) UpdateDeliveryInfo(id uint, company, sn string) error {
 	}
 	return s.repoFactory.GetSpOrderRepository().UpdateDeliveryInfo(id, company, sn)
 }
+
+func (s *SpOrderService) DeleteOrder(id uint) error {
+	if id == 0 {
+		return errors.New("订单ID不能为空")
+	}
+	_,err :=  s.repoFactory.GetSpOrderRepository().FindByID(id)
+	if err != nil {
+		return errors.New("订单不存在")
+	}
+	return s.repoFactory.GetSpOrderRepository().Delete(id)
+}

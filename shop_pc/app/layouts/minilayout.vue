@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import api from '~/api';
+import api from '../../api';
 import {  NBreadcrumb, NBreadcrumbItem, useDialog, useMessage} from 'naive-ui'
 const route = useRoute();
 const router = useRouter();

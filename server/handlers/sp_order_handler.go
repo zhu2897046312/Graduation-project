@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"server/middleware"
 	"server/models/sp"
 	"server/service"
 	"server/utils"
@@ -44,11 +45,46 @@ type ListOrdersRequest struct {
 	Page     int    `json:"page_no"`
 	PageSize int    `json:"page_size"`
 }
+
+type ProductItemRequest struct {
+	ProductID uint `json:"product_id"`
+	SkuID     uint `json:"sku_id"`
+	Quantity  uint `json:"quantity"`
+}
+
+type OrderCreateRequest struct {
+	ProductItem []ProductItemRequest `json:"product_item"`
+	PayType     interface{}          `json:"pay_type"`
+	FirstName   string               `json:"first_name"`
+	LastName    string               `json:"last_name"`
+	Email       string               `json:"email"`
+	Phone       string               `json:"phone"`
+	PostCode    string               `json:"postal_code"`
+	Country     string               `json:"country"`
+	Province    string               `json:"province"`
+	City        string               `json:"city"`
+	Region      string               `json:"region"`
+	Detail      string               `json:"detail_address"`
+}
+
+// SpOrderCreateResp 创建订单响应
+type SpOrderCreateResp struct {
+	OrderID          uint   `json:"order_id"`
+	OrderCode        string `json:"order_code"`
+	VisitorQueryCode string `json:"visitor_query_code"`
+	TotalAmount      string `json:"total_amount"`
+	PayAmount        string `json:"pay_amount"`
+	Freight          string `json:"freight"`
+}
+
 type SpOrderHandler struct {
 	service              *service.SpOrderService
 	orderItemService     *service.SpOrderItemService
 	orederReceiveService *service.SpOrderReceiveAddressService
 	orderRefundService   *service.SpOrderRefundService
+	addressService       *service.SpOrderReceiveAddressService
+	productService       *service.SpProductService
+	cartService      *service.SpUserCartService
 }
 
 func NewSpOrderHandler(
@@ -56,29 +92,183 @@ func NewSpOrderHandler(
 	orderItemService *service.SpOrderItemService,
 	orederReceiveService *service.SpOrderReceiveAddressService,
 	orderRefundService *service.SpOrderRefundService,
+	addressService *service.SpOrderReceiveAddressService,
+	productService *service.SpProductService,
+	cartService      *service.SpUserCartService,
 ) *SpOrderHandler {
 	return &SpOrderHandler{
 		service:              service,
 		orderItemService:     orderItemService,
 		orederReceiveService: orederReceiveService,
 		orderRefundService:   orderRefundService,
+		addressService:       addressService,
+		productService:       productService,
+		cartService:      cartService,
 	}
 }
 
 // 创建订单
 func (h *SpOrderHandler) CreateOrder(c *gin.Context) {
-	var order sp.SpOrder
-	if err := c.ShouldBindJSON(&order); err != nil {
+	var req OrderCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
 	}
+	// 获取用户ID和设备指纹
+	userID := middleware.GetUserIDFromContext(c)
+	fingerprint := middleware.GetDeviceFingerprintFromContext(c)
 
-	if err := h.service.CreateOrder(&order); err != nil {
-		Error(c, 27001, err.Error())
+	// 创建订单项并计算金额
+	orderItems, totalAmount, payAmount, err := h.createOrderItems(req.ProductItem)
+	if err != nil {
+		Error(c, 16001, err.Error())
 		return
 	}
 
-	Success(c, order)
+	// 获取运费
+	freight, err := h.getFreight()
+	if err != nil {
+		Error(c, 16002, "获取运费失败")
+		return
+	}
+
+	// 计算总金额（含运费）
+	totalAmountWithFreight := totalAmount + freight
+	payAmountWithFreight := payAmount + freight
+
+	// 生成订单号
+	orderCode := utils.GenerateOrderSn()
+
+	// 生成访客查询码
+	visitorQueryCode := utils.GenerateUUID()
+
+	// 创建订单主记录
+	order := &sp.SpOrder{
+		Code:            orderCode,
+		UserID:          uint(userID),
+		Nickname:        req.FirstName + " " + req.LastName,
+		Email:           req.Email,
+		TotalAmount:     totalAmountWithFreight,
+		PayAmount:       payAmountWithFreight,
+		PayType:         uint16(utils.ConvertToUint(req.PayType)),
+		State:           2, // 待支付
+		Freight:         freight,
+		VisitorQueryCode: visitorQueryCode,
+	}
+
+	// 保存订单
+	if err := h.service.CreateOrder(order); err != nil {
+		Error(c, 16003, "创建订单失败: "+err.Error())
+		return
+	}
+
+	// 保存订单项
+	if err := h.saveOrderItems(order.ID, orderItems); err != nil {
+		// 如果保存订单项失败，删除订单
+		h.service.DeleteOrder(order.ID)
+		Error(c, 16004, "保存订单项失败")
+		return
+	}
+
+	// 保存收货地址
+	if err := h.saveOrderAddress(order.ID, req); err != nil {
+		// 如果保存地址失败，删除订单和订单项
+		h.service.DeleteOrder(order.ID)
+		Error(c, 16005, "保存收货地址失败")
+		return
+	}
+
+	// 清空购物车
+	if err := h.clearCart(uint(userID), fingerprint); err != nil {
+		Error(c, 16006, "清空购物车失败")
+	}
+
+	// 返回响应
+	Success(c, visitorQueryCode)
+}
+
+// clearCart 清空购物车
+func (h *SpOrderHandler) clearCart(userID uint, fingerprint string) error {
+	if userID == 0 {
+		// 游客 - 根据设备指纹清空
+		return h.cartService.ClearCartByFingerprint(fingerprint)
+	} else {
+		// 用户 - 根据用户ID清空
+		return h.cartService.ClearCartByUserID(userID)
+	}
+}
+
+// getFreight 获取运费
+func (h *SpOrderHandler) getFreight() (float64, error) {
+	// 这里可以从配置或数据库中获取运费
+	// 暂时返回固定值
+	return 20, nil
+}
+
+// createOrderItems 创建订单项并计算金额
+func (h *SpOrderHandler) createOrderItems(productItems []ProductItemRequest) ([]*sp.SpOrderItem, float64, float64, error) {
+	var orderItems []*sp.SpOrderItem
+	var totalAmount float64
+	var payAmount float64
+
+	for _, item := range productItems {
+		// 获取商品信息
+		product, err := h.productService.GetProductByID(item.ProductID)
+		if err != nil {
+			return nil, 0, 0, err
+		}
+
+		// 计算商品金额
+		itemTotalAmount := product.Price * float64(item.Quantity)
+		itemPayAmount := product.Price * float64(item.Quantity) // 这里可以根据折扣策略调整
+		pictureGallery, _ := json.Marshal(product.PictureGallery)
+		thumb := string(pictureGallery)
+		orderItem := &sp.SpOrderItem{
+			ProductID:   item.ProductID,
+			SkuID:       item.SkuID,
+			Quantity:    item.Quantity,
+			Price:       product.Price,
+			TotalAmount: itemTotalAmount,
+			PayAmount:   itemPayAmount,
+			Title:       product.Title,
+			Thumb:       thumb,
+		}
+
+		orderItems = append(orderItems, orderItem)
+		totalAmount += itemTotalAmount
+		payAmount += itemPayAmount
+	}
+
+	return orderItems, totalAmount, payAmount, nil
+}
+
+// saveOrderItems 保存订单项
+func (h *SpOrderHandler) saveOrderItems(orderID uint, items []*sp.SpOrderItem) error {
+	for _, item := range items {
+		item.OrderID = orderID
+		if err := h.orderItemService.CreateOrderItem(item); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// saveOrderAddress 保存收货地址
+func (h *SpOrderHandler) saveOrderAddress(orderID uint, req OrderCreateRequest) error {
+	address := &sp.SpOrderReceiveAddress{
+		OrderID:       orderID,
+		FirstName:     req.FirstName,
+		LastName:      req.LastName,
+		Email:         req.Email,
+		Phone:         req.Phone,
+		Country:       req.Country,
+		Province:      req.Province,
+		City:          req.City,
+		PostalCode:    req.PostCode,
+		DetailAddress: req.Detail,
+	}
+
+	return h.addressService.CreateAddress(address)
 }
 
 // 更新订单
@@ -287,9 +477,9 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 		OrderID      interface{} `json:"order_id"`
 		Reason       string      `json:"reason"`
 		RefundAmount float64     `json:"refund_amount"`
-		ImagesReq      []string    `json:"images"`
+		ImagesReq    []string    `json:"images"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		InvalidParams(c)
 		return
@@ -333,7 +523,7 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 		Reason:       req.Reason,
 		RefundAmount: req.RefundAmount,
 		Images:       images,
-		Status: 2,
+		Status:       2,
 	}
 	if err := h.orderRefundService.CreateRefund(&refund); err != nil {
 		Error(c, 27015, err.Error())

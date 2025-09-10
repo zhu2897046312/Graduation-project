@@ -137,3 +137,11 @@ func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) (
 
 	return products, total, err
 }
+
+func (r *SpOrderRepository) Delete(id uint) error {
+	return r.db.Model(&sp.SpOrder{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"deleted_time": time.Now(),
+		}).Error
+}
