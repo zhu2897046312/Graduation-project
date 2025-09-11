@@ -13,7 +13,7 @@ import (
 
 // PaymentSimulateReq 模拟支付请求
 type PaymentSimulateReq struct {
-	OrderID   uint   `json:"order_id" form:"order_id" binding:"required"`
+	OrderID   string   `json:"order_id" form:"order_id" binding:"required"`
 	PayType   uint8  `json:"pay_type" form:"pay_type" binding:"required"`
 	Success   bool   `json:"success" form:"success"` // 是否模拟成功支付，默认true
 	ReturnURL string `json:"return_url" form:"return_url"`
@@ -23,7 +23,7 @@ type PaymentSimulateReq struct {
 type PaymentSimulateResp struct {
 	ApproveURL string `json:"approve_url"`
 	Status     string `json:"status"`
-	OrderID    uint   `json:"order_id"`
+	OrderID    string `json:"order_id"`
 	Message    string `json:"message"`
 }
 type PaymentHandler struct {
@@ -39,7 +39,7 @@ func NewPaymentHandler(orderService *service.SpOrderService) *PaymentHandler {
 // SimulatePayment 模拟支付
 func (h *PaymentHandler) SimulatePayment(c *gin.Context) {
 	var req PaymentSimulateReq
-	
+
 	// 支持JSON和表单两种方式
 	if c.ContentType() == "application/json" {
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -54,12 +54,17 @@ func (h *PaymentHandler) SimulatePayment(c *gin.Context) {
 	}
 
 	// 设置默认值
-	if req.Success == false {
+	if !req.Success {
 		req.Success = true // 默认模拟成功支付
 	}
 
-	// 验证订单是否存在
-	order, err := h.orderService.GetOrderByID(req.OrderID)
+	// 根据订单ID类型查询订单
+	var order *sp.SpOrder
+	var err error
+
+	// 尝试将订单ID解析为uint（数字ID）
+	order, err = h.orderService.GetByVisitorQueryCode(req.OrderID)
+
 	if err != nil {
 		Error(c, 17001, "订单不存在")
 		return
@@ -90,14 +95,13 @@ func (h *PaymentHandler) simulateSuccessPayment(c *gin.Context, order *sp.SpOrde
 	err := h.orderService.UpdateOrderState(order.ID, 1, "模拟支付成功")
 	if err != nil {
 		Error(c, 17003, "更新订单状态失败")
-
 	}
 
 	// 构建返回URL
 	returnURL := req.ReturnURL
 	if returnURL == "" {
 		// 默认的成功页面URL
-		returnURL = "/payment/success?order_id=" + strconv.FormatUint(uint64(order.ID), 10) + 
+		returnURL = "/payment/success?order_id=" + strconv.FormatUint(uint64(order.ID), 10) +
 			"&code=" + order.VisitorQueryCode +
 			"&amount=" + utils.FormatPrice(order.PayAmount) +
 			"&timestamp=" + strconv.FormatInt(time.Now().Unix(), 10)
@@ -106,7 +110,7 @@ func (h *PaymentHandler) simulateSuccessPayment(c *gin.Context, order *sp.SpOrde
 	return PaymentSimulateResp{
 		ApproveURL: returnURL,
 		Status:     "success",
-		OrderID:    order.ID,
+		OrderID:    req.OrderID, // 返回客户端传入的原始订单ID
 		Message:    "支付成功",
 	}
 }
@@ -116,7 +120,7 @@ func (h *PaymentHandler) simulateFailedPayment(c *gin.Context, order *sp.SpOrder
 	// 构建失败返回URL
 	returnURL := req.ReturnURL
 	if returnURL == "" {
-		returnURL = "/payment/failed?order_id=" + strconv.FormatUint(uint64(order.ID), 10) + 
+		returnURL = "/payment/failed?order_id=" + strconv.FormatUint(uint64(order.ID), 10) +
 			"&code=" + order.VisitorQueryCode +
 			"&reason=simulated_failure"
 	}
@@ -124,7 +128,7 @@ func (h *PaymentHandler) simulateFailedPayment(c *gin.Context, order *sp.SpOrder
 	return PaymentSimulateResp{
 		ApproveURL: returnURL,
 		Status:     "failed",
-		OrderID:    order.ID,
+		OrderID:    req.OrderID, // 返回客户端传入的原始订单ID
 		Message:    "模拟支付失败",
 	}
 }
@@ -134,7 +138,7 @@ func (h *PaymentHandler) PaymentCallback(c *gin.Context) {
 	orderIDStr := c.Query("order_id")
 	code := c.Query("code")
 	status := c.Query("status")
-	
+
 	orderID, err := strconv.ParseUint(orderIDStr, 10, 32)
 	if err != nil {
 		c.HTML(400, "payment_error.html", gin.H{
@@ -155,14 +159,14 @@ func (h *PaymentHandler) PaymentCallback(c *gin.Context) {
 	// 根据状态显示不同的页面
 	if status == "success" {
 		c.HTML(200, "payment_success.html", gin.H{
-			"order":    order,
-			"amount":   utils.FormatPrice(order.PayAmount),
+			"order":     order,
+			"amount":    utils.FormatPrice(order.PayAmount),
 			"orderCode": order.Code,
 		})
 	} else {
 		c.HTML(200, "payment_failed.html", gin.H{
-			"order":    order,
-			"message":  "支付失败，请重试",
+			"order":   order,
+			"message": "支付失败，请重试",
 		})
 	}
 }

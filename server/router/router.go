@@ -328,11 +328,12 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				orderGrop := shopGroup.Group("/order")
 				{
 					orderGrop.POST("/create", spOrderHandler.CreateOrder)
+					orderGrop.GET("/query-code", spOrderHandler.GetOrderByQueryCode)
 				}
 
 				paymentGroup := r.Group("/payment")
 				// 模拟支付接口（开发环境使用）
-				paymentGroup.POST("/simulate", payHandler.SimulatePayment)
+				paymentGroup.POST("/paypal/create-order", payHandler.SimulatePayment)
 				paymentGroup.GET("/simulate", payHandler.SimulatePayment) // 支持GET请求
 
 				// 支付回调页面

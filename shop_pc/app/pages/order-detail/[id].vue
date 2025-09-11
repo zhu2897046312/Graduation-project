@@ -35,8 +35,23 @@ const handleBack = () => {
     router.push('/')
   }
 }
+// 处理商品图片
+const getProductImage = (thumb: string) => {
+  try {
+    // 解析 JSON 字符串数组
+    const images = JSON.parse(thumb)
+    // 返回第一个图片 URL
+    return images && images.length > 0 ? images[0] : '/placeholder-product.jpg'
+  } catch (error) {
+    console.error('Failed to parse thumb:', error)
+    // 如果解析失败，尝试直接使用（可能是普通字符串）
+    return thumb && thumb !== '' ? thumb : '/placeholder-product.jpg'
+  }
+}
+onMounted(() => {
+  console.log('Order Detail:', res.value)
+})
 
-console.log(res)
 </script>
 
 <template>
@@ -106,7 +121,7 @@ console.log(res)
             <NListItem v-for="item in res.items" :key="item.id" class="hover:bg-[#fdf2f5]">
               <NThing>
                 <template #avatar>
-                  <img :src="item.thumb || '/placeholder-product.jpg'" class="w-16 h-16 object-cover rounded border border-[#f4b3c2]/20" />
+                  <img :src="getProductImage(item.thumb)" class="w-16 h-16 object-cover rounded border border-[#f4b3c2]/20" />
                 </template>
                 <template #header>
                   <span class="text-gray-800 font-medium">{{ item.title || 'No Product Name' }}</span>

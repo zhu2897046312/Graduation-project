@@ -172,12 +172,12 @@ const handleCheckout = async () => {
   try {
     const res = await api.shop.order.create(payload)
 
-    // const paymentRes = await api.shop.order.getPaymentUrl({
-    //   orderId: res, 
-    //   payType: selectedPayType.value.toString()
-    // })
+    const paymentRes = await api.shop.order.getPaymentUrl({
+      orderId: res, 
+      payType: selectedPayType.value.toString()
+    })
     
-    // window.location.href = paymentRes.approveUrl;
+    window.location.href = paymentRes.approveUrl;
   } catch (error: any) {
     message.error(error.message)
   } finally {

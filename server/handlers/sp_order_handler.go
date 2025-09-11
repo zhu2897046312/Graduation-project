@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"server/middleware"
 	"server/models/sp"
 	"server/service"
@@ -53,7 +54,7 @@ type ProductItemRequest struct {
 }
 
 type OrderCreateRequest struct {
-	ProductItem []ProductItemRequest `json:"product_item"`
+	ProductItem []ProductItemRequest `json:"product_items"`
 	PayType     interface{}          `json:"pay_type"`
 	FirstName   string               `json:"first_name"`
 	LastName    string               `json:"last_name"`
@@ -76,6 +77,49 @@ type SpOrderCreateResp struct {
 	PayAmount        string `json:"pay_amount"`
 	Freight          string `json:"freight"`
 }
+// SpOrderFrontInfoVo 前端订单信息视图对象
+type SpOrderFrontInfoVo struct {
+	Order   SpOrderFrontQueryVo      `json:"order"`
+	Address sp.SpOrderReceiveAddress `json:"address"`
+	Items   []SpOrderItemFrontVo     `json:"items"`
+}
+
+// SpOrderFrontQueryVo 前端订单查询视图对象
+type SpOrderFrontQueryVo struct {
+	ID               uint                `json:"id" description:"主键"`
+	Code             string              `json:"code" description:"订单号"`
+	UserID           uint                `json:"user_id" description:"用户id"`
+	VisitorQueryCode string              `json:"visitor_query_code" description:"访客查询码"`
+	Nickname         string              `json:"nickname" description:"昵称"`
+	Email            string              `json:"email" description:"邮箱"`
+	TotalAmount      float64             `json:"total_amount" description:"订单总金额"`
+	PayAmount        float64             `json:"pay_amount" description:"实际支付总金额"`
+	PayType          uint8               `json:"pay_type" description:"支付方式:1=货到付款"`
+	State            uint8               `json:"state" description:"订单状态:1=待付款;2=待发货;3=已发货;4=已完成;5=已关闭;6=无效订单"`
+	PaymentTime      time.Time           `json:"payment_time" description:"支付时间"`
+	DeliveryTime     time.Time           `json:"delivery_time" description:"发货时间"`
+	ReceiveTime      time.Time           `json:"receive_time" description:"确认收货时间"`
+	DeliveryCompany  string              `json:"delivery_company" description:"物流公司(配送方式)"`
+	DeliverySn       string              `json:"delivery_sn" description:"物流单号"`
+	Items            []SpOrderItemFrontVo `json:"items" description:"商品信息"`
+	Freight          float64             `json:"freight" description:"运费"`
+}
+
+// SpOrderItemFrontVo 前端订单项视图对象
+type SpOrderItemFrontVo struct {
+	ID            uint    `json:"id" description:"主键"`
+	Title         string  `json:"title" description:"商品标题"`
+	SkuTitle      string  `json:"sku_title" description:"商品SKU内容"`
+	Thumb         string  `json:"thumb" description:"商品图片"`
+	OrderID       uint    `json:"order_id" description:"订单id"`
+	ProductID     uint    `json:"product_id" description:"商品id"`
+	SkuID         uint    `json:"sku_id" description:"商品SKUid"`
+	TotalAmount   float64 `json:"total_amount" description:"总金额"`
+	PayAmount     float64 `json:"pay_amount" description:"实际支付金额"`
+	Quantity      uint    `json:"quantity" description:"购买数量"`
+	Price         float64 `json:"price" description:"单价"`
+	OriginalPrice float64 `json:"original_price" description:"原价单价"`
+}
 
 type SpOrderHandler struct {
 	service              *service.SpOrderService
@@ -84,7 +128,7 @@ type SpOrderHandler struct {
 	orderRefundService   *service.SpOrderRefundService
 	addressService       *service.SpOrderReceiveAddressService
 	productService       *service.SpProductService
-	cartService      *service.SpUserCartService
+	cartService          *service.SpUserCartService
 }
 
 func NewSpOrderHandler(
@@ -94,7 +138,7 @@ func NewSpOrderHandler(
 	orderRefundService *service.SpOrderRefundService,
 	addressService *service.SpOrderReceiveAddressService,
 	productService *service.SpProductService,
-	cartService      *service.SpUserCartService,
+	cartService *service.SpUserCartService,
 ) *SpOrderHandler {
 	return &SpOrderHandler{
 		service:              service,
@@ -103,7 +147,7 @@ func NewSpOrderHandler(
 		orderRefundService:   orderRefundService,
 		addressService:       addressService,
 		productService:       productService,
-		cartService:      cartService,
+		cartService:          cartService,
 	}
 }
 
@@ -144,15 +188,15 @@ func (h *SpOrderHandler) CreateOrder(c *gin.Context) {
 
 	// 创建订单主记录
 	order := &sp.SpOrder{
-		Code:            orderCode,
-		UserID:          uint(userID),
-		Nickname:        req.FirstName + " " + req.LastName,
-		Email:           req.Email,
-		TotalAmount:     totalAmountWithFreight,
-		PayAmount:       payAmountWithFreight,
-		PayType:         uint16(utils.ConvertToUint(req.PayType)),
-		State:           2, // 待支付
-		Freight:         freight,
+		Code:             orderCode,
+		UserID:           uint(userID),
+		Nickname:         req.FirstName + " " + req.LastName,
+		Email:            req.Email,
+		TotalAmount:      totalAmountWithFreight,
+		PayAmount:        payAmountWithFreight,
+		PayType:          uint16(utils.ConvertToUint(req.PayType)),
+		State:            2, // 待支付
+		Freight:          freight,
 		VisitorQueryCode: visitorQueryCode,
 	}
 
@@ -530,4 +574,96 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 		return
 	}
 	Success(c, nil)
+}
+
+// GetOrderByQueryCode 根据访客查询码获取订单详情
+// GetOrderByQueryCode 根据访客查询码获取订单详情
+func (h *SpOrderHandler) GetOrderByQueryCode(c *gin.Context) {
+	queryCode := c.Query("queryCode")
+	if queryCode == "" {
+		Error(c, 27016, "查询码不能为空")
+		return
+	}
+
+	// 1. 使用查询码查找订单
+	order, err := h.service.GetByVisitorQueryCode(queryCode)
+	if err != nil {
+		Error(c, 27017, "订单不存在")
+		return
+	}
+
+	// 2. 获取订单的收货地址信息
+	address, err := h.orederReceiveService.GetAddressByOrderID(order.ID)
+	if err != nil {
+		Error(c, 27018, "获取收货地址失败")
+		return
+	}
+
+	// 3. 获取订单的商品项信息
+	items, err := h.orderItemService.GetItemsByOrderID(order.ID)
+	if err != nil {
+		Error(c, 27019, "获取订单商品项失败")
+		return
+	}
+
+	// 4. 转换为前端需要的VO对象
+	frontItems := make([]SpOrderItemFrontVo, 0)
+	for _, item := range items {
+		frontItems = append(frontItems, SpOrderItemFrontVo{
+			ID:            item.ID,
+			Title:         item.Title,
+			SkuTitle:      item.SkuTitle,
+			Thumb:         item.Thumb,
+			OrderID:       item.OrderID,
+			ProductID:     item.ProductID,
+			SkuID:         item.SkuID,
+			TotalAmount:   item.TotalAmount,
+			PayAmount:     item.PayAmount,
+			Quantity:      item.Quantity,
+			Price:         item.Price,
+			OriginalPrice: item.OriginalPrice,
+		})
+	}
+
+	// 处理时间字段，将指针转换为值
+	var paymentTime, deliveryTime, receiveTime time.Time
+	if order.PaymentTime != nil {
+		paymentTime = *order.PaymentTime
+	}
+	if order.DeliveryTime != nil {
+		deliveryTime = *order.DeliveryTime
+	}
+	if order.ReceiveTime != nil {
+		receiveTime = *order.ReceiveTime
+	}
+
+	// 5. 组装响应数据
+	orderVo := SpOrderFrontQueryVo{
+		ID:               order.ID,
+		Code:             order.Code,
+		UserID:           order.UserID,
+		VisitorQueryCode: order.VisitorQueryCode,
+		Nickname:         order.Nickname,
+		Email:            order.Email,
+		TotalAmount:      order.TotalAmount,
+		PayAmount:        order.PayAmount,
+		PayType:          uint8(order.PayType),
+		State:            order.State,
+		PaymentTime:      paymentTime,
+		DeliveryTime:     deliveryTime,
+		ReceiveTime:      receiveTime,
+		DeliveryCompany:  order.DeliveryCompany,
+		DeliverySn:       order.DeliverySn,
+		Items:            frontItems,
+		Freight:          order.Freight,
+	}
+
+	response := SpOrderFrontInfoVo{
+		Order:   orderVo,
+		Address: *address,
+		Items:   frontItems,
+	}
+	fmt.Println(response)
+	// 6. 返回响应
+	Success(c, response)
 }

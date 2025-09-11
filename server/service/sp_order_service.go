@@ -75,6 +75,13 @@ func (s *SpOrderService) GetOrderByCode(code string) (*sp.SpOrder, error) {
 	return s.repoFactory.GetSpOrderRepository().FindByCode(code)
 }
 
+func (s *SpOrderService) GetByVisitorQueryCode(code string) (*sp.SpOrder, error) {
+	if code == "" {
+		return nil, errors.New("订单号不能为空")
+	}
+	return s.repoFactory.GetSpOrderRepository().FindByVisitorQueryCode(code)
+}
+
 // GetOrdersByUserID 根据用户ID获取订单列表
 func (s *SpOrderService) GetOrdersByUserID(userID uint) ([]sp.SpOrder, error) {
 	if userID == 0 {

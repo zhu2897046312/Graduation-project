@@ -40,6 +40,12 @@ func (r *SpOrderRepository) FindByCode(code string) (*sp.SpOrder, error) {
 	return &order, err
 }
 
+func (r *SpOrderRepository) FindByVisitorQueryCode(code string) (*sp.SpOrder, error) {
+	var order sp.SpOrder
+	err := r.db.Where("visitor_query_code = ?", code).First(&order).Error
+	return &order, err
+}
+
 // 根据用户ID获取订单列表
 func (r *SpOrderRepository) FindByUserID(userID uint) ([]sp.SpOrder, error) {
 	var orders []sp.SpOrder
