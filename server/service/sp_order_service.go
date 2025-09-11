@@ -16,8 +16,8 @@ func NewSpOrderService(base *Service) *SpOrderService {
 
 // CreateOrder 创建订单
 func (s *SpOrderService) CreateOrder(order *sp.SpOrder) error {
-	if order.UserID == 0 {
-		return errors.New("用户ID不能为空")
+	if order.UserID == 0 && order.Email == ""  {
+		return errors.New("用户ID和邮箱不能同时为空")
 	}
 	if order.Code == "" {
 		return errors.New("订单号不能为空")
