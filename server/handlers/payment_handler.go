@@ -21,7 +21,7 @@ type PaymentSimulateReq struct {
 
 // PaymentSimulateResp 模拟支付响应
 type PaymentSimulateResp struct {
-	ApproveURL string `json:"approve_url"`
+	ApproveURL string `json:"approveUrl"`
 	Status     string `json:"status"`
 	OrderID    string `json:"order_id"`
 	Message    string `json:"message"`
@@ -40,18 +40,12 @@ func NewPaymentHandler(orderService *service.SpOrderService) *PaymentHandler {
 func (h *PaymentHandler) SimulatePayment(c *gin.Context) {
 	var req PaymentSimulateReq
 
-	// 支持JSON和表单两种方式
-	if c.ContentType() == "application/json" {
-		if err := c.ShouldBindJSON(&req); err != nil {
-			InvalidParams(c)
-			return
-		}
-	} else {
-		if err := c.ShouldBind(&req); err != nil {
-			InvalidParams(c)
-			return
-		}
-	}
+	orderCode := c.Query("orderId")
+
+	req.OrderID = orderCode
+	req.PayType = 1
+	req.Success = true
+	
 
 	// 设置默认值
 	if !req.Success {
@@ -85,7 +79,7 @@ func (h *PaymentHandler) SimulatePayment(c *gin.Context) {
 		// 模拟支付失败
 		resp = h.simulateFailedPayment(c, order, req)
 	}
-
+	resp.ApproveURL = "/order-detail/" + req.OrderID
 	Success(c, resp)
 }
 
