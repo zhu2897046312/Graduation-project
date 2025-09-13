@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpOrderReceiveAddressRepository struct {
@@ -26,7 +27,7 @@ func (r *SpOrderReceiveAddressRepository) Update(address *sp.SpOrderReceiveAddre
 }
 
 // 根据订单ID获取收货地址
-func (r *SpOrderReceiveAddressRepository) FindByOrderID(orderID uint) (*sp.SpOrderReceiveAddress, error) {
+func (r *SpOrderReceiveAddressRepository) FindByOrderID(orderID common.MyID) (*sp.SpOrderReceiveAddress, error) {
 	var address sp.SpOrderReceiveAddress
 	err := r.db.Where("order_id = ?", orderID).First(&address).Error
 	return &address, err

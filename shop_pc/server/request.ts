@@ -37,8 +37,9 @@ class HttpRequest {
       if (data == null) {
         return Promise.reject(new Error('请求失败'))
       }
-      // console.log(options, url, data)
+      
       if (data.code === 0) {
+        console.log(data)
         return Promise.resolve(data.result)
       }
       return Promise.reject(new Error(data.message))

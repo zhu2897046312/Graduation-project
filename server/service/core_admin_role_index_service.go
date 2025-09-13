@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/core"
+	"server/models/common"
 )
 
 type CoreAdminRoleIndexService struct {
@@ -26,7 +27,7 @@ func (s *CoreAdminRoleIndexService) CreateAdminRole(index *core.CoreAdminRoleInd
 }
 
 // DeleteAdminRole 删除管理员-角色关联
-func (s *CoreAdminRoleIndexService) DeleteAdminRole(adminID, roleID int64) error {
+func (s *CoreAdminRoleIndexService) DeleteAdminRole(adminID, roleID common.MyID) error {
 	if adminID <= 0 {
 		return errors.New("无效的管理员ID")
 	}
@@ -38,7 +39,7 @@ func (s *CoreAdminRoleIndexService) DeleteAdminRole(adminID, roleID int64) error
 }
 
 // GetRolesByAdminID 根据管理员ID获取角色关联
-func (s *CoreAdminRoleIndexService) GetRolesByAdminID(adminID int64) ([]core.CoreAdminRoleIndex, error) {
+func (s *CoreAdminRoleIndexService) GetRolesByAdminID(adminID common.MyID) ([]core.CoreAdminRoleIndex, error) {
 	if adminID <= 0 {
 		return nil, errors.New("无效的管理员ID")
 	}
@@ -46,7 +47,7 @@ func (s *CoreAdminRoleIndexService) GetRolesByAdminID(adminID int64) ([]core.Cor
 }
 
 // GetAdminsByRoleID 根据角色ID获取管理员关联
-func (s *CoreAdminRoleIndexService) GetAdminsByRoleID(roleID int64) ([]core.CoreAdminRoleIndex, error) {
+func (s *CoreAdminRoleIndexService) GetAdminsByRoleID(roleID common.MyID) ([]core.CoreAdminRoleIndex, error) {
 	if roleID <= 0 {
 		return nil, errors.New("无效的角色ID")
 	}
@@ -54,7 +55,7 @@ func (s *CoreAdminRoleIndexService) GetAdminsByRoleID(roleID int64) ([]core.Core
 }
 
 // DeleteAllRolesByAdminID 删除管理员的所有角色关联
-func (s *CoreAdminRoleIndexService) DeleteAllRolesByAdminID(adminID int64) error {
+func (s *CoreAdminRoleIndexService) DeleteAllRolesByAdminID(adminID common.MyID) error {
 	if adminID <= 0 {
 		return errors.New("无效的管理员ID")
 	}

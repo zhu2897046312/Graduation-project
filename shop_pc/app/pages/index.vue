@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import api from '../../api';
+import type { ProductList } from '../../api/type'
 import { useAsyncData } from 'nuxt/app';
+import { useSiteInfo } from '../composable/useSiteInfo';
+
+const { data: siteInfo } = await useSiteInfo()
 
 const { data: hotList, status: hotStatus } = await useAsyncData('hot', async () => {
-  return (await api.shop.product.list({ page_no: 1, page_size: 12, hot: '1' })).list
+return (await api.shop.product.list({ page_no: 1, page_size: 12, hot: '1' })).list as ProductList
 })
+
 const { data: newList, status: newStatus } = await useAsyncData('new', async () => {
-  return (await api.shop.product.list({ page_no: 1, page_size: 20 })).list
+  return (await api.shop.product.list({ page_no: 1, page_size: 20 })).list as ProductList
 })
-const { data: siteInfo } = await useAsyncData('siteInfo', async () => {
-  const res = await api.shop.market.siteInfo()
-  return  {
-    ...res,
-    // Set default SEO values if null
-    seo_title: res.seo_title || `${res.title} | Shop Name`,
-    seo_keyword: res.seo_keyword || `${res.title}, ${res.tags?.map((t : any) => t.title).join(', ') || ''}`,
-    seo_description: res.seo_description || `Buy ${res.title} at best price. ${res.property_list?.map((p : any) => `${p.title}: ${p.value}`).join('. ') || ''}`
-  };
+
+onMounted(() => {
+  console.log("index product list",hotList.value)
+  console.log("index siteInfo ", siteInfo.value)
 })
 </script>
 

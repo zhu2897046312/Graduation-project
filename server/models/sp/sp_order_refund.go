@@ -2,12 +2,13 @@ package sp
 
 import (
 	"encoding/json"
+	"server/models/common"
 	"time"
 )
 
 type SpOrderRefund struct {
-	ID           uint            `gorm:"primaryKey;autoIncrement" json:"id"`
-	OrderID      uint            `gorm:"not null;default:0" json:"order_id"`
+	ID           common.MyID     `gorm:"primaryKey;autoIncrement" json:"id"`
+	OrderID      common.MyID     `gorm:"not null;default:0" json:"order_id"`
 	RefundAmount float64         `gorm:"type:decimal(10,2);unsigned;not null;default:0.00" json:"refund_amount"`
 	Status       uint8           `gorm:"not null;default:0" json:"status"`
 	Reason       string          `gorm:"size:500" json:"reason"`

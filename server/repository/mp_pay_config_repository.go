@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/mp"
+	"server/models/common"
 )
 
 type MpPayConfigRepository struct {
@@ -26,7 +27,7 @@ func (r *MpPayConfigRepository) Update(config *mp.MpPayConfig) error {
 }
 
 // 根据ID获取支付配置
-func (r *MpPayConfigRepository) FindByID(id int64) (*mp.MpPayConfig, error) {
+func (r *MpPayConfigRepository) FindByID(id common.MyID) (*mp.MpPayConfig, error) {
 	var config mp.MpPayConfig
 	err := r.db.First(&config, id).Error
 	return &config, err

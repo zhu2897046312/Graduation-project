@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/core"
+	"server/models/common"
 )
 
 type CoreRoleRepository struct {
@@ -26,7 +27,7 @@ func (r *CoreRoleRepository) Update(role *core.CoreRole) error {
 }
 
 // 根据ID获取角色
-func (r *CoreRoleRepository) FindByID(id int64) (*core.CoreRole, error) {
+func (r *CoreRoleRepository) FindByID(id common.MyID) (*core.CoreRole, error) {
 	var role core.CoreRole
 	err := r.db.First(&role, id).Error
 	return &role, err
@@ -40,14 +41,14 @@ func (r *CoreRoleRepository) FindAll() ([]core.CoreRole, error) {
 }
 
 // 更新角色状态
-func (r *CoreRoleRepository) UpdateStatus(id int64, status int8) error {
+func (r *CoreRoleRepository) UpdateStatus(id common.MyID, status int8) error {
 	return r.db.Model(&core.CoreRole{}).
 		Where("id = ?", id).
 		Update("role_status", status).Error
 }
 
 // 更新角色权限
-func (r *CoreRoleRepository) UpdatePermissions(id int64, permissions []byte) error {
+func (r *CoreRoleRepository) UpdatePermissions(id common.MyID, permissions []byte) error {
 	return r.db.Model(&core.CoreRole{}).
 		Where("id = ?", id).
 		Update("permission", permissions).Error
@@ -105,7 +106,7 @@ func (r *CoreRoleRepository) List(page int, pageSize int) ([]core.CoreRole, int6
 	return products, total, err
 }
 
-func (r *CoreRoleRepository) FindByAdminID(id int64) ([]core.CoreRole, error) {
+func (r *CoreRoleRepository) FindByAdminID(id common.MyID) ([]core.CoreRole, error) {
 	var products []core.CoreRole
 	// 构建查询
 	query := r.db.Model(&core.CoreRole{}).Where("deleted_time IS NULL")
@@ -119,7 +120,7 @@ func (r *CoreRoleRepository) FindByAdminID(id int64) ([]core.CoreRole, error) {
 	return products, err
 }
 
-func (r *CoreRoleRepository) Delete(id int64) error {
+func (r *CoreRoleRepository) Delete(id common.MyID) error {
 	return r.db.Model(&core.CoreRole{}).
 		Where("id = ?", id).
 		Update("deleted_time", gorm.Expr("NOW()")).Error

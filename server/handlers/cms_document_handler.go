@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/middleware"
 	"server/models/cms"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -59,8 +60,8 @@ func (h *CmsDocumentHandler) GetByCategoryID(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-
-	documents, err := h.service.GetDocumentsByCategoryID(categoryID)
+	myID := common.MyID(uint64(categoryID))
+	documents, err := h.service.GetDocumentsByCategoryID(myID)
 	if err != nil {
 		ServerError(c, err)
 		return
@@ -77,8 +78,8 @@ func (h *CmsDocumentHandler) GetDocumentByCode(c *gin.Context) {
 		ServerError(c, err)
 		return
 	}
-
-	archive , err_1 := h.archiveService.GetArchiveByDocumentID(documents.ID)
+	myID := common.MyID(uint64(documents.ID))
+	archive , err_1 := h.archiveService.GetArchiveByDocumentID(myID)
 	if err_1 != nil {
 		ServerError(c, err_1)
 		return
@@ -145,7 +146,7 @@ func (h *CmsDocumentHandler) SaveDocument(c *gin.Context) {
 		LinkType: int8(req.LinkType),
 		Author: req.Author,
 		Source: req.Source,
-		AdminID: middleware.GetUserIDFromContext(c),
+		AdminID: common.MyID(middleware.GetUserIDFromContext(c)),
 		ReadNum: int(req.ReadNum),
 		LikeNum: int(req.LinkNum),
 		SortNum: int(req.SortNum),
@@ -210,12 +211,12 @@ func (h *CmsDocumentHandler) DeleteDocument(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	err := h.service.DeleteByID(int64(uid))
+	err := h.service.DeleteByID(common.MyID(uid))
 	if err != nil {
 		ServerError(c, err)
 		return
 	}
-	err = h.archiveService.DeleteByDocumetnID(int64(uid))
+	err = h.archiveService.DeleteByDocumetnID(common.MyID(uid))
 	if err != nil {
 		fmt.Println(err)
 		ServerError(c, err)

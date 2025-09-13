@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -44,7 +45,7 @@ func (h *SpUserAddressHandler) UpdateAddress(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	address.ID = uint(id)
+	address.ID = common.MyID(id)
 
 	if err := h.service.UpdateAddress(&address); err != nil {
 		Error(c, 3302, err.Error())

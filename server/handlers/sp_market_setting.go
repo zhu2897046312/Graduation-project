@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"server/service"
 	"server/utils"
-
+	"server/models/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -77,7 +77,7 @@ func (h *SpMarketSettingHandler) GetBreadcrumb(c *gin.Context) {
 		}
 
 		// 获取产品信息
-		product, err := h.productService.GetProductByID(uint(utils.ConvertToUint(params.ProductID)))
+		product, err := h.productService.GetProductByID(common.MyID(utils.ConvertToUint(params.ProductID)))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "获取产品信息失败"})
 			return

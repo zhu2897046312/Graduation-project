@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"server/models/common"
 	"server/models/shop"
 )
 
@@ -18,12 +19,12 @@ func (s *ShopTagService) CreateTag(tag *shop.ShopTag) error {
 	if tag.Title == "" {
 		return errors.New("标签名称不能为空")
 	}
-	
+
 	// 设置默认排序值
 	if tag.SortNum == 0 {
 		tag.SortNum = 999
 	}
-	
+
 	return s.repoFactory.GetShopTagRepository().Create(tag)
 }
 
@@ -35,21 +36,21 @@ func (s *ShopTagService) UpdateTag(tag *shop.ShopTag) error {
 	if tag.Title == "" {
 		return errors.New("标签名称不能为空")
 	}
-	
+
 	// 检查标签是否存在
 	existing, err := s.repoFactory.GetShopTagRepository().FindByID(tag.ID)
 	if err != nil {
 		return errors.New("标签不存在")
 	}
-	
+
 	// 保留原始创建时间
 	tag.CreatedTime = existing.CreatedTime
-	
+
 	return s.repoFactory.GetShopTagRepository().Update(tag)
 }
 
 // GetTagByID 根据ID获取标签
-func (s *ShopTagService) GetTagByID(id int) (*shop.ShopTag, error) {
+func (s *ShopTagService) GetTagByID(id common.MyID) (*shop.ShopTag, error) {
 	if id == 0 {
 		return nil, errors.New("标签ID不能为空")
 	}
@@ -73,7 +74,7 @@ func (s *ShopTagService) SearchTagsByMatchWord(matchWord string) ([]shop.ShopTag
 }
 
 // IncrementTagReadNum 增加标签阅读量
-func (s *ShopTagService) IncrementTagReadNum(id int) error {
+func (s *ShopTagService) IncrementTagReadNum(id common.MyID) error {
 	if id == 0 {
 		return errors.New("标签ID不能为空")
 	}
@@ -85,7 +86,7 @@ func (s *ShopTagService) ListTags(params shop.TagQueryParams) ([]shop.ShopTag, i
 	return s.repoFactory.GetShopTagRepository().ListWithPagination(params)
 }
 
-func (s *ShopTagService) DeleteTagByID(id int) error {
+func (s *ShopTagService) DeleteTagByID(id common.MyID) error {
 	if id == 0 {
 		return errors.New("标签ID不能为空")
 	}

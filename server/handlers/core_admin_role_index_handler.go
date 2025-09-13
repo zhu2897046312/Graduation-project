@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/core"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -45,7 +46,7 @@ func (h *CoreAdminRoleIndexHandler) DeleteAdminRole(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteAdminRole(adminID, roleID); err != nil {
+	if err := h.service.DeleteAdminRole(common.MyID(adminID), common.MyID(roleID)); err != nil {
 		Error(c, 4002, err.Error())
 		return
 	}
@@ -61,7 +62,7 @@ func (h *CoreAdminRoleIndexHandler) GetAdminRoles(c *gin.Context) {
 		return
 	}
 
-	roles, err := h.service.GetRolesByAdminID(adminID)
+	roles, err := h.service.GetRolesByAdminID(common.MyID(adminID))
 	if err != nil {
 		Error(c, 4003, "获取角色失败")
 		return
@@ -78,7 +79,7 @@ func (h *CoreAdminRoleIndexHandler) DeleteAllAdminRoles(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteAllRolesByAdminID(adminID); err != nil {
+	if err := h.service.DeleteAllRolesByAdminID(common.MyID(adminID)); err != nil {
 		Error(c, 4004, err.Error())
 		return
 	}

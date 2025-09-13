@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/mp"
+	"server/models/common"
 )
 
 type MpOrderService struct {
@@ -35,7 +36,7 @@ func (s *MpOrderService) CreateOrder(order *mp.MpOrder) error {
 
 // UpdateOrder 更新订单
 func (s *MpOrderService) UpdateOrder(order *mp.MpOrder) error {
-	if order.ID == "" {
+	if order.ID == 0 {
 		return errors.New("无效的订单ID")
 	}
 	
@@ -52,15 +53,15 @@ func (s *MpOrderService) UpdateOrder(order *mp.MpOrder) error {
 }
 
 // GetOrderByID 根据订单ID获取订单
-func (s *MpOrderService) GetOrderByID(id string) (*mp.MpOrder, error) {
-	if id == "" {
+func (s *MpOrderService) GetOrderByID(id common.MyID) (*mp.MpOrder, error) {
+	if id == 0 {
 		return nil, errors.New("订单ID不能为空")
 	}
 	return s.repoFactory.GetMpOrderRepository().FindByID(id)
 }
 
 // GetOrdersByUserID 根据用户ID获取订单列表
-func (s *MpOrderService) GetOrdersByUserID(userID int64) ([]mp.MpOrder, error) {
+func (s *MpOrderService) GetOrdersByUserID(userID common.MyID) ([]mp.MpOrder, error) {
 	if userID <= 0 {
 		return nil, errors.New("无效的用户ID")
 	}
@@ -76,8 +77,8 @@ func (s *MpOrderService) GetOrdersByState(state int8) ([]mp.MpOrder, error) {
 }
 
 // UpdateOrderState 更新订单状态
-func (s *MpOrderService) UpdateOrderState(id string, state int8) error {
-	if id == "" {
+func (s *MpOrderService) UpdateOrderState(id common.MyID, state int8) error {
+	if id == 0 {
 		return errors.New("订单ID不能为空")
 	}
 	if state < 0 || state > 3 {
@@ -88,8 +89,8 @@ func (s *MpOrderService) UpdateOrderState(id string, state int8) error {
 }
 
 // GetOrderByThirdID 根据第三方支付ID获取订单
-func (s *MpOrderService) GetOrderByThirdID(thirdID string) (*mp.MpOrder, error) {
-	if thirdID == "" {
+func (s *MpOrderService) GetOrderByThirdID(thirdID common.MyID) (*mp.MpOrder, error) {
+	if thirdID == 0 {
 		return nil, errors.New("第三方支付ID不能为空")
 	}
 	return s.repoFactory.GetMpOrderRepository().FindByThirdID(thirdID)

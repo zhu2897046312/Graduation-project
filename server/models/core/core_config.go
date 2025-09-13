@@ -1,18 +1,20 @@
 package core
 
 import (
+	"server/models/common"
 	"time"
 )
+
 type CoreConfig struct {
-    ID          int64     `gorm:"primaryKey;autoIncrement" json:"id"`
-    ConfigKey   string    `gorm:"size:255;not null;default:''" json:"configKey"`
-    ConfigValue string    `gorm:"type:text" json:"configValue"`
-    Remark      string    `gorm:"size:255;not null;default:''" json:"remark"`
-    SortNum     int       `gorm:"not null;default:0" json:"sortNum"`
-    CreatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
-    UpdatedTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
+	ID          common.MyID `gorm:"primaryKey;autoIncrement" json:"id"`
+	ConfigKey   string      `gorm:"size:255;not null;default:''" json:"config_key"`
+	ConfigValue string      `gorm:"type:text" json:"config_value"`
+	Remark      string      `gorm:"size:255;not null;default:''" json:"remark"`
+	SortNum     int         `gorm:"not null;default:0" json:"sort_num"`
+	CreatedTime time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
+	UpdatedTime time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
 }
 
 func (CoreConfig) TableName() string {
-    return "core_config"
+	return "core_config"
 }

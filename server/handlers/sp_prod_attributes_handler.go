@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -89,7 +90,7 @@ func (h *SpProdAttributesHandler) GetAttribute(c *gin.Context) {
 		return
 	}
 	fmt.Println(uintId)
-	attr, err := h.service.GetAttributeByID(uintId)
+	attr, err := h.service.GetAttributeByID(common.MyID(uintId))
 	if err != nil {
 		Error(c, 28003, "属性不存在")
 		return
@@ -161,7 +162,7 @@ func (h *SpProdAttributesHandler) UpdateAttributeSortNum(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateAttributeSortNum(uint(id), req.SortNum); err != nil {
+	if err := h.service.UpdateAttributeSortNum(common.MyID(id), req.SortNum); err != nil {
 		Error(c, 28005, err.Error())
 		return
 	}
@@ -177,7 +178,7 @@ func (h *SpProdAttributesHandler) DeleteAttribute(c *gin.Context) {
 		InvalidParams_1(c, uintId)
 		return
 	}
-	prodAttributesID := utils.ConvertToUint(id)
+	prodAttributesID := common.MyID(utils.ConvertToUint(id))
 	_,len,_ :=h.spProdAttributesValuesService.GetAllByProdAttributesID(sp.SpProdAttributesQueryParams{
 		ProdAttributesID: prodAttributesID,
 	})
@@ -185,7 +186,7 @@ func (h *SpProdAttributesHandler) DeleteAttribute(c *gin.Context) {
 		Error(c, 28006, "属性值不为空，无法删除")
 		return
 	}
-	if err := h.service.DeleteAttribute(uintId); err != nil {
+	if err := h.service.DeleteAttribute(common.MyID(uintId)); err != nil {
 		Error(c, 28006, err.Error())
 		return
 	}

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -52,7 +53,7 @@ func (s *SpProdAttributesService) UpdateAttribute(attr *sp.SpProdAttributes) err
 }
 
 // GetAttributeByID 根据ID获取属性
-func (s *SpProdAttributesService) GetAttributeByID(id uint) (*sp.SpProdAttributes, error) {
+func (s *SpProdAttributesService) GetAttributeByID(id common.MyID) (*sp.SpProdAttributes, error) {
 	if id == 0 {
 		return nil, errors.New("无效的属性ID")
 	}
@@ -77,7 +78,7 @@ func (s *SpProdAttributesService) GetAttributesByPage(title string, page, pageSi
 }
 
 // UpdateAttributeSortNum 更新属性排序
-func (s *SpProdAttributesService) UpdateAttributeSortNum(id uint, sortNum uint16) error {
+func (s *SpProdAttributesService) UpdateAttributeSortNum(id common.MyID, sortNum uint16) error {
 	if sortNum > 9999 {
 		return errors.New("排序值不能超过9999")
 	}
@@ -85,7 +86,7 @@ func (s *SpProdAttributesService) UpdateAttributeSortNum(id uint, sortNum uint16
 }
 
 // DeleteAttribute 删除属性
-func (s *SpProdAttributesService) DeleteAttribute(id uint) error {
+func (s *SpProdAttributesService) DeleteAttribute(id common.MyID) error {
 	if id == 0 {
 		return errors.New("无效的属性ID")
 	}

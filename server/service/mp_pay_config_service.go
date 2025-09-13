@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/mp"
+	"server/models/common"
 )
 
 type MpPayConfigService struct {
@@ -58,7 +59,7 @@ func (s *MpPayConfigService) UpdatePayConfig(config *mp.MpPayConfig) error {
 }
 
 // GetPayConfigByID 根据ID获取支付配置
-func (s *MpPayConfigService) GetPayConfigByID(id int64) (*mp.MpPayConfig, error) {
+func (s *MpPayConfigService) GetPayConfigByID(id common.MyID) (*mp.MpPayConfig, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的配置ID")
 	}

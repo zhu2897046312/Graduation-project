@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -27,7 +28,7 @@ func (r *SpOrderRefundRepository) Update(refund *sp.SpOrderRefund) error {
 }
 
 // 根据订单ID获取退款记录
-func (r *SpOrderRefundRepository) FindByOrderID(orderID uint) (*sp.SpOrderRefund, error) {
+func (r *SpOrderRefundRepository) FindByOrderID(orderID common.MyID) (*sp.SpOrderRefund, error) {
 	var refund sp.SpOrderRefund
 	err := r.db.Where("order_id = ?", orderID).First(&refund).Error
 	return &refund, err
@@ -41,7 +42,7 @@ func (r *SpOrderRefundRepository) FindByRefundNo(refundNo string) (*sp.SpOrderRe
 }
 
 // 更新退款状态
-func (r *SpOrderRefundRepository) UpdateStatus(id uint, status uint8) error {
+func (r *SpOrderRefundRepository) UpdateStatus(id common.MyID, status uint8) error {
 	updates := map[string]interface{}{"status": status}
 	
 	if status == 2 { // 退款成功
@@ -55,13 +56,13 @@ func (r *SpOrderRefundRepository) UpdateStatus(id uint, status uint8) error {
 }
 
 // 更新退款金额
-func (r *SpOrderRefundRepository) UpdateRefundAmount(id uint, amount float64) error {
+func (r *SpOrderRefundRepository) UpdateRefundAmount(id common.MyID, amount float64) error {
 	return r.db.Model(&sp.SpOrderRefund{}).
 		Where("id = ?", id).
 		Update("refund_amount", amount).Error
 }
 
-func (r *SpOrderRefundRepository) ListWithPagination(ordersID []uint, refundNo string, status uint) ([]sp.SpOrderRefund, int64, error) {
+func (r *SpOrderRefundRepository) ListWithPagination(ordersID []common.MyID, refundNo string, status uint) ([]sp.SpOrderRefund, int64, error) {
 	var products []sp.SpOrderRefund
 	var total int64
 
@@ -93,7 +94,7 @@ func (r *SpOrderRefundRepository) ListWithPagination(ordersID []uint, refundNo s
 	return products, total, err
 }
 
-func (r *SpOrderRefundRepository) ListByOrderID(orderID uint) ([]sp.SpOrderRefund, int64, error) {
+func (r *SpOrderRefundRepository) ListByOrderID(orderID common.MyID) ([]sp.SpOrderRefund, int64, error) {
 	var products []sp.SpOrderRefund
 	var total int64
 

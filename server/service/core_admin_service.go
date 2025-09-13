@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"server/models/core"
+	"server/models/common"
 	"time"
 )
 
@@ -65,7 +66,7 @@ func (s *CoreAdminService) GetAdminByAccount(account string) (*core.CoreAdmin, e
 }
 
 // GetAdminByID 根据ID获取管理员
-func (s *CoreAdminService) GetAdminByID(id int64) (*core.CoreAdmin, error) {
+func (s *CoreAdminService) GetAdminByID(id common.MyID) (*core.CoreAdmin, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的管理员ID")
 	}
@@ -78,7 +79,7 @@ func (s *CoreAdminService) GetAdminByID(id int64) (*core.CoreAdmin, error) {
 }
 
 // GetAdminsByDeptID 根据部门ID获取管理员列表
-func (s *CoreAdminService) GetAdminsByDeptID(deptID int64) ([]core.CoreAdmin, error) {
+func (s *CoreAdminService) GetAdminsByDeptID(deptID common.MyID) ([]core.CoreAdmin, error) {
 	if deptID <= 0 {
 		return nil, errors.New("无效的部门ID")
 	}
@@ -86,7 +87,7 @@ func (s *CoreAdminService) GetAdminsByDeptID(deptID int64) ([]core.CoreAdmin, er
 }
 
 // UpdateAdminStatus 更新管理员状态
-func (s *CoreAdminService) UpdateAdminStatus(id int64, status int8) error {
+func (s *CoreAdminService) UpdateAdminStatus(id common.MyID, status int8) error {
 	if id <= 0 {
 		return errors.New("无效的管理员ID")
 	}
@@ -98,7 +99,7 @@ func (s *CoreAdminService) UpdateAdminStatus(id int64, status int8) error {
 }
 
 // UpdateAdminPassword 更新管理员密码
-func (s *CoreAdminService) UpdateAdminPassword(id int64, newPwd string) error {
+func (s *CoreAdminService) UpdateAdminPassword(id common.MyID, newPwd string) error {
 	if id <= 0 {
 		return errors.New("无效的管理员ID")
 	}

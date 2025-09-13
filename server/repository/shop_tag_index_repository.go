@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/shop"
+	"server/models/common"
 )
 
 type ShopTagIndexRepository struct {
@@ -21,13 +22,13 @@ func (r *ShopTagIndexRepository) Create(index *shop.ShopTagIndex) error {
 }
 
 // 删除标签关联
-func (r *ShopTagIndexRepository) Delete(productID, tagID int) error {
+func (r *ShopTagIndexRepository) Delete(productID, tagID common.MyID) error {
 	return r.db.Where("product_id = ? AND tag_id = ?", productID, tagID).
 		Delete(&shop.ShopTagIndex{}).Error
 }
 
 // 根据产品ID获取标签关联
-func (r *ShopTagIndexRepository) FindByProductID(productID int) ([]shop.ShopTagIndex, error) {
+func (r *ShopTagIndexRepository) FindByProductID(productID common.MyID) ([]shop.ShopTagIndex, error) {
 	var indices []shop.ShopTagIndex
 	err := r.db.Where("product_id = ?", productID).
 		Order("sort_num ASC").
@@ -36,7 +37,7 @@ func (r *ShopTagIndexRepository) FindByProductID(productID int) ([]shop.ShopTagI
 }
 
 // 根据标签ID获取产品关联
-func (r *ShopTagIndexRepository) FindByTagID(tagID int) ([]shop.ShopTagIndex, error) {
+func (r *ShopTagIndexRepository) FindByTagID(tagID common.MyID) ([]shop.ShopTagIndex, error) {
 	var indices []shop.ShopTagIndex
 	err := r.db.Where("tag_id = ?", tagID).
 		Order("sort_num ASC").
@@ -52,7 +53,7 @@ func (r *ShopTagIndexRepository) UpdateSortNum(id, sortNum int) error {
 }
 
 // 删除产品的所有标签关联
-func (r *ShopTagIndexRepository) DeleteByProductID(productID int) error {
+func (r *ShopTagIndexRepository) DeleteByProductID(productID common.MyID) error {
 	return r.db.Where("product_id = ?", productID).
 		Delete(&shop.ShopTagIndex{}).Error
 }

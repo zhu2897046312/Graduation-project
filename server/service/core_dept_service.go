@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/core"
+	"server/models/common"
 	"time"
 )
 
@@ -49,7 +50,7 @@ func (s *CoreDeptService) UpdateDept(dept *core.CoreDept) error {
 }
 
 // GetDeptByID 根据ID获取部门
-func (s *CoreDeptService) GetDeptByID(id int64) (*core.CoreDept, error) {
+func (s *CoreDeptService) GetDeptByID(id common.MyID) (*core.CoreDept, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的部门ID")
 	}
@@ -57,15 +58,15 @@ func (s *CoreDeptService) GetDeptByID(id int64) (*core.CoreDept, error) {
 }
 
 // GetSubDepts 根据父ID获取子部门
-func (s *CoreDeptService) GetSubDepts(pid int64) ([]*core.CoreDept, error) {
-	if pid < 0 {
+func (s *CoreDeptService) GetSubDepts(pid common.MyID) ([]*core.CoreDept, error) {
+	if pid == 0 {
 		return nil, errors.New("无效的父部门ID")
 	}
 	return s.repoFactory.GetCoreDeptRepository().FindByPid(pid)
 }
 
 // DeleteDept 删除部门
-func (s *CoreDeptService) DeleteDept(id int64) error {
+func (s *CoreDeptService) DeleteDept(id common.MyID) error {
 	if id <= 0 {
 		return errors.New("无效的部门ID")
 	}
@@ -85,7 +86,7 @@ func (s *CoreDeptService) DeleteDept(id int64) error {
 	return s.repoFactory.GetCoreDeptRepository().Delete(id)
 }
 
-func (s *CoreDeptService) List(pid int64) ([]core.CoreDept, int64, error) {
+func (s *CoreDeptService) List(pid common.MyID) ([]core.CoreDept, int64, error) {
 	return s.repoFactory.GetCoreDeptRepository().List(pid)
 }
 

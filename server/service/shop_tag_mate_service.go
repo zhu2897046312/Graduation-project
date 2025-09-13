@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/shop"
+	"server/models/common"
 )
 
 type ShopTagMateService struct {
@@ -38,7 +39,7 @@ func (s *ShopTagMateService) UpdateTagMate(mate *shop.ShopTagMate) error {
 }
 
 // GetTagMateByID 根据ID获取元数据
-func (s *ShopTagMateService) GetTagMateByID(id int) (*shop.ShopTagMate, error) {
+func (s *ShopTagMateService) GetTagMateByID(id common.MyID) (*shop.ShopTagMate, error) {
 	if id == 0 {
 		return nil, errors.New("元数据ID不能为空")
 	}
@@ -46,7 +47,7 @@ func (s *ShopTagMateService) GetTagMateByID(id int) (*shop.ShopTagMate, error) {
 }
 
 // UpdateTagSEO 更新SEO信息
-func (s *ShopTagMateService) UpdateTagSEO(id int, title, keyword, description string) error {
+func (s *ShopTagMateService) UpdateTagSEO(id common.MyID, title, keyword, description string) error {
 	if id == 0 {
 		return errors.New("元数据ID不能为空")
 	}
@@ -57,7 +58,7 @@ func (s *ShopTagMateService) UpdateTagSEO(id int, title, keyword, description st
 }
 
 // UpdateTagContent 更新标签内容
-func (s *ShopTagMateService) UpdateTagContent(id int, content string) error {
+func (s *ShopTagMateService) UpdateTagContent(id common.MyID, content string) error {
 	if id == 0 {
 		return errors.New("元数据ID不能为空")
 	}
@@ -67,7 +68,7 @@ func (s *ShopTagMateService) UpdateTagContent(id int, content string) error {
 	return s.repoFactory.GetShopTagMateRepository().UpdateContent(id, content)
 }
 
-func (s *ShopTagMateService) DeleteTagMate(id int) error {
+func (s *ShopTagMateService) DeleteTagMate(id common.MyID) error {
 	if id == 0 {
 		return errors.New("元数据ID不能为空")
 	}

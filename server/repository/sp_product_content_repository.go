@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProductContentRepository struct {
@@ -26,14 +27,14 @@ func (r *SpProductContentRepository) Update(content *sp.SpProductContent) error 
 }
 
 // 根据商品ID获取内容
-func (r *SpProductContentRepository) FindByProductID(productID uint) (*sp.SpProductContent, error) {
+func (r *SpProductContentRepository) FindByProductID(productID common.MyID) (*sp.SpProductContent, error) {
 	var content sp.SpProductContent
 	err := r.db.Where("product_id = ?", productID).First(&content).Error
 	return &content, err
 }
 
 // 更新SEO信息
-func (r *SpProductContentRepository) UpdateSEO(productID uint, title, keyword, description string) error {
+func (r *SpProductContentRepository) UpdateSEO(productID common.MyID, title, keyword, description string) error {
 	return r.db.Model(&sp.SpProductContent{}).
 		Where("product_id = ?", productID).
 		Updates(map[string]interface{}{
@@ -44,7 +45,7 @@ func (r *SpProductContentRepository) UpdateSEO(productID uint, title, keyword, d
 }
 
 // 更新商品内容
-func (r *SpProductContentRepository) UpdateContent(productID uint, content string) error {
+func (r *SpProductContentRepository) UpdateContent(productID common.MyID, content string) error {
 	return r.db.Model(&sp.SpProductContent{}).
 		Where("product_id = ?", productID).
 		Update("content", content).Error

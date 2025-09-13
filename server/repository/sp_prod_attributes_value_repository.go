@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProdAttributesValueRepository struct {
@@ -26,7 +27,7 @@ func (r *SpProdAttributesValueRepository) Update(value *sp.SpProdAttributesValue
 }
 
 // 根据属性ID获取值列表
-func (r *SpProdAttributesValueRepository) FindByAttributeID(attrID uint) ([]sp.SpProdAttributesValue, error) {
+func (r *SpProdAttributesValueRepository) FindByAttributeID(attrID common.MyID) ([]sp.SpProdAttributesValue, error) {
 	var values []sp.SpProdAttributesValue
 	err := r.db.Where("prod_attributes_id = ?", attrID).
 		Order("sort_num ASC").
@@ -35,13 +36,13 @@ func (r *SpProdAttributesValueRepository) FindByAttributeID(attrID uint) ([]sp.S
 }
 
 // 根据ID获取属性值
-func (r *SpProdAttributesValueRepository) FindByID(id uint) (*sp.SpProdAttributesValue, error) {
+func (r *SpProdAttributesValueRepository) FindByID(id common.MyID) (*sp.SpProdAttributesValue, error) {
 	var value sp.SpProdAttributesValue
 	err := r.db.First(&value, id).Error
 	return &value, err
 }
 
-func (r *SpProdAttributesValueRepository) FindByIDList(attrID uint) ([]sp.SpProdAttributesValue, error) {
+func (r *SpProdAttributesValueRepository) FindByIDList(attrID common.MyID) ([]sp.SpProdAttributesValue, error) {
 	var values []sp.SpProdAttributesValue
 	err := r.db.Where("id = ?", attrID).
 		Order("sort_num ASC").
@@ -55,7 +56,7 @@ func (r *SpProdAttributesValueRepository) BatchCreate(values []sp.SpProdAttribut
 }
 
 // 删除属性的所有值
-func (r *SpProdAttributesValueRepository) DeleteByAttributeID(attrID uint) error {
+func (r *SpProdAttributesValueRepository) DeleteByAttributeID(attrID common.MyID) error {
 	return r.db.Where("prod_attributes_id = ?", attrID).
 		Delete(&sp.SpProdAttributesValue{}).Error
 }

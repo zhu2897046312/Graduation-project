@@ -4,6 +4,7 @@ package handlers
 import (
 	"server/models/sp"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"strconv"
 	"time"
@@ -142,7 +143,7 @@ func (h *PaymentHandler) PaymentCallback(c *gin.Context) {
 	}
 
 	// 验证订单和查询码
-	order, err := h.orderService.GetOrderByID(uint(orderID))
+	order, err := h.orderService.GetOrderByID(common.MyID(orderID))
 	if err != nil || order.VisitorQueryCode != code {
 		c.HTML(400, "payment_error.html", gin.H{
 			"message": "订单验证失败",
@@ -174,7 +175,7 @@ func (h *PaymentHandler) GetPaymentStatus(c *gin.Context) {
 		return
 	}
 
-	order, err := h.orderService.GetOrderByID(uint(orderID))
+	order, err := h.orderService.GetOrderByID(common.MyID(orderID))
 	if err != nil {
 		Error(c, 17001, "订单不存在")
 		return

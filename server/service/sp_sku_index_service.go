@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpSkuIndexService struct {
@@ -42,7 +43,7 @@ func (s *SpSkuIndexService) BatchCreateIndices(indices []sp.SpSkuIndex) error {
 }
 
 // GetIndicesBySkuID 根据SKU ID获取索引
-func (s *SpSkuIndexService) GetIndicesBySkuID(skuID uint) ([]sp.SpSkuIndex, error) {
+func (s *SpSkuIndexService) GetIndicesBySkuID(skuID common.MyID) ([]sp.SpSkuIndex, error) {
 	if skuID == 0 {
 		return nil, errors.New("无效的SKU ID")
 	}
@@ -50,7 +51,7 @@ func (s *SpSkuIndexService) GetIndicesBySkuID(skuID uint) ([]sp.SpSkuIndex, erro
 }
 
 // GetIndicesByProductID 根据产品ID获取索引
-func (s *SpSkuIndexService) GetIndicesByProductID(productID uint) ([]sp.SpSkuIndex, error) {
+func (s *SpSkuIndexService) GetIndicesByProductID(productID common.MyID) ([]sp.SpSkuIndex, error) {
 	if productID == 0 {
 		return nil, errors.New("无效的商品ID")
 	}
@@ -58,7 +59,7 @@ func (s *SpSkuIndexService) GetIndicesByProductID(productID uint) ([]sp.SpSkuInd
 }
 
 // GetIndicesByAttributeValueID 根据属性值ID获取索引
-func (s *SpSkuIndexService) GetIndicesByAttributeValueID(valueID uint) ([]sp.SpSkuIndex, error) {
+func (s *SpSkuIndexService) GetIndicesByAttributeValueID(valueID common.MyID) ([]sp.SpSkuIndex, error) {
 	if valueID == 0 {
 		return nil, errors.New("无效的属性值ID")
 	}
@@ -66,7 +67,7 @@ func (s *SpSkuIndexService) GetIndicesByAttributeValueID(valueID uint) ([]sp.SpS
 }
 
 // DeleteBySkuID 删除SKU的所有索引
-func (s *SpSkuIndexService) DeleteBySkuID(skuID uint) error {
+func (s *SpSkuIndexService) DeleteBySkuID(skuID common.MyID) error {
 	if skuID == 0 {
 		return errors.New("无效的SKU ID")
 	}
@@ -74,7 +75,7 @@ func (s *SpSkuIndexService) DeleteBySkuID(skuID uint) error {
 }
 
 // DeleteByProductID 删除产品的所有索引
-func (s *SpSkuIndexService) DeleteByProductID(productID uint) error {
+func (s *SpSkuIndexService) DeleteByProductID(productID common.MyID) error {
 	if productID == 0 {
 		return errors.New("无效的商品ID")
 	}

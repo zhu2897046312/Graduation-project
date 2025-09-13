@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"server/models/cms"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -56,13 +57,13 @@ func (h *CmsRecommendIndexHandler) CreateIndex(c *gin.Context) {
 	}
 
 	index := cms.CmsRecommendIndex{
-		RecommendID: int(utils.ConvertToUint(req.RecommendID)),
+		RecommendID: common.MyID(utils.ConvertToUint(req.RecommendID)),
 		Title:       req.Title,
 		Thumb:       req.Thumb,
 		Link:        req.Link,
 		State:       int8(utils.ConvertToUint(req.State)),
-		ProductID:   int(utils.ConvertToUint(req.ProductID)),
-		DocumentID:  int(utils.ConvertToUint(req.DocumentID)),
+		ProductID:   common.MyID(utils.ConvertToUint(req.ProductID)),
+		DocumentID:  common.MyID(utils.ConvertToUint(req.DocumentID)),
 		SortNum:     int(utils.ConvertToUint(req.SortNum)),
 	}
 
@@ -83,14 +84,14 @@ func (h *CmsRecommendIndexHandler) UpdateIndex(c *gin.Context) {
 	}
 
 	index := cms.CmsRecommendIndex{
-		ID:          int(utils.ConvertToUint(req.ID)),
-		RecommendID: int(utils.ConvertToUint(req.RecommendID)),
+		ID:          common.MyID(utils.ConvertToUint(req.ID)),
+		RecommendID: common.MyID(utils.ConvertToUint(req.RecommendID)),
 		Title:       req.Title,
 		Thumb:       req.Thumb,
 		Link:        req.Link,
 		State:       int8(utils.ConvertToUint(req.State)),
-		ProductID:   int(utils.ConvertToUint(req.ProductID)),
-		DocumentID:  int(utils.ConvertToUint(req.DocumentID)),
+		ProductID:   common.MyID(utils.ConvertToUint(req.ProductID)),
+		DocumentID:  common.MyID(utils.ConvertToUint(req.DocumentID)),
 		SortNum:     int(utils.ConvertToUint(req.SortNum)),
 	}
 
@@ -110,7 +111,7 @@ func (h *CmsRecommendIndexHandler) GetByRecommendID(c *gin.Context) {
 		return
 	}
 
-	indices, err := h.service.GetIndicesByRecommendID(recommendID)
+	indices, err := h.service.GetIndicesByRecommendID(common.MyID(recommendID))
 	if err != nil {
 		ServerError(c, err)
 		return
@@ -145,7 +146,7 @@ func (h *CmsRecommendIndexHandler) ListRecommendsIndex(c *gin.Context) {
 	recommend_id := utils.ConvertToUint(req.RecommendID)
 	recommends, total, err := h.service.ListRecommendsIndex(cms.RecommendIndexQueryParams{
 		Title:       req.Title,
-		RecommendID: int(recommend_id),
+		RecommendID: common.MyID(recommend_id),
 		Page:        req.Page,
 		PageSize:    req.PageSize,
 	})
@@ -171,7 +172,7 @@ func (h *CmsRecommendIndexHandler) DeleteRecommendIndexByID(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	if err := h.service.DeleteRecommendIndex(int(idUint)); err != nil {
+	if err := h.service.DeleteRecommendIndex(common.MyID(idUint)); err != nil {
 		Error(c, 7003, err.Error())
 		return
 	}
@@ -189,7 +190,7 @@ func (h *CmsRecommendIndexHandler) GetRecommendIndexByID(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	index, err := h.service.GetRecommendIndexByID(int(idUint))
+	index, err := h.service.GetRecommendIndexByID(common.MyID(idUint))
 	if err != nil {
 		ServerError(c, err)
 		return

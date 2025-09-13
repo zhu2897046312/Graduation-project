@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"server/models/cms"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
 	"time"
-	"gorm.io/gorm"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type ListRecommendsRequest struct {
@@ -80,7 +82,7 @@ func (h *CmsRecommendHandler) UpdateRecommend(c *gin.Context) {
 	id := utils.ConvertToUint(req.ID)
 
 	recommend := cms.CmsRecommend{
-		ID:          int(id),
+		ID:          common.MyID(id),
 		Title:       req.Title,
 		Code:        req.Code,
 		Thumb:       req.Thumb,
@@ -159,7 +161,7 @@ func (h *CmsRecommendHandler) DeleteRecommendByID(c *gin.Context) {
 		return
 	}
 	// 2. 检查是否有关联的推荐索引
-    indices, err := h.recommendIndexService.GetIndicesByRecommendID(int(idUint))
+    indices, err := h.recommendIndexService.GetIndicesByRecommendID(common.MyID(idUint))
     if err != nil && err != gorm.ErrRecordNotFound {
         ServerError(c, err)
         return
@@ -171,7 +173,7 @@ func (h *CmsRecommendHandler) DeleteRecommendByID(c *gin.Context) {
         return
     }
 	
-	if err := h.service.DeleteRecommendByID(int(idUint)); err != nil {
+	if err := h.service.DeleteRecommendByID(common.MyID(idUint)); err != nil {
 		Error(c, 8003, err.Error())
 		return
 	}	
@@ -189,7 +191,7 @@ func (h *CmsRecommendHandler) GetRecommendByID(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	recommend, err := h.service.GetRecommendByID(int(idUint))
+	recommend, err := h.service.GetRecommendByID(common.MyID(idUint))
 	if err != nil {
 		ServerError(c, err)
 		return

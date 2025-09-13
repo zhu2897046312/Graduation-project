@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"server/middleware"
 	"server/models/core"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -76,7 +77,7 @@ func (h *CoreAdminHandler) CreateAdmin(c *gin.Context) {
 		Account:     req.Account,
 		Pwd:         pwd,
 		Mobile:      req.Mobile,
-		DeptID:      req.DeptID,
+		DeptID:      common.MyID(req.DeptID),
 		AdminStatus: req.AdminStatus,
 	}
 	fmt.Printf("pwd: %s", admin.Pwd)
@@ -98,7 +99,7 @@ func (h *CoreAdminHandler) CreateAdmin(c *gin.Context) {
 	for _, roleID := range req.Roles {
 		role := core.CoreAdminRoleIndex{
 			AdminID: admin.ID,
-			RoleID:  roleID,
+			RoleID:  common.MyID(roleID),
 		}
 		if err := h.coreRoleIndex.CreateAdminRole(&role); err != nil {
 			fmt.Println(err)
@@ -118,12 +119,12 @@ func (h *CoreAdminHandler) UpdateAdmin(c *gin.Context) {
 	}
 	pwd := utils.HashPwd(req.Password)
 	admin := core.CoreAdmin{
-		ID:          req.ID,
+		ID:          common.MyID(req.ID),
 		Nickname:    req.Nickname,
 		Account:     req.Account,
 		Pwd:         pwd,
 		Mobile:      req.Mobile,
-		DeptID:      req.DeptID,
+		DeptID:      common.MyID(req.DeptID),
 		AdminStatus: req.AdminStatus,
 	}
 	fmt.Printf("pwd: %s", admin.Pwd)
@@ -142,7 +143,7 @@ func (h *CoreAdminHandler) UpdateAdmin(c *gin.Context) {
 		return
 	}
 	
-	err := h.coreRoleIndex.DeleteAllRolesByAdminID(admin.ID)
+	err := h.coreRoleIndex.DeleteAllRolesByAdminID(common.MyID(admin.ID))
 	if err != nil {
 		Error(c, 5001, err.Error())
 		return
@@ -151,7 +152,7 @@ func (h *CoreAdminHandler) UpdateAdmin(c *gin.Context) {
 	for _, roleID := range req.Roles {
 		role := core.CoreAdminRoleIndex{
 			AdminID: admin.ID,
-			RoleID:  roleID,
+			RoleID:  common.MyID(roleID),
 		}
 		if err := h.coreRoleIndex.CreateAdminRole(&role); err != nil {
 			fmt.Println(err)
@@ -170,7 +171,7 @@ func (h *CoreAdminHandler) GetAdmin(c *gin.Context) {
 	}
 	adminID := utils.ConvertToUint(req)
 
-	admin, err := h.service.GetAdminByID(int64(adminID))
+	admin, err := h.service.GetAdminByID(common.MyID(adminID))
 	if err != nil {
 		Error(c, 5003, "管理员不存在")
 		return
@@ -182,7 +183,7 @@ func (h *CoreAdminHandler) GetAdmin(c *gin.Context) {
 		Error(c, 5003, "部门不存在")
 		return
 	}
-	roleIndexs, err_1 := h.coreRoleIndex.GetRolesByAdminID(int64(adminID))
+	roleIndexs, err_1 := h.coreRoleIndex.GetRolesByAdminID(common.MyID(adminID))
 	if err_1 != nil {
 		Error(c, 5003, "角色不存在")
 		return
@@ -228,7 +229,7 @@ func (h *CoreAdminHandler) UpdateAdminStatus(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateAdminStatus(id, req.Status); err != nil {
+	if err := h.service.UpdateAdminStatus(common.MyID(id), req.Status); err != nil {
 		Error(c, 5004, err.Error())
 		return
 	}
@@ -252,7 +253,7 @@ func (h *CoreAdminHandler) UpdateAdminPassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateAdminPassword(id, req.NewPassword); err != nil {
+	if err := h.service.UpdateAdminPassword(common.MyID(id), req.NewPassword); err != nil {
 		Error(c, 5005, err.Error())
 		return
 	}
@@ -293,15 +294,15 @@ func (h *CoreAdminHandler) LoginAdmin(c *gin.Context) {
 
 	// 创建会话信息
 	sessionInfo := &utils.CoreLoginUserInfoModel{
-		ID:         admin.ID,
+		ID:         common.MyID(admin.ID),
 		Nickname:   admin.Nickname,
 		Permission: string(admin.Permission),
 		Avatar:     "",
-		DeptID:     admin.DeptID,
+		DeptID:     common.MyID(admin.DeptID),
 	}
 
 	// 存储到Redis并获取token
-	token, err := utils.PutSession(h.rdb, admin.ID, sessionInfo)
+	token, err := utils.PutSession(h.rdb, int64(admin.ID), sessionInfo)
 	if err != nil {
 		Error(c, 5006, "登录失败")
 		return

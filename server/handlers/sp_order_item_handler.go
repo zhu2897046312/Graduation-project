@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -55,7 +56,7 @@ func (h *SpOrderItemHandler) GetItemsByOrder(c *gin.Context) {
 		return
 	}
 
-	items, err := h.service.GetItemsByOrderID(uint(orderID))
+	items, err := h.service.GetItemsByOrderID(common.MyID(orderID))
 	if err != nil {
 		Error(c, 23003, "获取订单项失败")
 		return
@@ -72,7 +73,7 @@ func (h *SpOrderItemHandler) GetItemsByProduct(c *gin.Context) {
 		return
 	}
 
-	items, err := h.service.GetItemsByProductID(uint(productID))
+	items, err := h.service.GetItemsByProductID(common.MyID(productID))
 	if err != nil {
 		Error(c, 23004, "获取订单项失败")
 		return
@@ -89,7 +90,7 @@ func (h *SpOrderItemHandler) GetItemsBySku(c *gin.Context) {
 		return
 	}
 
-	items, err := h.service.GetItemsBySkuID(uint(skuID))
+	items, err := h.service.GetItemsBySkuID(common.MyID(skuID))
 	if err != nil {
 		Error(c, 23005, "获取订单项失败")
 		return
@@ -106,7 +107,7 @@ func (h *SpOrderItemHandler) CalculateProductSales(c *gin.Context) {
 		return
 	}
 
-	sales, err := h.service.CalculateProductSales(uint(productID))
+	sales, err := h.service.CalculateProductSales(common.MyID(productID))
 	if err != nil {
 		Error(c, 23006, "计算销量失败")
 		return

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpSkuService struct {
@@ -41,7 +42,7 @@ func (s *SpSkuService) UpdateSku(sku *sp.SpSku) error {
 }
 
 // GetSkusByProductID 根据商品ID获取SKU列表
-func (s *SpSkuService) GetSkusByProductID(productID uint) ([]sp.SpSku, error) {
+func (s *SpSkuService) GetSkusByProductID(productID common.MyID) ([]sp.SpSku, error) {
 	if productID == 0 {
 		return nil, errors.New("无效的商品ID")
 	}
@@ -49,7 +50,7 @@ func (s *SpSkuService) GetSkusByProductID(productID uint) ([]sp.SpSku, error) {
 }
 
 // GetSkuByID 根据ID获取SKU
-func (s *SpSkuService) GetSkuByID(id uint) (*sp.SpSku, error) {
+func (s *SpSkuService) GetSkuByID(id common.MyID) (*sp.SpSku, error) {
 	if id == 0 {
 		return nil, errors.New("无效的SKU ID")
 	}
@@ -65,7 +66,7 @@ func (s *SpSkuService) GetSkuByCode(code string) (*sp.SpSku, error) {
 }
 
 // UpdateStock 更新SKU库存
-func (s *SpSkuService) UpdateStock(id uint, stock int) error {
+func (s *SpSkuService) UpdateStock(id common.MyID, stock int) error {
 	if stock < 0 {
 		return errors.New("库存不能为负数")
 	}
@@ -73,7 +74,7 @@ func (s *SpSkuService) UpdateStock(id uint, stock int) error {
 }
 
 // DecrementStock 减少SKU库存
-func (s *SpSkuService) DecrementStock(id uint, quantity int) error {
+func (s *SpSkuService) DecrementStock(id common.MyID, quantity int) error {
 	if quantity <= 0 {
 		return errors.New("减少数量必须大于0")
 	}
@@ -81,7 +82,7 @@ func (s *SpSkuService) DecrementStock(id uint, quantity int) error {
 }
 
 // IncrementStock 增加SKU库存
-func (s *SpSkuService) IncrementStock(id uint, quantity int) error {
+func (s *SpSkuService) IncrementStock(id common.MyID, quantity int) error {
 	if quantity <= 0 {
 		return errors.New("增加数量必须大于0")
 	}
@@ -89,7 +90,7 @@ func (s *SpSkuService) IncrementStock(id uint, quantity int) error {
 }
 
 // SetDefaultSku 设置默认SKU
-func (s *SpSkuService) SetDefaultSku(id uint, productID uint) error {
+func (s *SpSkuService) SetDefaultSku(id common.MyID, productID common.MyID) error {
 	if id == 0 {
 		return errors.New("无效的SKU ID")
 	}
@@ -99,7 +100,7 @@ func (s *SpSkuService) SetDefaultSku(id uint, productID uint) error {
 	return s.repoFactory.GetSpSkuRepository().SetDefaultSku(id, productID)
 }
 
-func (s *SpSkuService) DeleteByProductID(productID uint) error  {
+func (s *SpSkuService) DeleteByProductID(productID common.MyID) error  {
 	if productID == 0 {
 		return errors.New("无效的SKU ID")
 	}

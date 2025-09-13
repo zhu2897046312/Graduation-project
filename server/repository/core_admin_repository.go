@@ -3,7 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/core"
-	
+	"server/models/common"
 )
 
 type CoreAdminRepository struct {
@@ -34,28 +34,28 @@ func (r *CoreAdminRepository) FindByAccount(account string) (*core.CoreAdmin, er
 }
 
 // 根据ID获取管理员
-func (r *CoreAdminRepository) FindByID(id int64) (*core.CoreAdmin, error) {
+func (r *CoreAdminRepository) FindByID(id common.MyID) (*core.CoreAdmin, error) {
 	var admin core.CoreAdmin
 	err := r.db.First(&admin, id).Error
 	return &admin, err
 }
 
 // 根据部门ID获取管理员列表
-func (r *CoreAdminRepository) FindByDeptID(deptID int64) ([]core.CoreAdmin, error) {
+func (r *CoreAdminRepository) FindByDeptID(deptID common.MyID) ([]core.CoreAdmin, error) {
 	var admins []core.CoreAdmin
 	err := r.db.Where("dept_id = ?", deptID).Find(&admins).Error
 	return admins, err
 }
 
 // 更新管理员状态
-func (r *CoreAdminRepository) UpdateStatus(id int64, status int8) error {
+func (r *CoreAdminRepository) UpdateStatus(id common.MyID, status int8) error {
 	return r.db.Model(&core.CoreAdmin{}).
 		Where("id = ?", id).
 		Update("admin_status", status).Error
 }
 
 // 更新管理员密码
-func (r *CoreAdminRepository) UpdatePassword(id int64, newPwd string) error {
+func (r *CoreAdminRepository) UpdatePassword(id common.MyID, newPwd string) error {
 	return r.db.Model(&core.CoreAdmin{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{

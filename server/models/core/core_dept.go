@@ -2,12 +2,13 @@ package core
 
 import (
 	"encoding/json"
+	"server/models/common"
 	"time"
 )
 
 type CoreDept struct {
-	ID             int64           `gorm:"primaryKey;autoIncrement" json:"id"`
-	Pid            int64           `gorm:"not null;default:0" json:"pid"`
+	ID             common.MyID     `gorm:"primaryKey;autoIncrement" json:"id"`
+	Pid            common.MyID     `gorm:"not null;default:0" json:"pid"`
 	DeptName       string          `gorm:"size:128;not null;default:''" json:"dept_name"`
 	ConnectName    string          `gorm:"size:128;not null;default:''" json:"connect_name"`
 	ConnectMobile  string          `gorm:"size:32;not null;default:''" json:"connect_mobile"`

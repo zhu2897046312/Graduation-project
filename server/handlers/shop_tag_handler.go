@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/models/shop"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"strconv"
 	"time"
@@ -115,11 +116,11 @@ func (h *ShopTagHandler) UpdateTag(c *gin.Context) {
 		State:          int8(utils.ConvertToUint(req.State)),
 		Thumb:          req.Thumb,
 		Title:          req.Title,
-		ID:             req.ID,
+		ID:             common.MyID(req.ID),
 		UpdatedTime: time.Now(),
 	}
 	tagMate := shop.ShopTagMate{
-		ID:             req.ID,
+		ID:             common.MyID(req.ID),
 		Content: req.MatchWord,
 		SeoTitle: req.SEOTitle,
 		SeoDescription: req.SEODescription,
@@ -147,12 +148,12 @@ func (h *ShopTagHandler) GetTag(c *gin.Context) {
 		return
 	}
 
-	tag, err := h.service.GetTagByID(int(uid))
+	tag, err := h.service.GetTagByID(common.MyID(uid))
 	if err != nil {
 		Error(c, 21003, "标签不存在")
 		return
 	}
-	tagMate , err_ := h.tagMateService.GetTagMateByID(int(uid))
+	tagMate , err_ := h.tagMateService.GetTagMateByID(common.MyID(uid))
 	if err_ != nil {
 		Error(c, 21003, "标签不存在")
 		return
@@ -207,20 +208,20 @@ func (h *ShopTagHandler) SearchTags(c *gin.Context) {
 }
 
 // 增加标签阅读量
-func (h *ShopTagHandler) IncrementTagReadNum(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
+// func (h *ShopTagHandler) IncrementTagReadNum(c *gin.Context) {
+// 	id, err := strconv.Atoi(c.Param("id"))
+// 	if err != nil || id == 0 {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	if err := h.service.IncrementTagReadNum(id); err != nil {
-		Error(c, 21006, err.Error())
-		return
-	}
+// 	if err := h.service.IncrementTagReadNum(id); err != nil {
+// 		Error(c, 21006, err.Error())
+// 		return
+// 	}
 
-	Success(c, nil)
-}
+// 	Success(c, nil)
+// }
 
 // 分页获取标签
 func (h *ShopTagHandler) ListTags(c *gin.Context) {
@@ -254,11 +255,11 @@ func (h *ShopTagHandler) DeleteTag(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	if err := h.service.DeleteTagByID(int(uid)); err != nil{
+	if err := h.service.DeleteTagByID(common.MyID(uid)); err != nil{
 		Error(c, 21008, "删除标签失败")
 		return
 	}
-	if err := h.tagMateService.DeleteTagMate(int(uid)); err != nil{
+	if err := h.tagMateService.DeleteTagMate(common.MyID(uid)); err != nil{
 		Error(c, 21008, "删除标签失败")
 		return
 	}
@@ -277,7 +278,7 @@ func (h *ShopTagHandler) GetTagByCode(c *gin.Context) {
 		Error(c, 21009, "获取标签失败")
 		return
 	}
-	tagMate , err_ := h.tagMateService.GetTagMateByID(int(tag.ID))
+	tagMate , err_ := h.tagMateService.GetTagMateByID(common.MyID(tag.ID))
 	if err_ != nil {
 		Error(c, 21003, "标签不存在")
 		return

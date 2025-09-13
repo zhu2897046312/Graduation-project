@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"server/service"
 	"server/models/cms"
+	"server/models/common"
+	"server/service"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CmsDocumentArchiveHandler struct {
@@ -28,7 +30,7 @@ func (h *CmsDocumentArchiveHandler) CreateArchive(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	archive.DocumentID = documentID
+	archive.DocumentID = common.MyID(documentID)
 
 	if err := h.service.CreateArchive(&archive); err != nil {
 		Error(c, 3001, err.Error())
@@ -51,7 +53,7 @@ func (h *CmsDocumentArchiveHandler) UpdateArchive(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	archive.DocumentID = documentID
+	archive.DocumentID = common.MyID(documentID)
 
 	if err := h.service.UpdateArchive(&archive); err != nil {
 		Error(c, 3002, err.Error())
@@ -69,7 +71,7 @@ func (h *CmsDocumentArchiveHandler) GetArchive(c *gin.Context) {
 		return
 	}
 
-	archive, err := h.service.GetArchiveByDocumentID(documentID)
+	archive, err := h.service.GetArchiveByDocumentID(common.MyID(documentID))
 	if err != nil {
 		Error(c, 3003, "存档不存在")
 		return

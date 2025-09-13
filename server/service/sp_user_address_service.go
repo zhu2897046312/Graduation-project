@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -63,7 +64,7 @@ func (s *SpUserAddressService) UpdateAddress(address *sp.SpUserAddress) error {
 }
 
 // GetAddressByID 根据ID获取地址
-func (s *SpUserAddressService) GetAddressByID(id uint) (*sp.SpUserAddress, error) {
+func (s *SpUserAddressService) GetAddressByID(id common.MyID) (*sp.SpUserAddress, error) {
 	if id == 0 {
 		return nil, errors.New("无效的地址ID")
 	}

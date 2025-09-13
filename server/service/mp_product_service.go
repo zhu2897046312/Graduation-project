@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/mp"
+	"server/models/common"
 )
 
 type MpProductService struct {
@@ -60,7 +61,7 @@ func (s *MpProductService) UpdateProduct(product *mp.MpProduct) error {
 }
 
 // GetProductByID 根据ID获取产品
-func (s *MpProductService) GetProductByID(id int64) (*mp.MpProduct, error) {
+func (s *MpProductService) GetProductByID(id common.MyID) (*mp.MpProduct, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的产品ID")
 	}
@@ -92,7 +93,7 @@ func (s *MpProductService) GetProductByCode(code string) (*mp.MpProduct, error) 
 }
 
 // UpdateProductState 更新产品状态
-func (s *MpProductService) UpdateProductState(id int64, state int) error {
+func (s *MpProductService) UpdateProductState(id common.MyID, state int) error {
 	if id <= 0 {
 		return errors.New("无效的产品ID")
 	}

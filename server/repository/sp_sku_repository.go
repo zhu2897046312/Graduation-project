@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpSkuRepository struct {
@@ -26,14 +27,14 @@ func (r *SpSkuRepository) Update(sku *sp.SpSku) error {
 }
 
 // 根据商品ID获取SKU列表
-func (r *SpSkuRepository) FindByProductID(productID uint) ([]sp.SpSku, error) {
+func (r *SpSkuRepository) FindByProductID(productID common.MyID) ([]sp.SpSku, error) {
 	var skus []sp.SpSku
 	err := r.db.Where("product_id = ?", productID).Find(&skus).Error
 	return skus, err
 }
 
 // 根据ID获取SKU
-func (r *SpSkuRepository) FindByID(id uint) (*sp.SpSku, error) {
+func (r *SpSkuRepository) FindByID(id common.MyID) (*sp.SpSku, error) {
 	var sku sp.SpSku
 	err := r.db.First(&sku, id).Error
 	return &sku, err
@@ -47,28 +48,28 @@ func (r *SpSkuRepository) FindBySkuCode(code string) (*sp.SpSku, error) {
 }
 
 // 更新SKU库存
-func (r *SpSkuRepository) UpdateStock(id uint, stock int) error {
+func (r *SpSkuRepository) UpdateStock(id common.MyID, stock int) error {
 	return r.db.Model(&sp.SpSku{}).
 		Where("id = ?", id).
 		Update("stock", stock).Error
 }
 
 // 减少SKU库存
-func (r *SpSkuRepository) DecrementStock(id uint, quantity int) error {
+func (r *SpSkuRepository) DecrementStock(id common.MyID, quantity int) error {
 	return r.db.Model(&sp.SpSku{}).
 		Where("id = ? AND stock >= ?", id, quantity).
 		Update("stock", gorm.Expr("stock - ?", quantity)).Error
 }
 
 // 增加SKU库存
-func (r *SpSkuRepository) IncrementStock(id uint, quantity int) error {
+func (r *SpSkuRepository) IncrementStock(id common.MyID, quantity int) error {
 	return r.db.Model(&sp.SpSku{}).
 		Where("id = ?", id).
 		Update("stock", gorm.Expr("stock + ?", quantity)).Error
 }
 
 // 设置默认SKU
-func (r *SpSkuRepository) SetDefaultSku(id uint, productID uint) error {
+func (r *SpSkuRepository) SetDefaultSku(id common.MyID, productID common.MyID) error {
 	// 先重置所有SKU的默认状态
 	if err := r.db.Model(&sp.SpSku{}).
 		Where("product_id = ?", productID).
@@ -82,7 +83,7 @@ func (r *SpSkuRepository) SetDefaultSku(id uint, productID uint) error {
 		Update("default_show", 1).Error
 }
 
-func (r *SpSkuRepository) DeleteByProductID(productID uint) error {
+func (r *SpSkuRepository) DeleteByProductID(productID common.MyID) error {
 	return r.db.Where("product_id = ?", productID).
 		Delete(&sp.SpSku{}).Error
 }

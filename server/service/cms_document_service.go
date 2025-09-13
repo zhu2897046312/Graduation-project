@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/cms"
+    "server/models/common"
 )
 
 type CmsDocumentService struct {
@@ -14,7 +15,7 @@ func NewCmsDocumentService(base *Service) *CmsDocumentService {
 }
 
 // GetDocumentsByCategoryID 根据分类ID获取文档
-func (s *CmsDocumentService) GetDocumentsByCategoryID(categoryID int64) ([]cms.CmsDocument, error) {
+func (s *CmsDocumentService) GetDocumentsByCategoryID(categoryID common.MyID) ([]cms.CmsDocument, error) {
 	if categoryID <= 0 {
 		return nil, errors.New("无效的分类ID")
 	}
@@ -52,7 +53,7 @@ func (s *CmsDocumentService) UpdateDocument(document *cms.CmsDocument) error {
 }
 
 // GetDocumentByID 根据ID获取文档
-func (s *CmsDocumentService) GetDocumentByID(id int64) (*cms.CmsDocument, error) {
+func (s *CmsDocumentService) GetDocumentByID(id common.MyID) (*cms.CmsDocument, error) {
     if id <= 0 {
         return nil, errors.New("无效的文档ID")
     }
@@ -66,7 +67,7 @@ func (s *CmsDocumentService) GetDocumentByCode(code string) (*cms.CmsDocument, e
     return s.repoFactory.GetCmsDocumentRepository().FindByDocumentCode(code)
 }
 
-func (s *CmsDocumentService) DeleteByID(id int64) error {
+func (s *CmsDocumentService) DeleteByID(id common.MyID) error {
     if id <= 0 {
         return errors.New("无效的文档ID")
     }

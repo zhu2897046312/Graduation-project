@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -76,7 +77,7 @@ func (s *SpProductService) UpdateProduct(product *sp.SpProduct) error {
 }
 
 // GetProductByID 根据ID获取商品详情
-func (s *SpProductService) GetProductByID(id uint) (*sp.SpProduct, error) {
+func (s *SpProductService) GetProductByID(id common.MyID) (*sp.SpProduct, error) {
 	if id == 0 {
 		return nil, errors.New("无效的商品ID")
 	}
@@ -84,7 +85,7 @@ func (s *SpProductService) GetProductByID(id uint) (*sp.SpProduct, error) {
 }
 
 // GetProductsByCategoryID 根据分类ID获取商品
-func (s *SpProductService) GetProductsByCategoryID(categoryID uint) ([]sp.SpProduct, error) {
+func (s *SpProductService) GetProductsByCategoryID(categoryID common.MyID) ([]sp.SpProduct, error) {
 	if categoryID == 0 {
 		return nil, errors.New("无效的分类ID")
 	}
@@ -111,7 +112,7 @@ func (s *SpProductService) ListProducts(prarams sp.ProductQueryParams) ([]sp.SpP
 }
 
 // UpdateStock 更新商品库存
-func (s *SpProductService) UpdateStock(id uint, stock int) error {
+func (s *SpProductService) UpdateStock(id common.MyID, stock int) error {
 	if stock < 0 {
 		return errors.New("库存不能为负数")
 	}
@@ -119,7 +120,7 @@ func (s *SpProductService) UpdateStock(id uint, stock int) error {
 }
 
 // UpdateState 更新商品状态
-func (s *SpProductService) UpdateState(id uint, state uint8) error {
+func (s *SpProductService) UpdateState(id common.MyID, state uint8) error {
 	if state != 1 && state != 2 {
 		return errors.New("无效的商品状态")
 	}
@@ -127,7 +128,7 @@ func (s *SpProductService) UpdateState(id uint, state uint8) error {
 }
 
 // IncrementSoldNum 增加销量
-func (s *SpProductService) IncrementSoldNum(id uint, num uint16) error {
+func (s *SpProductService) IncrementSoldNum(id common.MyID, num uint16) error {
 	if num <= 0 {
 		return errors.New("增加数量必须大于0")
 	}
@@ -135,7 +136,7 @@ func (s *SpProductService) IncrementSoldNum(id uint, num uint16) error {
 }
 
 // SoftDeleteProduct 软删除商品
-func (s *SpProductService) SoftDeleteProduct(id uint) error {
+func (s *SpProductService) SoftDeleteProduct(id common.MyID) error {
 	// 检查商品是否存在
 	_, err := s.repoFactory.GetSpProductRepository().FindByID(id)
 	if err != nil {

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -60,7 +61,7 @@ func (s *SpOrderService) UpdateOrder(order *sp.SpOrder) error {
 }
 
 // GetOrderByID 根据ID获取订单
-func (s *SpOrderService) GetOrderByID(id uint) (*sp.SpOrder, error) {
+func (s *SpOrderService) GetOrderByID(id common.MyID) (*sp.SpOrder, error) {
 	if id == 0 {
 		return nil, errors.New("无效的订单ID")
 	}
@@ -83,7 +84,7 @@ func (s *SpOrderService) GetByVisitorQueryCode(code string) (*sp.SpOrder, error)
 }
 
 // GetOrdersByUserID 根据用户ID获取订单列表
-func (s *SpOrderService) GetOrdersByUserID(userID uint) ([]sp.SpOrder, error) {
+func (s *SpOrderService) GetOrdersByUserID(userID common.MyID) ([]sp.SpOrder, error) {
 	if userID == 0 {
 		return nil, errors.New("无效的用户ID")
 	}
@@ -102,7 +103,7 @@ func (s *SpOrderService) List(param sp.ListOrdersQueryParam) ([]sp.SpOrder,int64
 	return s.repoFactory.GetSpOrderRepository().ListWithPagination(param)
 }
 // UpdateOrderState 更新订单状态
-func (s *SpOrderService) UpdateOrderState(id uint, state uint8,remark string) error {
+func (s *SpOrderService) UpdateOrderState(id common.MyID, state uint8,remark string) error {
 	if id == 0 {
 		return errors.New("订单ID不能为空")
 	}
@@ -115,7 +116,7 @@ func (s *SpOrderService) UpdateOrderState(id uint, state uint8,remark string) er
 }
 
 // UpdateDeliveryInfo 更新物流信息
-func (s *SpOrderService) UpdateDeliveryInfo(id uint, company, sn string) error {
+func (s *SpOrderService) UpdateDeliveryInfo(id common.MyID, company, sn string) error {
 	if id  == 0 {
 		return errors.New("订单ID不能为空")
 	}
@@ -132,7 +133,7 @@ func (s *SpOrderService) UpdateDeliveryInfo(id uint, company, sn string) error {
 	return s.repoFactory.GetSpOrderRepository().UpdateDeliveryInfo(id, company, sn)
 }
 
-func (s *SpOrderService) DeleteOrder(id uint) error {
+func (s *SpOrderService) DeleteOrder(id common.MyID) error {
 	if id == 0 {
 		return errors.New("订单ID不能为空")
 	}

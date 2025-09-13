@@ -73,3 +73,37 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+spCategoryHandler
+
+SpProdAttributes
+
+SpProdAttributesValue
+ShopTag
+ShopTagIndex
+SpProduct、
+SpCategory
+SpProductContent
+SpProductProperty
+SpSku
+SpSkuIndex
+SpOrder
+SpOrderItem
+SpOrderReceiveAddress
+SpUserCart
+SpOrderRefund
+
+CoreConfig
+CoreDept
+CoreAdmin
+CoreRole
+CoreAdminRoleIndex
+CorePermission
+
+CmsDocument
+CmsRecommend
+CmsRecommendIndex
+
+
+MpUser
+MpUserToken

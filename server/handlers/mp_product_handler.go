@@ -32,44 +32,44 @@ func (h *MpProductHandler) CreateProduct(c *gin.Context) {
 }
 
 // 更新产品
-func (h *MpProductHandler) UpdateProduct(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
+// func (h *MpProductHandler) UpdateProduct(c *gin.Context) {
+// 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+// 	if err != nil || id <= 0 {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	var product mp.MpProduct
-	if err := c.ShouldBindJSON(&product); err != nil {
-		InvalidParams(c)
-		return
-	}
-	product.ID = id
+// 	var product mp.MpProduct
+// 	if err := c.ShouldBindJSON(&product); err != nil {
+// 		InvalidParams(c)
+// 		return
+// 	}
+// 	product.ID = id
 
-	if err := h.service.UpdateProduct(&product); err != nil {
-		Error(c, 13002, err.Error())
-		return
-	}
+// 	if err := h.service.UpdateProduct(&product); err != nil {
+// 		Error(c, 13002, err.Error())
+// 		return
+// 	}
 
-	Success(c, product)
-}
+// 	Success(c, product)
+// }
 
-// 获取产品详情
-func (h *MpProductHandler) GetProduct(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
+// // 获取产品详情
+// func (h *MpProductHandler) GetProduct(c *gin.Context) {
+// 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+// 	if err != nil || id <= 0 {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	product, err := h.service.GetProductByID(id)
-	if err != nil {
-		Error(c, 13003, "产品不存在")
-		return
-	}
+// 	product, err := h.service.GetProductByID(id)
+// 	if err != nil {
+// 		Error(c, 13003, "产品不存在")
+// 		return
+// 	}
 
-	Success(c, product)
-}
+// 	Success(c, product)
+// }
 
 // 根据类型获取产品列表
 func (h *MpProductHandler) GetProductsByType(c *gin.Context) {
@@ -122,26 +122,26 @@ func (h *MpProductHandler) GetProductByCode(c *gin.Context) {
 	Success(c, product)
 }
 
-// 更新产品状态
-func (h *MpProductHandler) UpdateProductState(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
+// // 更新产品状态
+// func (h *MpProductHandler) UpdateProductState(c *gin.Context) {
+// 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+// 	if err != nil || id <= 0 {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	var req struct {
-		State int `json:"state"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
+// 	var req struct {
+// 		State int `json:"state"`
+// 	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	if err := h.service.UpdateProductState(id, req.State); err != nil {
-		Error(c, 13007, err.Error())
-		return
-	}
+// 	if err := h.service.UpdateProductState(id, req.State); err != nil {
+// 		Error(c, 13007, err.Error())
+// 		return
+// 	}
 
-	Success(c, nil)
-}
+// 	Success(c, nil)
+// }

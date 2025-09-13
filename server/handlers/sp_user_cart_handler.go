@@ -4,6 +4,7 @@ import (
 	"errors"
 	"server/middleware"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 	"time"
@@ -59,7 +60,7 @@ func (h *SpUserCartHandler) UpdateCartItem(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	cart.ID = uint(id)
+	cart.ID = common.MyID(id)
 
 	if err := h.service.UpdateCartItem(&cart); err != nil {
 		Error(c, 3402, err.Error())
@@ -77,7 +78,7 @@ func (h *SpUserCartHandler) GetCartItems(c *gin.Context) {
 		return
 	}
 
-	cartItems, err := h.service.GetCartItemsByUserID(uint(userID))
+	cartItems, err := h.service.GetCartItemsByUserID(common.MyID(userID))
 	if err != nil {
 		Error(c, 3403, err.Error())
 		return
@@ -94,7 +95,7 @@ func (h *SpUserCartHandler) DeleteCartItem(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteCartItem(uint(id)); err != nil {
+	if err := h.service.DeleteCartItem(common.MyID(id)); err != nil {
 		Error(c, 3404, err.Error())
 		return
 	}
@@ -110,7 +111,7 @@ func (h *SpUserCartHandler) ClearCart(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ClearCartByUserID(uint(userID)); err != nil {
+	if err := h.service.ClearCartByUserID(common.MyID(userID)); err != nil {
 		Error(c, 3405, err.Error())
 		return
 	}
@@ -141,8 +142,8 @@ func (h *SpUserCartHandler) List(c *gin.Context) {
 
 func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 	type SpUserCartActRequest struct {
-		ProductID uint `json:"product_id"` // 商品ID
-		SkuID     uint `json:"sku_id"`                        // SKU ID
+		ProductID common.MyID `json:"product_id"` // 商品ID
+		SkuID     common.MyID `json:"sku_id"`                        // SKU ID
 		Quantity  uint `json:"quantity"`  // 数量
 		Add       bool `json:"add"`                          // 操作类型：true=添加，false=减少
 	}
@@ -161,10 +162,10 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 	}
 	
 	if userID !=0 {
-		h.service.MergeGuestCart(uint(userID), fingerprint)
+		h.service.MergeGuestCart(common.MyID(userID), fingerprint)
 	}
 
-	currentCarts, err := h.service.GetCartItemByProduct(uint(userID), fingerprint, req.ProductID, req.SkuID)
+	currentCarts, err := h.service.GetCartItemByProduct(common.MyID(userID), fingerprint, req.ProductID, req.SkuID)
 
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		Error(c, 3408, err.Error())
@@ -174,7 +175,7 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 	if req.Add {
 		if currentCarts.ID == 0 {
 			newCart := &sp.SpUserCart{
-				UserID:      uint(userID),
+				UserID:      common.MyID(userID),
 				Fingerprint: fingerprint,
 				ProductID:   req.ProductID,
 				SkuID:       req.SkuID,

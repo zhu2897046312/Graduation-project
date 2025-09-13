@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/core"
+	"server/models/common"
 )
 
 type CorePermissionService struct {
@@ -55,7 +56,7 @@ func (s *CorePermissionService) UpdatePermission(permission *core.CorePermission
 }
 
 // GetPermissionByID 根据ID获取权限
-func (s *CorePermissionService) GetPermissionByID(id int64) (*core.CorePermission, error) {
+func (s *CorePermissionService) GetPermissionByID(id common.MyID) (*core.CorePermission, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的权限ID")
 	}
@@ -76,7 +77,7 @@ func (s *CorePermissionService) GetAll() ([]core.CorePermission, error) {
 
 }
 
-func (s *CorePermissionService) Delete(id int64) error {
+func (s *CorePermissionService) Delete(id common.MyID) error {
 	if id <= 0 {
 		return errors.New("无效的权限ID")
 	}

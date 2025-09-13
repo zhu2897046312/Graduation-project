@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/mp"
+	"server/models/common"
 )
 
 type MpUserRepository struct {
@@ -26,7 +27,7 @@ func (r *MpUserRepository) Update(user *mp.MpUser) error {
 }
 
 // 根据ID获取用户
-func (r *MpUserRepository) FindByID(id int) (*mp.MpUser, error) {
+func (r *MpUserRepository) FindByID(id common.MyID) (*mp.MpUser, error) {
 	var user mp.MpUser
 	err := r.db.First(&user, id).Error
 	return &user, err
@@ -40,28 +41,28 @@ func (r *MpUserRepository) FindByEmail(email string) (*mp.MpUser, error) {
 }
 
 // 更新用户状态
-func (r *MpUserRepository) UpdateStatus(id int, status int8) error {
+func (r *MpUserRepository) UpdateStatus(id common.MyID, status int8) error {
 	return r.db.Model(&mp.MpUser{}).
 		Where("id = ?", id).
 		Update("user_status", status).Error
 }
 
 // 更新用户密码
-func (r *MpUserRepository) UpdatePassword(id int, newPassword string) error {
+func (r *MpUserRepository) UpdatePassword(id common.MyID, newPassword string) error {
 	return r.db.Model(&mp.MpUser{}).
 		Where("id = ?", id).
 		Update("password", newPassword).Error
 }
 
 // 更新邮箱验证状态
-func (r *MpUserRepository) VerifyEmail(id int) error {
+func (r *MpUserRepository) VerifyEmail(id common.MyID) error {
 	return r.db.Model(&mp.MpUser{}).
 		Where("id = ?", id).
 		Update("email_verify", 1).Error
 }
 
 // 更新用户token
-func (r *MpUserRepository) UpdateToken(id int, token string) error {
+func (r *MpUserRepository) UpdateToken(id common.MyID, token string) error {
 	return r.db.Model(&mp.MpUser{}).
 		Where("id = ?", id).
 		Update("token", token).Error

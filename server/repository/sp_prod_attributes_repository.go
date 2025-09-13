@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"time"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProdAttributesRepository struct {
@@ -27,7 +28,7 @@ func (r *SpProdAttributesRepository) Update(attr *sp.SpProdAttributes) error {
 }
 
 // 根据ID获取属性
-func (r *SpProdAttributesRepository) FindByID(id uint) (*sp.SpProdAttributes, error) {
+func (r *SpProdAttributesRepository) FindByID(id common.MyID) (*sp.SpProdAttributes, error) {
 	var attr sp.SpProdAttributes
 	err := r.db.First(&attr, id).Error
 	return &attr, err
@@ -67,14 +68,14 @@ func (r *SpProdAttributesRepository) FindByPage(title string, page, pageSize int
 }
 
 // 更新属性排序
-func (r *SpProdAttributesRepository) UpdateSortNum(id uint, sortNum uint16) error {
+func (r *SpProdAttributesRepository) UpdateSortNum(id common.MyID, sortNum uint16) error {
 	return r.db.Model(&sp.SpProdAttributes{}).
 		Where("id = ?", id).
 		Update("sort_num", sortNum).Error
 }
 
 // 删除属性
-func (r *SpProdAttributesRepository) Delete(id uint) error {
+func (r *SpProdAttributesRepository) Delete(id common.MyID) error {
 	result := r.db.Model(&sp.SpProdAttributes{}).
 		Where("id = ?", id).
 		Update("deleted_time", time.Now())

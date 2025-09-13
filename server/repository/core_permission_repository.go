@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/core"
+	"server/models/common"
 )
 
 type CorePermissionRepository struct {
@@ -32,7 +33,7 @@ func (r *CorePermissionRepository) FindAll() ([]core.CorePermission, error) {
 }
 
 // 根据ID获取权限
-func (r *CorePermissionRepository) FindByID(id int64) (*core.CorePermission, error) {
+func (r *CorePermissionRepository) FindByID(id common.MyID) (*core.CorePermission, error) {
 	var permission core.CorePermission
 	err := r.db.First(&permission, id).Error
 	return &permission, err
@@ -73,7 +74,7 @@ func (r *CorePermissionRepository) FindByCode(code string) (*core.CorePermission
 // 	return tree, nil
 // }
 
-func (r *CorePermissionRepository) Delete(id int64) error {
+func (r *CorePermissionRepository) Delete(id common.MyID) error {
 	return r.db.Model(&core.CorePermission{}).
 		Where("id = ?", id).
 		Update("deleted_time", gorm.Expr("NOW()")).Error

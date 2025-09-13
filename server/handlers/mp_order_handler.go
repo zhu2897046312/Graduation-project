@@ -1,10 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"server/models/common"
 	"server/models/mp"
 	"server/service"
+	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type MpOrderHandler struct {
@@ -44,7 +47,7 @@ func (h *MpOrderHandler) UpdateOrder(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	order.ID = id
+	order.ID = common.MyID(utils.ConvertToUint(id))
 
 	if err := h.service.UpdateOrder(&order); err != nil {
 		Error(c, 11002, err.Error())
@@ -56,13 +59,13 @@ func (h *MpOrderHandler) UpdateOrder(c *gin.Context) {
 
 // 获取订单详情
 func (h *MpOrderHandler) GetOrder(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Query("id")
 	if id == "" {
 		InvalidParams(c)
 		return
 	}
 
-	order, err := h.service.GetOrderByID(id)
+	order, err := h.service.GetOrderByID(common.MyID(utils.ConvertToUint(id)))
 	if err != nil {
 		Error(c, 11003, "订单不存在")
 		return
@@ -79,7 +82,7 @@ func (h *MpOrderHandler) GetOrdersByUser(c *gin.Context) {
 		return
 	}
 
-	orders, err := h.service.GetOrdersByUserID(userID)
+	orders, err := h.service.GetOrdersByUserID(common.MyID(userID))
 	if err != nil {
 		Error(c, 11004, "获取订单失败")
 		return
@@ -121,7 +124,7 @@ func (h *MpOrderHandler) UpdateOrderState(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateOrderState(id, req.State); err != nil {
+	if err := h.service.UpdateOrderState(common.MyID(utils.ConvertToUint(id)), req.State); err != nil {
 		Error(c, 11006, err.Error())
 		return
 	}
@@ -137,7 +140,7 @@ func (h *MpOrderHandler) GetOrderByThirdID(c *gin.Context) {
 		return
 	}
 
-	order, err := h.service.GetOrderByThirdID(thirdID)
+	order, err := h.service.GetOrderByThirdID(common.MyID(utils.ConvertToUint(thirdID)))
 	if err != nil {
 		Error(c, 11007, "订单不存在")
 		return

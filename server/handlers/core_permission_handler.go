@@ -3,6 +3,7 @@ package handlers
 import (
 	"server/models/core"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"sort"
 
@@ -43,7 +44,7 @@ func (h *CorePermissionHandler) CreatePermission(c *gin.Context) {
 		Title:  req.Title,
 		Code:   req.Code,
 		Remark: req.Remark,
-		Pid:    req.Pid,
+		Pid:    common.MyID(req.Pid),
 	}
 	if err := h.service.CreatePermission(&permission); err != nil {
 		Error(c, 8001, err.Error())
@@ -61,11 +62,11 @@ func (h *CorePermissionHandler) UpdatePermission(c *gin.Context) {
 		return
 	}
 	permission := core.CorePermission{
-		ID:     req.ID,
+		ID:     common.MyID(req.ID),
 		Title:  req.Title,
 		Code:   req.Code,
 		Remark: req.Remark,
-		Pid:    req.Pid,
+		Pid:    common.MyID(req.Pid),
 	}
 	if err := h.service.UpdatePermission(&permission); err != nil {
 		Error(c, 8001, err.Error())
@@ -85,7 +86,7 @@ func (h *CorePermissionHandler) GetPermission(c *gin.Context) {
 
 	uID := utils.ConvertToUint(id)
 
-	permission, err := h.service.GetPermissionByID(int64(uID))
+	permission, err := h.service.GetPermissionByID(common.MyID(uID))
 	if err != nil {
 		Error(c, 8003, "权限不存在")
 		return
@@ -168,7 +169,7 @@ func (h *CorePermissionHandler) buildFlatList(allPermissions []core.CorePermissi
 
 		// 添加该顶级分类下的子分类
 		for _, sec := range secList {
-			if sec.Pid == int64(top.ID) {
+			if sec.Pid == common.MyID(top.ID) {
 				result = append(result, sec)
 			}
 		}
@@ -189,7 +190,7 @@ func (h *CorePermissionHandler) DeletePermission(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}			
-	if err := h.service.Delete(int64(uID)); err != nil {
+	if err := h.service.Delete(common.MyID(uID)); err != nil {
 		Error(c, 8002, err.Error())
 		return
 	}	

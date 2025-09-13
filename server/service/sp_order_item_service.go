@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpOrderItemService struct {
@@ -43,7 +44,7 @@ func (s *SpOrderItemService) BatchCreateOrderItems(items []*sp.SpOrderItem) erro
 }
 
 // GetItemsByOrderID 根据订单ID获取订单项
-func (s *SpOrderItemService) GetItemsByOrderID(orderID uint) ([]sp.SpOrderItem, error) {
+func (s *SpOrderItemService) GetItemsByOrderID(orderID common.MyID) ([]sp.SpOrderItem, error) {
 	if orderID == 0 {
 		return nil, errors.New("无效的订单ID")
 	}
@@ -51,7 +52,7 @@ func (s *SpOrderItemService) GetItemsByOrderID(orderID uint) ([]sp.SpOrderItem, 
 }
 
 // GetItemsByProductID 根据产品ID获取订单项
-func (s *SpOrderItemService) GetItemsByProductID(productID uint) ([]sp.SpOrderItem, error) {
+func (s *SpOrderItemService) GetItemsByProductID(productID common.MyID) ([]sp.SpOrderItem, error) {
 	if productID == 0 {
 		return nil, errors.New("无效的产品ID")
 	}
@@ -59,7 +60,7 @@ func (s *SpOrderItemService) GetItemsByProductID(productID uint) ([]sp.SpOrderIt
 }
 
 // GetItemsBySkuID 根据SKU ID获取订单项
-func (s *SpOrderItemService) GetItemsBySkuID(skuID uint) ([]sp.SpOrderItem, error) {
+func (s *SpOrderItemService) GetItemsBySkuID(skuID common.MyID) ([]sp.SpOrderItem, error) {
 	if skuID == 0 {
 		return nil, errors.New("无效的SKU ID")
 	}
@@ -67,7 +68,7 @@ func (s *SpOrderItemService) GetItemsBySkuID(skuID uint) ([]sp.SpOrderItem, erro
 }
 
 // CalculateProductSales 计算产品销售总量
-func (s *SpOrderItemService) CalculateProductSales(productID uint) (int, error) {
+func (s *SpOrderItemService) CalculateProductSales(productID common.MyID) (int, error) {
 	if productID == 0 {
 		return 0, errors.New("无效的产品ID")
 	}

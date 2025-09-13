@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/shop"
+	"server/models/common"
 	"time"
 )
 
@@ -27,14 +28,14 @@ func (r *ShopTagMateRepository) Update(mate *shop.ShopTagMate) error {
 }
 
 // 根据ID获取元数据
-func (r *ShopTagMateRepository) FindByID(id int) (*shop.ShopTagMate, error) {
+func (r *ShopTagMateRepository) FindByID(id common.MyID) (*shop.ShopTagMate, error) {
 	var mate shop.ShopTagMate
 	err := r.db.First(&mate, id).Error
 	return &mate, err
 }
 
 // 更新SEO信息
-func (r *ShopTagMateRepository) UpdateSEO(id int, title, keyword, description string) error {
+func (r *ShopTagMateRepository) UpdateSEO(id common.MyID, title, keyword, description string) error {
 	return r.db.Model(&shop.ShopTagMate{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{
@@ -45,13 +46,13 @@ func (r *ShopTagMateRepository) UpdateSEO(id int, title, keyword, description st
 }
 
 // 更新标签内容
-func (r *ShopTagMateRepository) UpdateContent(id int, content string) error {
+func (r *ShopTagMateRepository) UpdateContent(id common.MyID, content string) error {
 	return r.db.Model(&shop.ShopTagMate{}).
 		Where("id = ?", id).
 		Update("content", content).Error
 }
 
-func (r *ShopTagMateRepository) DeleteByID(id int) error{
+func (r *ShopTagMateRepository) DeleteByID(id common.MyID) error{
 	//return r.db.Where("id = ?", id).Delete(&shop.ShopTagMate{}).Error
 	result := r.db.Model(&shop.ShopTagMate{}).
 		Where("id = ?", id).

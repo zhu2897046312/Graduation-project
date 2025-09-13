@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/cms"
+	"server/models/common"
 )
 
 type CmsRecommendService struct {
@@ -65,14 +66,14 @@ func (s *CmsRecommendService) ListRecommends(prarams cms.RecommendQueryParams) (
 	return s.repoFactory.GetCmsRecommendRepository().ListWithPagination(prarams)
 }
 
-func (s *CmsRecommendService) DeleteRecommendByID(id int) error {
+func (s *CmsRecommendService) DeleteRecommendByID(id common.MyID) error {
 	if id <= 0 {
 		return errors.New("无效的推荐ID")
 	}
 	return s.repoFactory.GetCmsRecommendRepository().Delete(id)
 }
 
-func (s *CmsRecommendService) GetRecommendByID(id int) (*cms.CmsRecommend, error) {
+func (s *CmsRecommendService) GetRecommendByID(id common.MyID) (*cms.CmsRecommend, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的推荐ID")
 	}

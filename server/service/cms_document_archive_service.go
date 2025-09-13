@@ -4,6 +4,8 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"server/models/cms"
+
+	"server/models/common"
 )
 
 type CmsDocumentArchiveService struct {
@@ -41,14 +43,14 @@ func (s *CmsDocumentArchiveService) UpdateArchive(archive *cms.CmsDocumentArchiv
 }
 
 // GetArchiveByDocumentID 根据文档ID获取存档
-func (s *CmsDocumentArchiveService) GetArchiveByDocumentID(documentID int64) (*cms.CmsDocumentArchive, error) {
+func (s *CmsDocumentArchiveService) GetArchiveByDocumentID(documentID common.MyID) (*cms.CmsDocumentArchive, error) {
 	if documentID <= 0 {
 		return nil, errors.New("无效的文档ID")
 	}
 	return s.repoFactory.GetCmsDocumentArchiveRepository().FindByDocumentID(documentID)
 }
 
-func (s *CmsDocumentArchiveService) DeleteByDocumetnID(id int64) error {
+func (s *CmsDocumentArchiveService) DeleteByDocumetnID(id common.MyID) error {
 	_,err := s.repoFactory.GetCmsDocumentArchiveRepository().FindByDocumentID(id)
 	if err == gorm.ErrRecordNotFound {
 		return errors.New("存档不存在")

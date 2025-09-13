@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"server/models/common"
 	"server/models/core"
 	"server/service"
 	"server/utils"
@@ -148,7 +149,7 @@ func (h *CoreConfigHandler) UpdateConfig(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	config.ID = id
+	config.ID = common.MyID(id)
 
 	if err := h.service.UpdateConfig(&config); err != nil {
 		Error(c, 6002, err.Error())
@@ -195,9 +196,12 @@ type SiteInfoResponse struct {
 }
 
 type MarketInfoResponse struct {
-	Exchange string `json:"exchange"`
-	Freight  string `json:"freight"`
-	Original string `json:"original"`
+	Exchange       string `json:"exchange"`
+	Freight        string `json:"freight"`
+	Original       string `json:"original"`
+	SEOTitle       string `json:"seo_title"`
+	SEODescription string `json:"seo_description"`
+	SEOKeyword     string `json:"seo_keyword"`
 }
 
 // GetAllConfigs 获取所有配置项
@@ -257,7 +261,7 @@ func (h *CoreConfigHandler) SaveMarketSetting(c *gin.Context) {
 		result, _ := h.service.GetConfigByKey("Freight")
 		config := core.CoreConfig{
 			ConfigKey:   "Freight",
-			ConfigValue: fmt.Sprintf("%v",(utils.ConvertToFloat64(req.Freight))),
+			ConfigValue: fmt.Sprintf("%v", (utils.ConvertToFloat64(req.Freight))),
 			UpdatedTime: time.Now(),
 		}
 		if result.ConfigValue == "" {
@@ -272,7 +276,7 @@ func (h *CoreConfigHandler) SaveMarketSetting(c *gin.Context) {
 		result, _ := h.service.GetConfigByKey("Original")
 		config := core.CoreConfig{
 			ConfigKey:   "Original",
-			ConfigValue: fmt.Sprintf("%v",(utils.ConvertToFloat64(req.Original))),
+			ConfigValue: fmt.Sprintf("%v", (utils.ConvertToFloat64(req.Original))),
 			UpdatedTime: time.Now(),
 		}
 		if result.ConfigValue == "" {
@@ -288,7 +292,7 @@ func (h *CoreConfigHandler) SaveMarketSetting(c *gin.Context) {
 		result, _ := h.service.GetConfigByKey("Exchange")
 		config := core.CoreConfig{
 			ConfigKey:   "Exchange",
-			ConfigValue: fmt.Sprintf("%v",(utils.ConvertToFloat64(req.Exchange))),
+			ConfigValue: fmt.Sprintf("%v", (utils.ConvertToFloat64(req.Exchange))),
 			UpdatedTime: time.Now(),
 		}
 		if result.ConfigValue == "" {
@@ -300,7 +304,6 @@ func (h *CoreConfigHandler) SaveMarketSetting(c *gin.Context) {
 	}
 	Success(c, "配置保存成功")
 }
-
 
 func (h *CoreConfigHandler) GetMarketInfo(c *gin.Context) {
 	configs, err := h.service.GetAllConfigs()
@@ -321,6 +324,12 @@ func (h *CoreConfigHandler) GetMarketInfo(c *gin.Context) {
 			response.Exchange = configs[i].ConfigValue
 		case "Original":
 			response.Original = configs[i].ConfigValue
+		case "seo_title":
+			response.SEOTitle = configs[i].ConfigValue
+		case "seo_description":
+			response.SEODescription = configs[i].ConfigValue
+		case "seo_keyword":
+			response.SEOKeyword = configs[i].ConfigValue
 		}
 	}
 	fmt.Println(response)

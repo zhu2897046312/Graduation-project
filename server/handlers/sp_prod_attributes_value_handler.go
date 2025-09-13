@@ -3,6 +3,7 @@ package handlers
 import (
 	"server/models/sp"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"strconv"
 
@@ -61,7 +62,7 @@ func (h *SpProdAttributesValueHandler) UpdateAttributeValue(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	value.ID = uint(id)
+	value.ID = common.MyID(id)
 
 	if err := h.service.UpdateAttributeValue(&value); err != nil {
 		Error(c, 29002, err.Error())
@@ -78,7 +79,7 @@ func (h *SpProdAttributesValueHandler) List(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	ProdAttributesID := utils.ConvertToUint(req.ProdAttributesID)
+	ProdAttributesID := common.MyID(utils.ConvertToUint(req.ProdAttributesID))
 	attr := sp.SpProdAttributesQueryParams{
 		Page:             req.Page,
 		PageSize:         req.PageSize,
@@ -104,7 +105,7 @@ func (h *SpProdAttributesValueHandler) GetValue(c *gin.Context) {
 		return
 	}
 
-	value, err := h.service.GetValueByID(uint(id))
+	value, err := h.service.GetValueByID(common.MyID(id))
 	if err != nil {
 		Error(c, 29004, "属性值不存在")
 		return
@@ -137,7 +138,7 @@ func (h *SpProdAttributesValueHandler) DeleteValuesByAttribute(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteValuesByAttributeID(uint(attrID)); err != nil {
+	if err := h.service.DeleteValuesByAttributeID(common.MyID(attrID)); err != nil {
 		Error(c, 29006, err.Error())
 		return
 	}

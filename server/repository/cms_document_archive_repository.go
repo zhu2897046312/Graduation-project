@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"time"
 	"server/models/cms"
+	"server/models/common"
 )
 
 type CmsDocumentArchiveRepository struct {
@@ -27,12 +28,12 @@ func (r *CmsDocumentArchiveRepository) Update(archive *cms.CmsDocumentArchive) e
 }
 
 // 根据文档ID获取存档
-func (r *CmsDocumentArchiveRepository) FindByDocumentID(documentID int64) (*cms.CmsDocumentArchive, error) {
+func (r *CmsDocumentArchiveRepository) FindByDocumentID(documentID common.MyID) (*cms.CmsDocumentArchive, error) {
 	var archive cms.CmsDocumentArchive
 	err := r.db.Where("document_id = ?", documentID).First(&archive).Error
 	return &archive, err
 }
-func (r *CmsDocumentArchiveRepository) DeleteByDocumentID(documentID int64) error {
+func (r *CmsDocumentArchiveRepository) DeleteByDocumentID(documentID common.MyID) error {
     result := r.db.Model(&cms.CmsDocumentArchive{}).
 		Where("document_id = ?", documentID).
 		Update("deleted_time", time.Now())
@@ -40,7 +41,7 @@ func (r *CmsDocumentArchiveRepository) DeleteByDocumentID(documentID int64) erro
 	return result.Error
 }
 
-func (r *CmsDocumentArchiveRepository) FindByDocumentCode(documentCode int64) (*cms.CmsDocumentArchive, error) {
+func (r *CmsDocumentArchiveRepository) FindByDocumentCode(documentCode common.MyID) (*cms.CmsDocumentArchive, error) {
 	var archive cms.CmsDocumentArchive
 	err := r.db.Where("document_id = ?", documentCode).First(&archive).Error
 	return &archive, err

@@ -1,26 +1,29 @@
 package sp
 
 import (
+	"server/models/common"
 	"time"
 )
+
 type SpUserAddress struct {
-    ID            uint       `gorm:"primaryKey;autoIncrement" json:"id"`
-    UserID        uint       `gorm:"not null;default:0" json:"userId"`
-    Title         string     `gorm:"size:200;not null" json:"title"`
-    DefaultStatus *bool      `json:"defaultStatus"`
-    FirstName     string     `gorm:"size:64;not null;default:''" json:"firstName"`
-    LastName      string     `gorm:"size:64;not null;default:''" json:"lastName"`
-    Email         string     `gorm:"size:128;not null;default:''" json:"email"`
-    Phone         string     `gorm:"size:64;not null;default:''" json:"phone"`
-    Province      string     `gorm:"size:64;not null;default:''" json:"province"`
-    City          string     `gorm:"size:64;not null;default:''" json:"city"`
-    Region        string     `gorm:"size:64;not null;default:''" json:"region"`
-    DetailAddress string     `gorm:"size:200;not null;default:''" json:"detailAddress"`
-    CreatedTime   time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"createdTime"`
-    UpdatedTime   time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updatedTime"`
-    Country       string     `gorm:"size:64;not null;default:''" json:"country"`
-    PostalCode    string     `gorm:"size:64;not null;default:''" json:"postalCode"`
+	ID            common.MyID `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID        common.MyID `gorm:"not null;default:0" json:"user_id"`
+	Title         string      `gorm:"size:200;not null" json:"title"`
+	DefaultStatus *bool       `json:"default_status"`
+	FirstName     string      `gorm:"size:64;not null;default:''" json:"first_name"`
+	LastName      string      `gorm:"size:64;not null;default:''" json:"last_name"`
+	Email         string      `gorm:"size:128;not null;default:''" json:"email"`
+	Phone         string      `gorm:"size:64;not null;default:''" json:"phone"`
+	Province      string      `gorm:"size:64;not null;default:''" json:"province"`
+	City          string      `gorm:"size:64;not null;default:''" json:"city"`
+	Region        string      `gorm:"size:64;not null;default:''" json:"region"`
+	DetailAddress string      `gorm:"size:200;not null;default:''" json:"detail_address"`
+	CreatedTime   time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
+	UpdatedTime   time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
+	Country       string      `gorm:"size:64;not null;default:''" json:"country"`
+	PostalCode    string      `gorm:"size:64;not null;default:''" json:"postal_code"`
 }
+
 func (SpUserAddress) TableName() string {
-    return "sp_user_address"
+	return "sp_user_address"
 }

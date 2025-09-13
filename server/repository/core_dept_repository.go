@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/core"
+	"server/models/common"
 )
 
 type CoreDeptRepository struct {
@@ -26,7 +27,7 @@ func (r *CoreDeptRepository) Update(dept *core.CoreDept) error {
 }
 
 // 根据ID获取部门
-func (r *CoreDeptRepository) FindByID(id int64) (*core.CoreDept, error) {
+func (r *CoreDeptRepository) FindByID(id common.MyID) (*core.CoreDept, error) {
 	var dept core.CoreDept
 	err := r.db.First(&dept, id).Error
 	return &dept, err
@@ -61,20 +62,20 @@ func (r *CoreDeptRepository) FindByID(id int64) (*core.CoreDept, error) {
 // }
 
 // 根据父ID获取子部门
-func (r *CoreDeptRepository) FindByPid(pid int64) ([]*core.CoreDept, error) {
+func (r *CoreDeptRepository) FindByPid(pid common.MyID) ([]*core.CoreDept, error) {
 	var depts []*core.CoreDept
 	err := r.db.Where("pid = ?", pid).Order("sort_num ASC").Find(&depts).Error
 	return depts, err
 }
 
 // 删除部门
-func (r *CoreDeptRepository) Delete(id int64) error {
+func (r *CoreDeptRepository) Delete(id common.MyID) error {
 	return r.db.Model(&core.CoreAdminRoleIndex{}).
 	Where("id = ?", id).
 	Update("deleted_time", gorm.Expr("NOW()")).Error
 }
 
-func (r *CoreDeptRepository) List(pid int64) ([]core.CoreDept,int64, error) {
+func (r *CoreDeptRepository) List(pid common.MyID) ([]core.CoreDept,int64, error) {
 	var coreDepts []core.CoreDept
 	var total int64
 

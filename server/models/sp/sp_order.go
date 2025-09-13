@@ -2,12 +2,13 @@ package sp
 
 import (
 	"time"
+	"server/models/common"
 )
 
 type SpOrder struct {
-	ID               uint       `gorm:"primaryKey;autoIncrement" json:"id"`
+	ID               common.MyID       `gorm:"primaryKey;autoIncrement" json:"id"`
 	Code             string     `gorm:"size:128;not null;default:''" json:"code"`
-	UserID           uint       `gorm:"not null;default:0" json:"user_id"`
+	UserID           common.MyID       `gorm:"not null;default:0" json:"user_id"`
 	Nickname         string     `gorm:"size:100;not null" json:"nickname"`
 	Email            string     `gorm:"size:100;not null" json:"email"`
 	TotalAmount      float64    `gorm:"type:decimal(10,2);unsigned;not null;default:0.00" json:"total_amount"`

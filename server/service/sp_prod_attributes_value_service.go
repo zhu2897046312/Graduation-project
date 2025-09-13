@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProdAttributesValueService struct {
@@ -42,7 +43,7 @@ func (s *SpProdAttributesValueService) UpdateAttributeValue(value *sp.SpProdAttr
 }
 
 // GetValuesByAttributeID 根据属性ID获取值列表
-func (s *SpProdAttributesValueService) GetValuesByAttributeID(attrID uint) ([]sp.SpProdAttributesValue, error) {
+func (s *SpProdAttributesValueService) GetValuesByAttributeID(attrID common.MyID) ([]sp.SpProdAttributesValue, error) {
 	if attrID == 0 {
 		return nil, errors.New("无效的属性ID")
 	}
@@ -50,7 +51,7 @@ func (s *SpProdAttributesValueService) GetValuesByAttributeID(attrID uint) ([]sp
 }
 
 // GetValueByID 根据ID获取属性值
-func (s *SpProdAttributesValueService) GetValueByID(id uint) (*sp.SpProdAttributesValue, error) {
+func (s *SpProdAttributesValueService) GetValueByID(id common.MyID) (*sp.SpProdAttributesValue, error) {
 	if id == 0 {
 		return nil, errors.New("无效的属性值ID")
 	}
@@ -71,7 +72,7 @@ func (s *SpProdAttributesValueService) BatchCreateAttributeValues(values []sp.Sp
 }
 
 // DeleteValuesByAttributeID 删除属性的所有值
-func (s *SpProdAttributesValueService) DeleteValuesByAttributeID(attrID uint) error {
+func (s *SpProdAttributesValueService) DeleteValuesByAttributeID(attrID common.MyID) error {
 	if attrID == 0 {
 		return errors.New("无效的属性ID")
 	}

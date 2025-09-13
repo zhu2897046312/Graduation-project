@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 	"math/rand"
 	"fmt"
@@ -61,14 +62,14 @@ func (s *SpOrderRefundService) UpdateRefund(refund *sp.SpOrderRefund) error {
 	return s.repoFactory.GetSpOrderRefundRepository().Update(refund)
 }
 
-func (s *SpOrderRefundService) GetRefundByOrderIDOne(orderID uint) (*sp.SpOrderRefund, error) {
+func (s *SpOrderRefundService) GetRefundByOrderIDOne(orderID common.MyID) (*sp.SpOrderRefund, error) {
 	if orderID == 0 {
 		return nil, errors.New("无效的订单ID")
 	}
 	return s.repoFactory.GetSpOrderRefundRepository().FindByOrderID(orderID)
 }
 // GetRefundByOrderID 根据订单ID获取退款记录
-func (s *SpOrderRefundService) GetRefundByOrderID(orderID uint) ([]sp.SpOrderRefund,int64, error) {
+func (s *SpOrderRefundService) GetRefundByOrderID(orderID common.MyID) ([]sp.SpOrderRefund,int64, error) {
 	if orderID == 0 {
 		return nil,0, errors.New("无效的订单ID")
 	}
@@ -84,7 +85,7 @@ func (s *SpOrderRefundService) GetRefundByRefundNo(refundNo string) (*sp.SpOrder
 }
 
 // UpdateRefundStatus 更新退款状态
-func (s *SpOrderRefundService) UpdateRefundStatus(id uint, status uint8) error {
+func (s *SpOrderRefundService) UpdateRefundStatus(id common.MyID, status uint8) error {
 	if status != 1 && status != 2 && status != 3 {
 		return errors.New("无效的退款状态")
 	}
@@ -92,13 +93,13 @@ func (s *SpOrderRefundService) UpdateRefundStatus(id uint, status uint8) error {
 }
 
 // UpdateRefundAmount 更新退款金额
-func (s *SpOrderRefundService) UpdateRefundAmount(id uint, amount float64) error {
+func (s *SpOrderRefundService) UpdateRefundAmount(id common.MyID, amount float64) error {
 	if amount <= 0 {
 		return errors.New("退款金额必须大于0")
 	}
 	return s.repoFactory.GetSpOrderRefundRepository().UpdateRefundAmount(id, amount)
 }
 
-func (s *SpOrderRefundService) ListWithPagination(ordersID []uint, refundNo string, status uint) ([]sp.SpOrderRefund, int64, error) {
+func (s *SpOrderRefundService) ListWithPagination(ordersID []common.MyID, refundNo string, status uint) ([]sp.SpOrderRefund, int64, error) {
 	return s.repoFactory.GetSpOrderRefundRepository().ListWithPagination(ordersID, refundNo, status)
 }

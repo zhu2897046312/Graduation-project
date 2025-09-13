@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"server/models/cms"
+    "server/models/common"
     "time"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func NewCmsDocumentRepository(db *gorm.DB) *CmsDocumentRepository {
 }
 
 // 根据分类ID获取文档
-func (r *CmsDocumentRepository) FindByCategoryID(categoryID int64) ([]cms.CmsDocument, error) {
+func (r *CmsDocumentRepository) FindByCategoryID(categoryID common.MyID) ([]cms.CmsDocument, error) {
     var documents []cms.CmsDocument
     err := r.db.Where("category_id = ?", categoryID).Find(&documents).Error
     return documents, err
@@ -83,7 +84,7 @@ func (r *CmsDocumentRepository) Update(document *cms.CmsDocument) error {
 }
 
 // 根据ID查找文档
-func (r *CmsDocumentRepository) FindByID(id int64) (*cms.CmsDocument, error) {
+func (r *CmsDocumentRepository) FindByID(id common.MyID) (*cms.CmsDocument, error) {
     var document cms.CmsDocument
     err := r.db.First(&document, id).Error
     if err != nil {
@@ -98,7 +99,7 @@ func (r *CmsDocumentRepository) FindByDocumentCode(documentCode string) (*cms.Cm
 	return &document, err
 }
 
-func (r *CmsDocumentRepository) DeleteByID(id int64) error {
+func (r *CmsDocumentRepository) DeleteByID(id common.MyID) error {
     result := r.db.Model(&cms.CmsDocument{}).
 		Where("id = ?", id).
 		Update("deleted_time", time.Now())

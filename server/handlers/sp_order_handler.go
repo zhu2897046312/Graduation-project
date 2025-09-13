@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"server/middleware"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -14,9 +15,9 @@ import (
 )
 
 type SpOrderListVo struct {
-	ID              uint             `json:"id"`
+	ID              common.MyID             `json:"id"`
 	Code            string           `json:"code"`
-	UserID          uint             `json:"user_id"`
+	UserID          common.MyID             `json:"user_id"`
 	Nickname        string           `json:"nickname"`
 	Email           string           `json:"email"`
 	TotalAmount     float64          `json:"total_amount"`
@@ -48,8 +49,8 @@ type ListOrdersRequest struct {
 }
 
 type ProductItemRequest struct {
-	ProductID uint `json:"product_id"`
-	SkuID     uint `json:"sku_id"`
+	ProductID common.MyID `json:"product_id"`
+	SkuID     common.MyID `json:"sku_id"`
 	Quantity  uint `json:"quantity"`
 }
 
@@ -86,9 +87,9 @@ type SpOrderFrontInfoVo struct {
 
 // SpOrderFrontQueryVo 前端订单查询视图对象
 type SpOrderFrontQueryVo struct {
-	ID               uint                `json:"id" description:"主键"`
+	ID               common.MyID                `json:"id" description:"主键"`
 	Code             string              `json:"code" description:"订单号"`
-	UserID           uint                `json:"user_id" description:"用户id"`
+	UserID           common.MyID                `json:"user_id" description:"用户id"`
 	VisitorQueryCode string              `json:"visitor_query_code" description:"访客查询码"`
 	Nickname         string              `json:"nickname" description:"昵称"`
 	Email            string              `json:"email" description:"邮箱"`
@@ -107,13 +108,13 @@ type SpOrderFrontQueryVo struct {
 
 // SpOrderItemFrontVo 前端订单项视图对象
 type SpOrderItemFrontVo struct {
-	ID            uint    `json:"id" description:"主键"`
+	ID            common.MyID    `json:"id" description:"主键"`
 	Title         string  `json:"title" description:"商品标题"`
 	SkuTitle      string  `json:"sku_title" description:"商品SKU内容"`
 	Thumb         string  `json:"thumb" description:"商品图片"`
-	OrderID       uint    `json:"order_id" description:"订单id"`
-	ProductID     uint    `json:"product_id" description:"商品id"`
-	SkuID         uint    `json:"sku_id" description:"商品SKUid"`
+	OrderID       common.MyID    `json:"order_id" description:"订单id"`
+	ProductID     common.MyID    `json:"product_id" description:"商品id"`
+	SkuID         common.MyID    `json:"sku_id" description:"商品SKUid"`
 	TotalAmount   float64 `json:"total_amount" description:"总金额"`
 	PayAmount     float64 `json:"pay_amount" description:"实际支付金额"`
 	Quantity      uint    `json:"quantity" description:"购买数量"`
@@ -189,7 +190,7 @@ func (h *SpOrderHandler) CreateOrder(c *gin.Context) {
 	// 创建订单主记录
 	order := &sp.SpOrder{
 		Code:             orderCode,
-		UserID:           uint(userID),
+		UserID:           common.MyID(userID),
 		Nickname:         req.FirstName + " " + req.LastName,
 		Email:            req.Email,
 		TotalAmount:      totalAmountWithFreight,
@@ -223,7 +224,7 @@ func (h *SpOrderHandler) CreateOrder(c *gin.Context) {
 	}
 
 	// 清空购物车
-	if err := h.clearCart(uint(userID), fingerprint); err != nil {
+	if err := h.clearCart(common.MyID(userID), fingerprint); err != nil {
 		Error(c, 16006, "清空购物车失败")
 	}
 
@@ -232,7 +233,7 @@ func (h *SpOrderHandler) CreateOrder(c *gin.Context) {
 }
 
 // clearCart 清空购物车
-func (h *SpOrderHandler) clearCart(userID uint, fingerprint string) error {
+func (h *SpOrderHandler) clearCart(userID common.MyID, fingerprint string) error {
 	if userID == 0 {
 		// 游客 - 根据设备指纹清空
 		return h.cartService.ClearCartByFingerprint(fingerprint)
@@ -268,8 +269,8 @@ func (h *SpOrderHandler) createOrderItems(productItems []ProductItemRequest) ([]
 		pictureGallery, _ := json.Marshal(product.PictureGallery)
 		thumb := string(pictureGallery)
 		orderItem := &sp.SpOrderItem{
-			ProductID:   item.ProductID,
-			SkuID:       item.SkuID,
+			ProductID:   common.MyID(item.ProductID),
+			SkuID:       common.MyID(item.SkuID),
 			Quantity:    item.Quantity,
 			Price:       product.Price,
 			TotalAmount: itemTotalAmount,
@@ -287,7 +288,7 @@ func (h *SpOrderHandler) createOrderItems(productItems []ProductItemRequest) ([]
 }
 
 // saveOrderItems 保存订单项
-func (h *SpOrderHandler) saveOrderItems(orderID uint, items []*sp.SpOrderItem) error {
+func (h *SpOrderHandler) saveOrderItems(orderID common.MyID, items []*sp.SpOrderItem) error {
 	for _, item := range items {
 		item.OrderID = orderID
 		if err := h.orderItemService.CreateOrderItem(item); err != nil {
@@ -298,7 +299,7 @@ func (h *SpOrderHandler) saveOrderItems(orderID uint, items []*sp.SpOrderItem) e
 }
 
 // saveOrderAddress 保存收货地址
-func (h *SpOrderHandler) saveOrderAddress(orderID uint, req OrderCreateRequest) error {
+func (h *SpOrderHandler) saveOrderAddress(orderID common.MyID, req OrderCreateRequest) error {
 	address := &sp.SpOrderReceiveAddress{
 		OrderID:       orderID,
 		FirstName:     req.FirstName,
@@ -339,7 +340,7 @@ func (h *SpOrderHandler) GetOrder(c *gin.Context) {
 		return
 	}
 	uid := utils.ConvertToUint(id)
-	order, err := h.service.GetOrderByID(uid)
+	order, err := h.service.GetOrderByID(common.MyID(uid))
 	if err != nil {
 		Error(c, 27003, "订单不存在")
 		return
@@ -386,7 +387,7 @@ func (h *SpOrderHandler) GetOrdersByUser(c *gin.Context) {
 		return
 	}
 
-	orders, err := h.service.GetOrdersByUserID(uint(userID))
+	orders, err := h.service.GetOrdersByUserID(common.MyID(userID))
 	if err != nil {
 		Error(c, 27005, "获取订单列表失败")
 		return
@@ -428,7 +429,7 @@ func (h *SpOrderHandler) UpdateOrderState(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	if err := h.service.UpdateOrderState(orderID, req.State, req.Remark); err != nil {
+	if err := h.service.UpdateOrderState(common.MyID(orderID), req.State, req.Remark); err != nil {
 		Error(c, 27007, err.Error())
 		return
 	}
@@ -450,11 +451,11 @@ func (h *SpOrderHandler) UpdateDeliveryInfo(c *gin.Context) {
 		return
 	}
 	orderID := utils.ConvertToUint(req.ID)
-	if err := h.service.UpdateDeliveryInfo(orderID, req.Company, req.SN); err != nil {
+	if err := h.service.UpdateDeliveryInfo(common.MyID(orderID), req.Company, req.SN); err != nil {
 		Error(c, 27008, err.Error())
 		return
 	}
-	if err := h.service.UpdateOrderState(orderID, 3, ""); err != nil {
+	if err := h.service.UpdateOrderState(common.MyID(orderID), 3, ""); err != nil {
 		Error(c, 27007, err.Error())
 		return
 	}
@@ -533,7 +534,7 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	order, err := h.service.GetOrderByID(orderID)
+	order, err := h.service.GetOrderByID(common.MyID(orderID))
 	if err != nil {
 		Error(c, 27011, err.Error())
 		return
@@ -547,7 +548,7 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 		return
 	}
 
-	refunds, _, err_1 := h.orderRefundService.GetRefundByOrderID(orderID)
+	refunds, _, err_1 := h.orderRefundService.GetRefundByOrderID(common.MyID(orderID))
 	if err_1 != nil {
 		Error(c, 27015, err_1.Error())
 		return
@@ -563,7 +564,7 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 	imagesJson, _ := json.Marshal(req.ImagesReq)
 	images := json.RawMessage(imagesJson)
 	refund := sp.SpOrderRefund{
-		OrderID:      orderID,
+		OrderID:      common.MyID(orderID),
 		Reason:       req.Reason,
 		RefundAmount: req.RefundAmount,
 		Images:       images,

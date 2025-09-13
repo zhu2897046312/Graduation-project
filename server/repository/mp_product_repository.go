@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/mp"
+	"server/models/common"
 )
 
 type MpProductRepository struct {
@@ -26,7 +27,7 @@ func (r *MpProductRepository) Update(product *mp.MpProduct) error {
 }
 
 // 根据ID获取产品
-func (r *MpProductRepository) FindByID(id int64) (*mp.MpProduct, error) {
+func (r *MpProductRepository) FindByID(id common.MyID) (*mp.MpProduct, error) {
 	var product mp.MpProduct
 	err := r.db.First(&product, id).Error
 	return &product, err
@@ -58,7 +59,7 @@ func (r *MpProductRepository) FindByCode(code string) (*mp.MpProduct, error) {
 }
 
 // 更新产品状态
-func (r *MpProductRepository) UpdateState(id int64, state int) error {
+func (r *MpProductRepository) UpdateState(id common.MyID, state int) error {
 	return r.db.Model(&mp.MpProduct{}).
 		Where("id = ?", id).
 		Update("state", state).Error

@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProductPropertyRepository struct {
@@ -26,7 +27,7 @@ func (r *SpProductPropertyRepository) Update(property *sp.SpProductProperty) err
 }
 
 // 根据商品ID获取属性
-func (r *SpProductPropertyRepository) FindByProductID(productID uint) ([]sp.SpProductProperty, error) {
+func (r *SpProductPropertyRepository) FindByProductID(productID common.MyID) ([]sp.SpProductProperty, error) {
 	var properties []sp.SpProductProperty
 	err := r.db.Where("product_id = ?", productID).
 		Order("sort_num ASC").
@@ -40,7 +41,7 @@ func (r *SpProductPropertyRepository) BatchCreate(properties []sp.SpProductPrope
 }
 
 // 删除商品的所有属性
-func (r *SpProductPropertyRepository) DeleteByProductID(productID uint) error {
+func (r *SpProductPropertyRepository) DeleteByProductID(productID common.MyID) error {
 	return r.db.Where("product_id = ?", productID).
 		Delete(&sp.SpProductProperty{}).Error
 }

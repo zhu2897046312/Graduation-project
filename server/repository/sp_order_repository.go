@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -27,7 +28,7 @@ func (r *SpOrderRepository) Update(order *sp.SpOrder) error {
 }
 
 // 根据ID获取订单
-func (r *SpOrderRepository) FindByID(id uint) (*sp.SpOrder, error) {
+func (r *SpOrderRepository) FindByID(id common.MyID) (*sp.SpOrder, error) {
 	var order sp.SpOrder
 	err := r.db.First(&order, id).Error
 	return &order, err
@@ -47,7 +48,7 @@ func (r *SpOrderRepository) FindByVisitorQueryCode(code string) (*sp.SpOrder, er
 }
 
 // 根据用户ID获取订单列表
-func (r *SpOrderRepository) FindByUserID(userID uint) ([]sp.SpOrder, error) {
+func (r *SpOrderRepository) FindByUserID(userID common.MyID) ([]sp.SpOrder, error) {
 	var orders []sp.SpOrder
 	err := r.db.Where("user_id = ?", userID).
 		Order("created_time DESC").
@@ -65,7 +66,7 @@ func (r *SpOrderRepository) FindByState(state uint8) ([]sp.SpOrder, error) {
 }
 
 // 更新订单状态
-func (r *SpOrderRepository) UpdateState(id uint, state uint8,remark string) error {
+func (r *SpOrderRepository) UpdateState(id common.MyID, state uint8,remark string) error {
 	updates := map[string]interface{}{
 		"state": state,
 		"remark": remark,
@@ -89,7 +90,7 @@ func (r *SpOrderRepository) UpdateState(id uint, state uint8,remark string) erro
 }
 
 // 更新物流信息
-func (r *SpOrderRepository) UpdateDeliveryInfo(id uint, company, sn string) error {
+func (r *SpOrderRepository) UpdateDeliveryInfo(id common.MyID, company, sn string) error {
 	return r.db.Model(&sp.SpOrder{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{
@@ -144,7 +145,7 @@ func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) (
 	return products, total, err
 }
 
-func (r *SpOrderRepository) Delete(id uint) error {
+func (r *SpOrderRepository) Delete(id common.MyID) error {
 	return r.db.Model(&sp.SpOrder{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{

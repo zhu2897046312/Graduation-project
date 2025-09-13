@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import api from '../../api';
+import type { CartList } from '../../api/type';
 import { NTag, NPopconfirm, NInputNumber, NCard, NButton, useMessage,NEmpty } from 'naive-ui';
 
 const message = useMessage();
@@ -12,14 +13,19 @@ useSeoMeta({
 })
 
 const { data: cart_list, refresh } = await useAsyncData(async () => {
-  const res: any = await api.shop.cart.list();
-  let count = 0
-  console.log("cart list", res.list)
-  res.list.forEach((it: any) => {
-    count += it.quantity
-  })
-  cartNum.value = count
-  return res.list;
+  try {
+    const res: any = await api.shop.cart.list() 
+    
+    let count = 0
+    res.list.forEach((it: any) => {
+      count += it.quantity
+    })
+    cartNum.value = count
+    return res.list as CartList;
+  } catch (error) {
+    console.error('Failed to fetch cart:', error)
+    return [] as CartList // 提供空数组作为默认值
+  }
 })
 
 
@@ -27,42 +33,45 @@ const lock = useState<boolean>('lock', () => false)
 
 const total_amount = computed(() => {
   let total = 0
-  cart_list.value.forEach((item: any) => {
+  cart_list.value?.forEach((item: any) => {
     total += Number(item.original_price) * item.quantity
   })
   return total
 })
 const pay_amount = computed(() => {
   let total = 0
-  cart_list.value.forEach((item: any) => {
+  cart_list.value?.forEach((item: any) => {
     total += Number(item.price) * item.quantity
   })
   return total
 })
 
 const handleChangeCartItem = async (e: any, value: number) => {
-  if (cart_list.value) {
-    if (lock.value) {
-      return
+  if (!cart_list.value) return
+  
+  if (lock.value) return
+  
+  lock.value = true
+  let messageReactive = message.loading('Updating cart', { duration: 0 })
+  
+  // 使用临时变量
+  const currentCartList = cart_list.value
+  const cartItem = currentCartList[e]
+  
+  try {
+    let _quantity = cartItem!.quantity - value
+    if (_quantity != 0) {
+      await api.shop.cart.act({
+        product_id: cartItem!.product_id,
+        sku_id: cartItem!.sku_id,
+        quantity: Math.abs(_quantity),
+        add: _quantity < 0
+      })
+      refresh()
     }
-    lock.value = true
-    let messageReactive = message.loading('Updating cart', { duration: 0 })
-    try {
-      let _quantity = cart_list.value[e].quantity - value
-      if (_quantity != 0) {
-        await api.shop.cart.act({
-          product_id: cart_list.value[e].product_id,
-          sku_id: cart_list.value[e].sku_id,
-          quantity: Math.abs(_quantity),
-          add: _quantity < 0
-        })
-        refresh()
-      }
-    } finally {
-      messageReactive.destroy()
-      lock.value = false
-    }
-
+  } finally {
+    messageReactive.destroy()
+    lock.value = false
   }
 }
 
@@ -77,11 +86,16 @@ const handleRemoveCartItem = async (e: any) => {
     }
     lock.value = true
     let messageReactive = message.loading('updating cart', { duration: 0 })
+    
+    const currentCartList = cart_list.value
+    const productID = currentCartList[e]!.product_id
+    const skuID = currentCartList[e]!.sku_id
+    const quantity = currentCartList[e]!.quantity
     try {
       await api.shop.cart.act({
-        product_id: cart_list.value[e].product_id,
-        sku_id: cart_list.value[e].sku_id,
-        quantity: cart_list.value[e].quantity,
+        product_id: productID,
+        sku_id: skuID,
+        quantity: quantity,
         add: false
       })
       refresh()
@@ -105,6 +119,9 @@ const formatPrice = (price: unknown) => {
   return !isNaN(num) ? `$${num.toFixed(2)}` : '$0.00'
 }
 
+onMounted(() => {
+  console.log("cart list: ", cart_list.value)
+})
 </script>
 
 <template>

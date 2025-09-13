@@ -2,6 +2,7 @@ package repository
 
 import (
 	"server/models/cms"
+	"server/models/common"
 	"time"
 
 	"gorm.io/gorm"
@@ -27,13 +28,13 @@ func (r *CmsRecommendIndexRepository) Update(index *cms.CmsRecommendIndex) error
 	return r.db.Updates(index).Error
 }
 
-func (r *CmsRecommendIndexRepository) FindByID(id int) (*cms.CmsRecommendIndex, error) {
+func (r *CmsRecommendIndexRepository) FindByID(id common.MyID) (*cms.CmsRecommendIndex, error) {
 	var index cms.CmsRecommendIndex
 	err := r.db.First(&index, id).Error
 	return &index, err
 }
 
-func (r *CmsRecommendIndexRepository) Delete(id int) error {
+func (r *CmsRecommendIndexRepository) Delete(id common.MyID) error {
 	result := r.db.Model(&cms.CmsRecommendIndex{}).
 		Where("id = ?", id).
 		Update("deleted_time", time.Now())
@@ -42,7 +43,7 @@ func (r *CmsRecommendIndexRepository) Delete(id int) error {
 }
 
 // 根据推荐ID获取索引项
-func (r *CmsRecommendIndexRepository) FindByRecommendID(recommendID int) ([]cms.CmsRecommendIndex, error) {
+func (r *CmsRecommendIndexRepository) FindByRecommendID(recommendID common.MyID) ([]cms.CmsRecommendIndex, error) {
 	var indices []cms.CmsRecommendIndex
 	query := r.db.Model(&cms.CmsRecommendIndex{}).Where("deleted_time IS NULL")
 	err := query.Where("recommend_id = ?", recommendID).

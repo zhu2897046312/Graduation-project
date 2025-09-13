@@ -3,6 +3,7 @@ package handlers
 import (
 	"server/models/sp"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"strconv"
 
@@ -18,7 +19,7 @@ type ListSpOrderRefundRequest struct {
 }
 
 type SpOrderRefundListVo struct {
-	ID           uint    `json:"id" schema:"主键"`
+	ID           common.MyID    `json:"id" schema:"主键"`
 	RefundNo     string  `json:"refund_no" schema:"退款单号"`
 	Status       uint8   `json:"status" schema:"退款状态"`
 	RefundAmount float64 `json:"refund_amount" schema:"退款金额"`
@@ -69,7 +70,7 @@ func (h *SpOrderRefundHandler) UpdateRefund(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	refund.ID = uint(id)
+	refund.ID = common.MyID(id)
 
 	if err := h.service.UpdateRefund(&refund); err != nil {
 		Error(c, 26002, err.Error())
@@ -91,7 +92,7 @@ func (h *SpOrderRefundHandler) GetRefundByOrder(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	refund, err := h.service.GetRefundByOrderIDOne(orderID)
+	refund, err := h.service.GetRefundByOrderIDOne(common.MyID(orderID))
 	if err != nil {
 		Error(c, 26003, "退款记录不存在")
 		return
@@ -155,7 +156,7 @@ func (h *SpOrderRefundHandler) UpdateRefundStatus(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateRefundStatus(uint(id), req.Status); err != nil {
+	if err := h.service.UpdateRefundStatus(common.MyID(id), req.Status); err != nil {
 		Error(c, 26005, err.Error())
 		return
 	}
@@ -164,28 +165,28 @@ func (h *SpOrderRefundHandler) UpdateRefundStatus(c *gin.Context) {
 }
 
 // 更新退款金额
-func (h *SpOrderRefundHandler) UpdateRefundAmount(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
+// func (h *SpOrderRefundHandler) UpdateRefundAmount(c *gin.Context) {
+// 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+// 	if err != nil || id == 0 {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	var req struct {
-		Amount float64 `json:"amount"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
+// 	var req struct {
+// 		Amount float64 `json:"amount"`
+// 	}
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		InvalidParams(c)
+// 		return
+// 	}
 
-	if err := h.service.UpdateRefundAmount(uint(id), req.Amount); err != nil {
-		Error(c, 26006, err.Error())
-		return
-	}
+// 	if err := h.service.UpdateRefundAmount(uint(id), req.Amount); err != nil {
+// 		Error(c, 26006, err.Error())
+// 		return
+// 	}
 
-	Success(c, nil)
-}
+// 	Success(c, nil)
+// }
 
 func (h *SpOrderRefundHandler) ListSpOrderRefund(c *gin.Context) {
 	var req ListSpOrderRefundRequest
@@ -205,8 +206,8 @@ func (h *SpOrderRefundHandler) ListSpOrderRefund(c *gin.Context) {
 	}
 
 	// 提取订单ID列表，并构建ID到订单的映射，避免重复查询
-	orderIDs := make([]uint, 0, len(orders))
-	orderMap := make(map[uint]sp.SpOrder, len(orders)) // 假设订单实体为sp.SpOrder
+	orderIDs := make([]common.MyID, 0, len(orders))
+	orderMap := make(map[common.MyID]sp.SpOrder, len(orders)) // 假设订单实体为sp.SpOrder
 	for _, order := range orders {
 		orderIDs = append(orderIDs, order.ID)
 		orderMap[order.ID] = order // 存储ID与订单的映射关系

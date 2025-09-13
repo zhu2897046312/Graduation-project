@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/mp"
+	"server/models/common"
 	"time"
 )
 
@@ -56,7 +57,7 @@ func (s *MpUserService) UpdateUser(user *mp.MpUser) error {
 }
 
 // GetUserByID 根据ID获取用户
-func (s *MpUserService) GetUserByID(id int) (*mp.MpUser, error) {
+func (s *MpUserService) GetUserByID(id common.MyID) (*mp.MpUser, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的用户ID")
 	}
@@ -72,7 +73,7 @@ func (s *MpUserService) GetUserByEmail(email string) (*mp.MpUser, error) {
 }
 
 // UpdateUserStatus 更新用户状态
-func (s *MpUserService) UpdateUserStatus(id int, status int8) error {
+func (s *MpUserService) UpdateUserStatus(id common.MyID, status int8) error {
 	if id <= 0 {
 		return errors.New("无效的用户ID")
 	}
@@ -84,7 +85,7 @@ func (s *MpUserService) UpdateUserStatus(id int, status int8) error {
 }
 
 // UpdateUserPassword 更新用户密码
-func (s *MpUserService) UpdateUserPassword(id int, newPassword string) error {
+func (s *MpUserService) UpdateUserPassword(id common.MyID, newPassword string) error {
 	if id <= 0 {
 		return errors.New("无效的用户ID")
 	}
@@ -96,7 +97,7 @@ func (s *MpUserService) UpdateUserPassword(id int, newPassword string) error {
 }
 
 // VerifyUserEmail 验证用户邮箱
-func (s *MpUserService) VerifyUserEmail(id int) error {
+func (s *MpUserService) VerifyUserEmail(id common.MyID) error {
 	if id <= 0 {
 		return errors.New("无效的用户ID")
 	}
@@ -104,7 +105,7 @@ func (s *MpUserService) VerifyUserEmail(id int) error {
 }
 
 // UpdateUserToken 更新用户token
-func (s *MpUserService) UpdateUserToken(id int, token string) error {
+func (s *MpUserService) UpdateUserToken(id common.MyID, token string) error {
 	if id <= 0 {
 		return errors.New("无效的用户ID")
 	}

@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpUserAddressRepository struct {
@@ -26,7 +27,7 @@ func (r *SpUserAddressRepository) Update(address *sp.SpUserAddress) error {
 }
 
 // 根据ID获取地址
-func (r *SpUserAddressRepository) FindByID(id uint) (*sp.SpUserAddress, error) {
+func (r *SpUserAddressRepository) FindByID(id common.MyID) (*sp.SpUserAddress, error) {
 	var address sp.SpUserAddress
 	err := r.db.First(&address, id).Error
 	return &address, err

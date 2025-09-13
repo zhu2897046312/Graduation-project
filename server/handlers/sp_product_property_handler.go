@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -44,7 +45,7 @@ func (h *SpProductPropertyHandler) UpdateProperty(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	property.ID = uint(id)
+	property.ID = common.MyID(id)
 
 	if err := h.service.UpdateProperty(&property); err != nil {
 		Error(c, 3002, err.Error())
@@ -62,7 +63,7 @@ func (h *SpProductPropertyHandler) GetPropertiesByProduct(c *gin.Context) {
 		return
 	}
 
-	properties, err := h.service.GetPropertiesByProductID(uint(productID))
+	properties, err := h.service.GetPropertiesByProductID(common.MyID(productID))
 	if err != nil {
 		Error(c, 3003, err.Error())
 		return
@@ -79,7 +80,7 @@ func (h *SpProductPropertyHandler) DeletePropertiesByProduct(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeletePropertiesByProductID(uint(productID)); err != nil {
+	if err := h.service.DeletePropertiesByProductID(common.MyID(productID)); err != nil {
 		Error(c, 3004, err.Error())
 		return
 	}

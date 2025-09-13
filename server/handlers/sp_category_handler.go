@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"server/models/common"
 	"server/models/sp"
 	"server/service"
 	"server/utils"
@@ -17,7 +18,7 @@ type SpCategoryHandler struct {
 // 树形结构返回结果
 type CategoryTreeResult struct {
 	Label    string               `json:"label"`
-	Value    uint                 `json:"value"`
+	Value    common.MyID          `json:"value"`
 	Node     sp.SpCategory        `json:"node"`
 	Children []CategoryTreeResult `json:"children"`
 }
@@ -75,7 +76,7 @@ func (h *SpCategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 	category := sp.SpCategory{
-		Pid:            req.PID,
+		Pid:            common.MyID(req.PID),
 		Title:          req.Title,
 		Code:           req.Code,
 		State:          req.State,
@@ -103,8 +104,8 @@ func (h *SpCategoryHandler) UpdateCategory(c *gin.Context) {
 		return
 	}
 	category := sp.SpCategory{
-		ID:             req.ID,
-		Pid:            req.PID,
+		ID:             common.MyID(req.ID),
+		Pid:            common.MyID(req.PID),
 		Title:          req.Title,
 		Code:           req.Code,
 		State:          req.State,
@@ -132,7 +133,7 @@ func (h *SpCategoryHandler) GetCategory(c *gin.Context) {
 		return
 	}
 
-	category, err := h.service.GetCategoryByID(uintId)
+	category, err := h.service.GetCategoryByID(common.MyID(uintId))
 	if err != nil {
 		Error(c, 22003, "分类不存在")
 		return
@@ -180,7 +181,7 @@ func (h *SpCategoryHandler) GetSubCategories(c *gin.Context) {
 		pid = 0 // 默认获取顶级分类
 	}
 
-	categories, err := h.service.GetCategoriesByPid(uint(pid))
+	categories, err := h.service.GetCategoriesByPid(common.MyID(pid))
 	if err != nil {
 		Error(c, 22004, "获取子分类失败")
 		return
@@ -212,20 +213,20 @@ func (h *SpCategoryHandler) GetCategoryTree(c *gin.Context) {
 	}
 
 	// 构建树形结构
-	tree := h.buildTree(categories, uint(pid), state)
+	tree := h.buildTree(categories, common.MyID(pid), state)
 
 	Success(c, tree)
 }
 
 // 递归构建树形结构
-func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid uint, state *uint8) []CategoryTreeResult {
+func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid common.MyID, state *uint8) []CategoryTreeResult {
 	var tree []CategoryTreeResult
 
 	for _, category := range categories {
 		if category.Pid == pid && (state == nil || category.State == *state) {
 			treeResult := CategoryTreeResult{
 				Label: category.Title,
-				Value: category.ID,
+				Value: (category.ID),
 				Node:  *category,
 			}
 
@@ -260,7 +261,7 @@ func (h *SpCategoryHandler) UpdateCategoryState(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateCategoryState(uint(id), req.State); err != nil {
+	if err := h.service.UpdateCategoryState(common.MyID(id), req.State); err != nil {
 		Error(c, 22005, err.Error())
 		return
 	}
@@ -284,7 +285,7 @@ func (h *SpCategoryHandler) UpdateCategorySortNum(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateCategorySortNum(uint(id), req.SortNum); err != nil {
+	if err := h.service.UpdateCategorySortNum(common.MyID(id), req.SortNum); err != nil {
 		Error(c, 22006, err.Error())
 		return
 	}

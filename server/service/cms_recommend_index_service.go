@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/cms"
+	"server/models/common"
 )
 
 type CmsRecommendIndexService struct {
@@ -41,7 +42,7 @@ func (s *CmsRecommendIndexService) UpdateRecommendIndex(index *cms.CmsRecommendI
 }
 
 // GetIndicesByRecommendID 根据推荐ID获取索引
-func (s *CmsRecommendIndexService) GetIndicesByRecommendID(recommendID int) ([]cms.CmsRecommendIndex, error) {
+func (s *CmsRecommendIndexService) GetIndicesByRecommendID(recommendID common.MyID) ([]cms.CmsRecommendIndex, error) {
 	if recommendID <= 0 {
 		return nil, errors.New("无效的推荐ID")
 	}
@@ -57,7 +58,7 @@ func (s *CmsRecommendIndexService) GetIndicesByState(state int8) ([]cms.CmsRecom
 }
 
 // DeleteRecommendIndex 删除推荐索引
-func (s *CmsRecommendIndexService) DeleteRecommendIndex(id int) error {
+func (s *CmsRecommendIndexService) DeleteRecommendIndex(id common.MyID) error {
 	if id <= 0 {
 		return errors.New("无效的索引ID")
 	}
@@ -68,7 +69,7 @@ func (s *CmsRecommendIndexService) ListRecommendsIndex(prarams cms.RecommendInde
 	return s.repoFactory.GetCmsRecommendIndexRepository().ListWithPagination(prarams)
 }
 
-func (s *CmsRecommendIndexService) GetRecommendIndexByID(id int) (*cms.CmsRecommendIndex, error) {
+func (s *CmsRecommendIndexService) GetRecommendIndexByID(id common.MyID) (*cms.CmsRecommendIndex, error) {
 	if id <= 0 {
 		return nil, errors.New("无效的索引ID")
 	}

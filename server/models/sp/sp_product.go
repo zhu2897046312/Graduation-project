@@ -2,14 +2,15 @@ package sp
 
 import (
 	"encoding/json"
+	"server/models/common"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 type SpProduct struct {
-	ID             uint            `gorm:"primaryKey;autoIncrement" json:"id"`
-	CategoryID     uint            `gorm:"not null" json:"category_id"`
+	ID             common.MyID     `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID     common.MyID     `gorm:"not null" json:"category_id"`
 	Title          string          `gorm:"size:200;not null" json:"title"`
 	State          uint8           `gorm:"not null;default:1" json:"state"`
 	Price          float64         `gorm:"type:decimal(10,2);unsigned;not null;default:0.00" json:"price"`

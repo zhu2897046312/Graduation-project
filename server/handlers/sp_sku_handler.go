@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -44,7 +45,7 @@ func (h *SpSkuHandler) UpdateSku(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	sku.ID = uint(id)
+	sku.ID = common.MyID(id)
 
 	if err := h.service.UpdateSku(&sku); err != nil {
 		Error(c, 3202, err.Error())
@@ -62,7 +63,7 @@ func (h *SpSkuHandler) GetSkusByProduct(c *gin.Context) {
 		return
 	}
 
-	skus, err := h.service.GetSkusByProductID(uint(productID))
+	skus, err := h.service.GetSkusByProductID(common.MyID(productID))
 	if err != nil {
 		Error(c, 3203, err.Error())
 		return
@@ -87,7 +88,7 @@ func (h *SpSkuHandler) UpdateSkuStock(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateStock(uint(id), req.Stock); err != nil {
+	if err := h.service.UpdateStock(common.MyID(id), req.Stock); err != nil {
 		Error(c, 3204, err.Error())
 		return
 	}

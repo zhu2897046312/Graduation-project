@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -44,7 +45,7 @@ func (h *SpProductContentHandler) UpdateContent(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	content.ID = uint(id)
+	content.ID = common.MyID(id)
 
 	if err := h.service.UpdateContent(&content); err != nil {
 		Error(c, 30002, err.Error())
@@ -62,7 +63,7 @@ func (h *SpProductContentHandler) GetContentByProduct(c *gin.Context) {
 		return
 	}
 
-	content, err := h.service.GetContentByProductID(uint(productID))
+	content, err := h.service.GetContentByProductID(common.MyID(productID))
 	if err != nil {
 		Error(c, 30003, "商品内容不存在")
 		return
@@ -94,7 +95,7 @@ func (h *SpProductContentHandler) UpdateSEO(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateSEO(uint(productID), req.Title, req.Keywords, req.Description); err != nil {
+	if err := h.service.UpdateSEO(common.MyID(productID), req.Title, req.Keywords, req.Description); err != nil {
 		Error(c, 30005, err.Error())
 		return
 	}
@@ -123,7 +124,7 @@ func (h *SpProductContentHandler) UpdateContentText(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateContentText(uint(productID), req.Content); err != nil {
+	if err := h.service.UpdateContentText(common.MyID(productID), req.Content); err != nil {
 		Error(c, 30007, err.Error())
 		return
 	}

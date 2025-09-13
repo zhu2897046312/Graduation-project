@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"server/models/core"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"strconv"
 
@@ -66,7 +67,7 @@ func (h *CoreRoleHandler) UpdateRole(c *gin.Context) {
 	rolePermissions, _ := json.Marshal(req.Permissions)
 	rolePermissionsJson := json.RawMessage(rolePermissions)
 	role := core.CoreRole{
-		ID :         int64(roleID),
+		ID :         common.MyID(roleID),
 		RoleName:   req.Name,
 		RoleStatus: req.Status,
 		Permission: rolePermissionsJson,
@@ -89,7 +90,7 @@ func (h *CoreRoleHandler) GetRole(c *gin.Context) {
 	}
 	uID := utils.ConvertToUint(id)
 
-	role, err := h.service.GetRoleByID(int64(uID))
+	role, err := h.service.GetRoleByID(common.MyID(uID))
 	if err != nil {
 		Error(c, 10003, "角色不存在")
 		return
@@ -125,7 +126,7 @@ func (h *CoreRoleHandler) UpdateRoleStatus(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateRoleStatus(id, req.Status); err != nil {
+	if err := h.service.UpdateRoleStatus(common.MyID(id), req.Status); err != nil {
 		Error(c, 10005, err.Error())
 		return
 	}
@@ -154,7 +155,7 @@ func (h *CoreRoleHandler) UpdateRolePermissions(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateRolePermissions(id, []byte(req.Permissions)); err != nil {
+	if err := h.service.UpdateRolePermissions(common.MyID(id), []byte(req.Permissions)); err != nil {
 		Error(c, 10007, err.Error())
 		return
 	}
@@ -198,7 +199,7 @@ func (h *CoreRoleHandler) DeleteRole(c *gin.Context) {
 		return
 	}
 	uID := utils.ConvertToUint(id)
-	if err := h.service.DeleteRole(int64(uID)); err != nil {
+	if err := h.service.DeleteRole(common.MyID(uID)); err != nil {
 		Error(c, 10009, err.Error())
 		return
 	}	

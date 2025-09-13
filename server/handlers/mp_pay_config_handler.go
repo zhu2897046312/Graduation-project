@@ -1,10 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"server/models/mp"
+	"server/models/common"
 	"server/service"
+	"server/utils"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type MpPayConfigHandler struct {
@@ -44,7 +47,7 @@ func (h *MpPayConfigHandler) UpdatePayConfig(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	config.ID = id
+	config.ID = common.MyID(utils.ConvertToUint(id))
 
 	if err := h.service.UpdatePayConfig(&config); err != nil {
 		Error(c, 12002, err.Error())
@@ -62,7 +65,7 @@ func (h *MpPayConfigHandler) GetPayConfig(c *gin.Context) {
 		return
 	}
 
-	config, err := h.service.GetPayConfigByID(id)
+	config, err := h.service.GetPayConfigByID(common.MyID(utils.ConvertToUint(id)))
 	if err != nil {
 		Error(c, 12003, "支付配置不存在")
 		return

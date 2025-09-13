@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -60,7 +61,7 @@ func (s *SpUserCartService) UpdateCartItem(cart *sp.SpUserCart) error {
 }
 
 // UpdateQuantity 更新购物车项数量
-func (s *SpUserCartService) UpdateQuantity(id uint, quantity uint) error {
+func (s *SpUserCartService) UpdateQuantity(id common.MyID, quantity uint) error {
 	if id == 0 {
 		return errors.New("购物车项ID不能为空")
 	}
@@ -71,7 +72,7 @@ func (s *SpUserCartService) UpdateQuantity(id uint, quantity uint) error {
 }
 
 // GetCartItemsByUserID 根据用户ID获取购物车项
-func (s *SpUserCartService) GetCartItemsByUserID(userID uint) ([]sp.SpUserCart, error) {
+func (s *SpUserCartService) GetCartItemsByUserID(userID common.MyID) ([]sp.SpUserCart, error) {
 	if userID == 0 {
 		return nil, errors.New("无效的用户ID")
 	}
@@ -79,7 +80,7 @@ func (s *SpUserCartService) GetCartItemsByUserID(userID uint) ([]sp.SpUserCart, 
 }
 
 // GetCartItemByProduct 根据用户ID和产品ID获取购物车项
-func (s *SpUserCartService) GetCartItemByProduct(userId uint, fingerprint string, productID uint,skuID uint) (*sp.SpUserCart, error) {
+func (s *SpUserCartService) GetCartItemByProduct(userId common.MyID, fingerprint string, productID common.MyID,skuID common.MyID) (*sp.SpUserCart, error) {
 	if userId == 0  && fingerprint == "" {
 		return nil, errors.New("用户ID或设备指纹必须提供一项")
 	}
@@ -87,7 +88,7 @@ func (s *SpUserCartService) GetCartItemByProduct(userId uint, fingerprint string
 }
 
 // GetCartItemBySku 根据用户ID和SKU ID获取购物车项
-func (s *SpUserCartService) GetCartItemBySku(userID, skuID uint) (*sp.SpUserCart, error) {
+func (s *SpUserCartService) GetCartItemBySku(userID, skuID common.MyID) (*sp.SpUserCart, error) {
 	if userID == 0 {
 		return nil, errors.New("无效的用户ID")
 	}
@@ -98,7 +99,7 @@ func (s *SpUserCartService) GetCartItemBySku(userID, skuID uint) (*sp.SpUserCart
 }
 
 // DeleteCartItem 删除购物车项
-func (s *SpUserCartService) DeleteCartItem(id uint) error {
+func (s *SpUserCartService) DeleteCartItem(id common.MyID) error {
 	if id == 0 {
 		return errors.New("无效的购物车项ID")
 	}
@@ -106,7 +107,7 @@ func (s *SpUserCartService) DeleteCartItem(id uint) error {
 }
 
 // ClearCart 清空用户购物车
-func (s *SpUserCartService) ClearCartByUserID(userID uint) error {
+func (s *SpUserCartService) ClearCartByUserID(userID common.MyID) error {
 	if userID == 0 {
 		return errors.New("无效的用户ID")
 	}
@@ -121,7 +122,7 @@ func (s *SpUserCartService) ClearCartByFingerprint(fingerprint string) error {
 }
 
 // MergeGuestCart 合并游客购物车到用户购物车
-func (s *SpUserCartService) MergeGuestCart(userID uint, fingerprint string) error {
+func (s *SpUserCartService) MergeGuestCart(userID common.MyID, fingerprint string) error {
 	if userID == 0 {
 		return errors.New("无效的用户ID")
 	}
@@ -131,7 +132,7 @@ func (s *SpUserCartService) MergeGuestCart(userID uint, fingerprint string) erro
 	return s.repoFactory.GetSpUserCartRepository().MergeGuestCart(userID, fingerprint)
 }
 
-func (s *SpUserCartService) List(userID uint, fingerprint string, productID uint, skuID uint) ([]sp.SpUserCart, int64, error) {
+func (s *SpUserCartService) List(userID common.MyID, fingerprint string, productID common.MyID, skuID uint) ([]sp.SpUserCart, int64, error) {
 	if userID == 0 && fingerprint == "" {
 		return nil, 0, errors.New("用户ID或设备指纹必须提供一项")
 	}

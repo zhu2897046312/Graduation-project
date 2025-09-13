@@ -2,7 +2,7 @@ package repository
 
 import (
 	"server/models/sp"
-
+	"server/models/common"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +27,7 @@ func (r *SpUserCartRepository) Update(cart *sp.SpUserCart) error {
 }
 
 // 更新购物车项数量
-func (r *SpUserCartRepository) UpdateQuantity(id uint, quantity uint) error {
+func (r *SpUserCartRepository) UpdateQuantity(id common.MyID, quantity uint) error {
 	return r.db.Model(&sp.SpUserCart{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{
@@ -38,7 +38,7 @@ func (r *SpUserCartRepository) UpdateQuantity(id uint, quantity uint) error {
 }
 
 // 根据用户ID获取购物车项
-func (r *SpUserCartRepository) FindByUserID(userID uint) ([]sp.SpUserCart, error) {
+func (r *SpUserCartRepository) FindByUserID(userID common.MyID) ([]sp.SpUserCart, error) {
 	var cartItems []sp.SpUserCart
 	err := r.db.Where("user_id = ?", userID).
 		Order("created_time DESC").
@@ -47,7 +47,7 @@ func (r *SpUserCartRepository) FindByUserID(userID uint) ([]sp.SpUserCart, error
 }
 
 // 根据用户ID和产品ID获取购物车项
-func (r *SpUserCartRepository) FindByUserAndProduct(userId uint, fingerprint string, productID uint,skuID uint) (*sp.SpUserCart, error) {
+func (r *SpUserCartRepository) FindByUserAndProduct(userId common.MyID, fingerprint string, productID common.MyID,skuID common.MyID) (*sp.SpUserCart, error) {
 	var cartItem sp.SpUserCart
 	err := r.db.Where("user_id = ? AND product_id = ? AND sku_id = ? AND fingerprint = ?", userId, productID, skuID, fingerprint).
 		First(&cartItem).Error
@@ -55,7 +55,7 @@ func (r *SpUserCartRepository) FindByUserAndProduct(userId uint, fingerprint str
 }
 
 // 根据用户ID和SKU ID获取购物车项
-func (r *SpUserCartRepository) FindByUserAndSku(userID, skuID uint) (*sp.SpUserCart, error) {
+func (r *SpUserCartRepository) FindByUserAndSku(userID, skuID common.MyID) (*sp.SpUserCart, error) {
 	var cartItem sp.SpUserCart
 	err := r.db.Where("user_id = ? AND sku_id = ?", userID, skuID).
 		First(&cartItem).Error
@@ -63,12 +63,12 @@ func (r *SpUserCartRepository) FindByUserAndSku(userID, skuID uint) (*sp.SpUserC
 }
 
 // 删除购物车项
-func (r *SpUserCartRepository) Delete(id uint) error {
+func (r *SpUserCartRepository) Delete(id common.MyID) error {
 	return r.db.Delete(&sp.SpUserCart{}, id).Error
 }
 
 // 清空用户购物车
-func (r *SpUserCartRepository) ClearUserCart(userID uint) error {
+func (r *SpUserCartRepository) ClearUserCart(userID common.MyID) error {
 	return r.db.Where("user_id = ?", userID).
 		Delete(&sp.SpUserCart{}).Error
 }
@@ -79,13 +79,13 @@ func (r *SpUserCartRepository) ClearFingerprintCart(Fingerprint string) error {
 }
 
 // 合并游客购物车到用户购物车
-func (r *SpUserCartRepository) MergeGuestCart(userID uint, fingerprint string) error {
+func (r *SpUserCartRepository) MergeGuestCart(userID common.MyID, fingerprint string) error {
 	return r.db.Model(&sp.SpUserCart{}).
 		Where("fingerprint = ?", fingerprint).
 		Update("user_id", userID).Error
 }
 
-func (r *SpUserCartRepository) ListWithPagination(userId uint, fingerprint string) ([]sp.SpUserCart, int64, error) {
+func (r *SpUserCartRepository) ListWithPagination(userId common.MyID, fingerprint string) ([]sp.SpUserCart, int64, error) {
 	var tags []sp.SpUserCart
 	var total int64
 

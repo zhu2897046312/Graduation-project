@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"server/models/core"
 	"server/service"
+	"server/models/common"
 	"server/utils"
 	"strconv"
 
@@ -66,7 +67,7 @@ func (h *CoreDeptHandler) CreateDept(c *gin.Context) {
 	}
 
 	if req.Pid > 0{
-		subDepts,err:=h.service.GetSubDepts(req.Pid)
+		subDepts,err:=h.service.GetSubDepts(common.MyID(req.Pid))
 		if err == nil && len(subDepts) <= 0 {
 			Error(c, 7000, "父级部门不存在")
 			return
@@ -76,7 +77,7 @@ func (h *CoreDeptHandler) CreateDept(c *gin.Context) {
 	organize,_ := json.Marshal(req.OrganizeInfo)
 	organizeJson := json.RawMessage(organize)
 	dept := core.CoreDept{
-		Pid: req.Pid,
+		Pid: common.MyID(req.Pid),
 		DeptName: req.DeptName,
 		ConnectName: req.ConnectName,
 		ConnectMobile: req.ConnectMobile,
@@ -103,7 +104,7 @@ func (h *CoreDeptHandler) UpdateDept(c *gin.Context) {
 	}
 
 	if req.Pid > 0{
-		subDepts,err:=h.service.GetSubDepts(req.Pid)
+		subDepts,err:=h.service.GetSubDepts(common.MyID(req.Pid))
 		if err == nil && len(subDepts) <= 0 {
 			Error(c, 7000, "父级部门不存在")
 			return
@@ -113,8 +114,8 @@ func (h *CoreDeptHandler) UpdateDept(c *gin.Context) {
 	organize,_ := json.Marshal(req.OrganizeInfo)
 	organizeJson := json.RawMessage(organize)
 	dept := core.CoreDept{
-		ID : req.ID,
-		Pid: req.Pid,
+		ID : common.MyID(req.ID),
+		Pid: common.MyID(req.Pid),
 		DeptName: req.DeptName,
 		ConnectName: req.ConnectName,
 		ConnectMobile: req.ConnectMobile,
@@ -144,7 +145,7 @@ func (h *CoreDeptHandler) GetDept(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	dept, err := h.service.GetDeptByID(int64(uID))
+	dept, err := h.service.GetDeptByID(common.MyID(uID))
 	if err != nil {
 		Error(c, 7003, "部门不存在")
 		return
@@ -165,7 +166,7 @@ func (h *CoreDeptHandler) GetSubDepts(c *gin.Context) {
 		return
 	}
 
-	depts, err := h.service.GetSubDepts(pid)
+	depts, err := h.service.GetSubDepts(common.MyID(pid))
 	if err != nil {
 		Error(c, 7004, "获取子部门失败")
 		return
@@ -188,7 +189,7 @@ func (h *CoreDeptHandler) DeleteDept(c *gin.Context) {
 	}
 	id := int64(uID)
 
-	if err := h.service.DeleteDept(id); err != nil {
+	if err := h.service.DeleteDept(common.MyID(id)); err != nil {
 		Error(c, 7005, err.Error())
 		return
 	}
@@ -221,7 +222,7 @@ func (h *CoreDeptHandler) buildTree(allDepts []*core.CoreDept, pid uint) []CoreD
 
 	for _, dept := range allDepts {
 		// 只检查PID匹配，不进行状态过滤
-		if dept.Pid == int64(pid) {
+		if dept.Pid == common.MyID(pid) {
 			node := CoreDeptTreeResult{
 				Label: dept.DeptName,
 				Value: uint(dept.ID),

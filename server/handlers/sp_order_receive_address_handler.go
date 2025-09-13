@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"strconv"
 )
@@ -44,7 +45,7 @@ func (h *SpOrderReceiveAddressHandler) UpdateAddress(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	address.ID = uint(id)
+	address.ID = common.MyID(id)
 
 	if err := h.service.UpdateAddress(&address); err != nil {
 		Error(c, 25002, err.Error())
@@ -62,7 +63,7 @@ func (h *SpOrderReceiveAddressHandler) GetAddressByOrder(c *gin.Context) {
 		return
 	}
 
-	address, err := h.service.GetAddressByOrderID(uint(orderID))
+	address, err := h.service.GetAddressByOrderID(common.MyID(orderID))
 	if err != nil {
 		Error(c, 25003, "收货地址不存在")
 		return

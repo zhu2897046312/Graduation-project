@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/shop"
+	"server/models/common"
 	"time"
 )
 
@@ -27,7 +28,7 @@ func (r *ShopTagRepository) Update(tag *shop.ShopTag) error {
 }
 
 // 根据ID获取标签
-func (r *ShopTagRepository) FindByID(id int) (*shop.ShopTag, error) {
+func (r *ShopTagRepository) FindByID(id common.MyID) (*shop.ShopTag, error) {
 	var tag shop.ShopTag
 	err := r.db.First(&tag, id).Error
 	return &tag, err
@@ -60,7 +61,7 @@ func (r *ShopTagRepository) FindByMatchWord(matchWord string) ([]shop.ShopTag, e
 }
 
 // 增加标签阅读量
-func (r *ShopTagRepository) IncrementReadNum(id int) error {
+func (r *ShopTagRepository) IncrementReadNum(id common.MyID) error {
 	return r.db.Model(&shop.ShopTag{}).
 		Where("id = ?", id).
 		Update("read_num", gorm.Expr("read_num + ?", 1)).Error
@@ -125,7 +126,7 @@ func (r *ShopTagRepository) ListWithPagination(params shop.TagQueryParams) ([]sh
 	}
 }
 
-func (r *ShopTagRepository) DeleteByID(id int) error {
+func (r *ShopTagRepository) DeleteByID(id common.MyID) error {
 	result := r.db.Model(&shop.ShopTag{}).
 		Where("id = ?", id).
 		Update("deleted_time", time.Now())

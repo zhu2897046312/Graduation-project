@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/shop"
+	"server/models/common"
 )
 
 type ShopTagIndexService struct {
@@ -26,7 +27,7 @@ func (s *ShopTagIndexService) CreateTagIndex(index *shop.ShopTagIndex) error {
 }
 
 // DeleteTagIndex 删除标签关联
-func (s *ShopTagIndexService) DeleteTagIndex(productID, tagID int) error {
+func (s *ShopTagIndexService) DeleteTagIndex(productID, tagID common.MyID) error {
 	if productID == 0 {
 		return errors.New("商品ID不能为空")
 	}
@@ -37,7 +38,7 @@ func (s *ShopTagIndexService) DeleteTagIndex(productID, tagID int) error {
 }
 
 // GetTagIndicesByProductID 根据产品ID获取标签关联
-func (s *ShopTagIndexService) GetTagIndicesByProductID(productID int) ([]shop.ShopTagIndex, error) {
+func (s *ShopTagIndexService) GetTagIndicesByProductID(productID common.MyID) ([]shop.ShopTagIndex, error) {
 	if productID == 0 {
 		return nil, errors.New("商品ID不能为空")
 	}
@@ -45,7 +46,7 @@ func (s *ShopTagIndexService) GetTagIndicesByProductID(productID int) ([]shop.Sh
 }
 
 // GetTagIndicesByTagID 根据标签ID获取产品关联
-func (s *ShopTagIndexService) GetTagIndicesByTagID(tagID int) ([]shop.ShopTagIndex, error) {
+func (s *ShopTagIndexService) GetTagIndicesByTagID(tagID common.MyID) ([]shop.ShopTagIndex, error) {
 	if tagID == 0 {
 		return nil, errors.New("标签ID不能为空")
 	}
@@ -64,7 +65,7 @@ func (s *ShopTagIndexService) UpdateTagSortNum(id, sortNum int) error {
 }
 
 // DeleteAllTagsByProductID 删除产品的所有标签关联
-func (s *ShopTagIndexService) DeleteAllTagsByProductID(productID int) error {
+func (s *ShopTagIndexService) DeleteAllTagsByProductID(productID common.MyID) error {
 	if productID == 0 {
 		return errors.New("商品ID不能为空")
 	}

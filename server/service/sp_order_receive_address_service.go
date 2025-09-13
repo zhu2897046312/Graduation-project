@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 	"time"
 )
 
@@ -63,7 +64,7 @@ func (s *SpOrderReceiveAddressService) UpdateAddress(address *sp.SpOrderReceiveA
 }
 
 // GetAddressByOrderID 根据订单ID获取收货地址
-func (s *SpOrderReceiveAddressService) GetAddressByOrderID(orderID uint) (*sp.SpOrderReceiveAddress, error) {
+func (s *SpOrderReceiveAddressService) GetAddressByOrderID(orderID common.MyID) (*sp.SpOrderReceiveAddress, error) {
 	if orderID == 0 {
 		return nil, errors.New("无效的订单ID")
 	}

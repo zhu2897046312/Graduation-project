@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProductContentService struct {
@@ -30,7 +31,7 @@ func (s *SpProductContentService) UpdateContent(content *sp.SpProductContent) er
 }
 
 // GetContentByProductID 根据商品ID获取内容
-func (s *SpProductContentService) GetContentByProductID(productID uint) (*sp.SpProductContent, error) {
+func (s *SpProductContentService) GetContentByProductID(productID common.MyID) (*sp.SpProductContent, error) {
 	if productID == 0 {
 		return nil, errors.New("无效的商品ID")
 	}
@@ -38,7 +39,7 @@ func (s *SpProductContentService) GetContentByProductID(productID uint) (*sp.SpP
 }
 
 // UpdateSEO 更新SEO信息
-func (s *SpProductContentService) UpdateSEO(productID uint, title, keyword, description string) error {
+func (s *SpProductContentService) UpdateSEO(productID common.MyID, title, keyword, description string) error {
 	if productID == 0 {
 		return errors.New("无效的商品ID")
 	}
@@ -49,7 +50,7 @@ func (s *SpProductContentService) UpdateSEO(productID uint, title, keyword, desc
 }
 
 // UpdateContentText 更新商品内容文本
-func (s *SpProductContentService) UpdateContentText(productID uint, content string) error {
+func (s *SpProductContentService) UpdateContentText(productID common.MyID, content string) error {
 	if productID == 0 {
 		return errors.New("无效的商品ID")
 	}

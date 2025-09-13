@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"server/models/shop"
 	"server/models/sp"
+	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -51,7 +52,7 @@ type CreateProductRequest struct {
 	SortNum        int64          `json:"sort_num"`
 	State          int64          `json:"state"`
 	Stock          int64          `json:"stock"`
-	Tags           []int          `json:"tags"`
+	Tags           []common.MyID          `json:"tags"`
 	Title          string         `json:"title"`
 }
 
@@ -77,7 +78,7 @@ type UpdateProductRequest struct {
 	SortNum        int64          `json:"sort_num"`
 	State          int64          `json:"state"`
 	Stock          int64          `json:"stock"`
-	Tags           []int          `json:"tags"`
+	Tags           []common.MyID          `json:"tags"`
 	Title          string         `json:"title"`
 }
 
@@ -154,7 +155,7 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 
 	// 检查分类是否存在
 	if req.CategoryID != 0 {
-		category, err := h.categoryService.GetCategoryByID(uint(req.CategoryID))
+		category, err := h.categoryService.GetCategoryByID(common.MyID(req.CategoryID))
 		if err != nil || category == nil {
 			Error(c, 3105, "分类不存在")
 			return
@@ -195,7 +196,7 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 	}
 	// 创建商品基本信息
 	product := sp.SpProduct{
-		CategoryID:     uint(req.CategoryID),
+		CategoryID:     common.MyID(req.CategoryID),
 		Title:          req.Title,
 		State:          uint8(req.State),
 		Price:          Price,
@@ -275,7 +276,7 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 }
 
 // saveProperties 保存商品属性
-func (h *SpProductHandler) saveProperties(productID uint, properties []PropertyList) error {
+func (h *SpProductHandler) saveProperties(productID common.MyID, properties []PropertyList) error {
 	for i := range properties {
 		property := sp.SpProductProperty{
 			ProductID: productID,
@@ -291,7 +292,7 @@ func (h *SpProductHandler) saveProperties(productID uint, properties []PropertyL
 }
 
 // saveSkus 保存SKU
-func (h *SpProductHandler) saveSkus(productID uint, skus []SkuList) error {
+func (h *SpProductHandler) saveSkus(productID common.MyID, skus []SkuList) error {
 	if err := h.skuService.DeleteByProductID(productID); err != nil {
 		return err
 	}
@@ -316,7 +317,7 @@ func (h *SpProductHandler) saveSkus(productID uint, skus []SkuList) error {
 }
 
 // syncProductSkuConfig 同步商品SKU配置
-func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
+func (h *SpProductHandler) syncProductSkuConfig(productID common.MyID) error {
 	// 1. 获取商品SKU列表
 	skus, err := h.skuService.GetSkusByProductID(productID)
 	if err != nil {
@@ -348,7 +349,7 @@ func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
 				}
 
 				// 获取属性值信息
-				attrValue, err := h.ProdAttributesValues.GetValuesByAttributeID(uint(parsedValue))
+				attrValue, err := h.ProdAttributesValues.GetValuesByAttributeID(common.MyID(parsedValue))
 				if err != nil {
 					return fmt.Errorf("查询属性值失败(ID=%s): %v", code, err)
 				}
@@ -375,12 +376,12 @@ func (h *SpProductHandler) syncProductSkuConfig(productID uint) error {
 }
 
 // saveTags 保存标签关联
-func (h *SpProductHandler) saveTags(productID uint, tagIDs []int) error {
+func (h *SpProductHandler) saveTags(productID common.MyID, tagIDs []common.MyID) error {
 	// 这里实现标签关联的保存逻辑
 	// 需要调用 tagIndexService 来创建标签索引
 	for _, tagID := range tagIDs {
 		tagIndex := shop.ShopTagIndex{
-			ProductID: int(productID),
+			ProductID: common.MyID(productID),
 			TagID:     tagID,
 		}
 		if err := h.tagIndexService.CreateTagIndex(&tagIndex); err != nil {
@@ -391,7 +392,7 @@ func (h *SpProductHandler) saveTags(productID uint, tagIDs []int) error {
 }
 
 // getFullProductInfo 获取完整的商品信息
-func (h *SpProductHandler) getFullProductInfo(productID uint) (gin.H, error) {
+func (h *SpProductHandler) getFullProductInfo(productID common.MyID) (gin.H, error) {
 	// 获取商品基本信息
 	product, err := h.service.GetProductByID(productID)
 	if err != nil {
@@ -423,11 +424,11 @@ func (h *SpProductHandler) getFullProductInfo(productID uint) (gin.H, error) {
 	}
 
 	// 获取标签
-	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(int(productID))
+	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(common.MyID(productID))
 	var tags []shop.ShopTag
 	if err == nil && len(tagIds) > 0 {
 		for _, tagId := range tagIds {
-			tag, err := h.tagService.GetTagByID(int(tagId.ID))
+			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
 			if err == nil {
 				tags = append(tags, *tag)
 			}
@@ -455,7 +456,7 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 	fmt.Println(req)
 	// 检查分类是否存在
 	if req.CategoryID != 0 {
-		category, err := h.categoryService.GetCategoryByID(uint(req.CategoryID))
+		category, err := h.categoryService.GetCategoryByID(common.MyID(req.CategoryID))
 		if err != nil || category == nil {
 			Error(c, 3105, "分类不存在")
 			return
@@ -497,8 +498,8 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 	productID := utils.ConvertToUint(req.ProductID)
 	// 创建商品基本信息
 	product := sp.SpProduct{
-		ID:             productID,
-		CategoryID:     uint(req.CategoryID),
+		ID:             common.MyID(productID),
+		CategoryID:     common.MyID(req.CategoryID),
 		Title:          req.Title,
 		State:          uint8(req.State),
 		Price:          Price,
@@ -524,7 +525,7 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	content := sp.SpProductContent{
-		ProductID:      productID,
+		ProductID:      common.MyID(productID),
 		Content:        req.Content,
 		SeoTitle:       req.SEOTitle,
 		SeoKeyword:     req.SEOKeyword,
@@ -537,7 +538,7 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 	}
 	// 保存商品属性
 	if len(req.PropertyList) > 0 {
-		if err := h.saveProperties(productID, req.PropertyList); err != nil {
+		if err := h.saveProperties(common.MyID(productID), req.PropertyList); err != nil {
 			Error(c, 3101, "保存商品属性失败: "+err.Error())
 			return
 		}
@@ -545,13 +546,13 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 
 	// 保存SKU
 	if len(req.SkuList) > 0 {
-		if err := h.saveSkus(productID, req.SkuList); err != nil {
+		if err := h.saveSkus(common.MyID(productID), req.SkuList); err != nil {
 			Error(c, 3101, "保存SKU失败: "+err.Error())
 			return
 		}
 
 		// 同步SKU配置
-		if err := h.syncProductSkuConfig(productID); err != nil {
+		if err := h.syncProductSkuConfig(common.MyID(productID)); err != nil {
 			Error(c, 3101, "同步SKU配置失败: "+err.Error())
 			return
 		}
@@ -559,7 +560,7 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 
 	// 保存标签
 	if len(req.Tags) > 0 {
-		if err := h.saveTags(productID, req.Tags); err != nil {
+		if err := h.saveTags(common.MyID(productID), req.Tags); err != nil {
 			Error(c, 3101, "保存标签失败: "+err.Error())
 			return
 		}
@@ -576,7 +577,7 @@ func (h *SpProductHandler) GetProduct(c *gin.Context) {
 		return
 	}
 
-	product, err := h.service.GetProductByID(uintId)
+	product, err := h.service.GetProductByID(common.MyID(uintId))
 	if err != nil {
 		Error(c, 3103, "商品不存在")
 		return
@@ -586,35 +587,35 @@ func (h *SpProductHandler) GetProduct(c *gin.Context) {
 	content, err := h.contentService.GetContentByProductID(product.ID)
 	if err != nil {
 		content = &sp.SpProductContent{
-			ProductID: uintId,
+			ProductID: common.MyID(uintId),
 		}
 	}
 
 	// 获取商品属性列表
-	properties, err := h.propertyService.GetPropertiesByProductID(uintId)
+	properties, err := h.propertyService.GetPropertiesByProductID(common.MyID(uintId))
 	if err != nil {
 		properties = []sp.SpProductProperty{}
 	}
 
 	// 获取SKU列表
-	skus, err := h.skuService.GetSkusByProductID(uintId)
+	skus, err := h.skuService.GetSkusByProductID(common.MyID(uintId))
 	if err != nil {
 		skus = []sp.SpSku{}
 	}
 
 	// 获取SKU配置列表
-	skuConfigList, err := h.skuIndexService.GetIndicesByProductID(uintId)
+	skuConfigList, err := h.skuIndexService.GetIndicesByProductID(common.MyID(uintId))
 	if err != nil {
 		skuConfigList = []sp.SpSkuIndex{}
 	}
 
 	// 获取标签
-	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(int(uintId))
+	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(common.MyID(uintId))
 	var tags []shop.ShopTag
 	if err == nil && len(tagIds) > 0 {
 		// 使用循环逐个获取标签
 		for _, tagId := range tagIds {
-			tag, err := h.tagService.GetTagByID(int(tagId.ID))
+			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
 			if err == nil {
 				tags = append(tags, *tag)
 			}
@@ -722,7 +723,7 @@ func (h *SpProductHandler) UpdateStock(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdateStock(uint(id), req.Stock); err != nil {
+	if err := h.service.UpdateStock(common.MyID(id), req.Stock); err != nil {
 		Error(c, 3104, err.Error())
 		return
 	}
@@ -739,7 +740,7 @@ func (h *SpProductHandler) SoftDeleteProduct(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.SoftDeleteProduct(uintId); err != nil {
+	if err := h.service.SoftDeleteProduct(common.MyID(uintId)); err != nil {
 		Error(c, 3105, err.Error())
 		return
 	}
@@ -757,7 +758,7 @@ func (h *SpProductHandler) GetProductFrontInfo(c *gin.Context) {
 	}
 
 	// 获取完整的商品信息
-	fullInfo, err := h.getFullProductInfo(uintId)
+	fullInfo, err := h.getFullProductInfo(common.MyID(uintId))
 	if err != nil {
 		Error(c, 3103, "商品不存在")
 		return

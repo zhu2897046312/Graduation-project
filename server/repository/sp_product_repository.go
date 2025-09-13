@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"server/models/sp"
+	"server/models/common"
 )
 
 type SpProductRepository struct {
@@ -33,14 +34,14 @@ func (r *SpProductRepository) Update(product *sp.SpProduct) error {
 }
 
 // 根据ID获取商品
-func (r *SpProductRepository) FindByID(id uint) (*sp.SpProduct, error) {
+func (r *SpProductRepository) FindByID(id common.MyID) (*sp.SpProduct, error) {
 	var product sp.SpProduct
 	err := r.db.First(&product, id).Error
 	return &product, err
 }
 
 // 根据分类ID获取商品
-func (r *SpProductRepository) FindByCategoryID(categoryID uint) ([]sp.SpProduct, error) {
+func (r *SpProductRepository) FindByCategoryID(categoryID common.MyID) ([]sp.SpProduct, error) {
 	var products []sp.SpProduct
 	err := r.db.Where("category_id = ?", categoryID).
 		Order("sort_num ASC").
@@ -118,27 +119,27 @@ func (r *SpProductRepository) ListWithPagination(params sp.ProductQueryParams) (
 }
 
 // 更新商品库存
-func (r *SpProductRepository) UpdateStock(id uint, stock int) error {
+func (r *SpProductRepository) UpdateStock(id common.MyID, stock int) error {
 	return r.db.Model(&sp.SpProduct{}).
 		Where("id = ?", id).
 		Update("stock", stock).Error
 }
 
 // 更新商品状态
-func (r *SpProductRepository) UpdateState(id uint, state uint8) error {
+func (r *SpProductRepository) UpdateState(id common.MyID, state uint8) error {
 	return r.db.Model(&sp.SpProduct{}).
 		Where("id = ?", id).
 		Update("state", state).Error
 }
 
 // 增加销量
-func (r *SpProductRepository) IncrementSoldNum(id uint, num uint16) error {
+func (r *SpProductRepository) IncrementSoldNum(id common.MyID, num uint16) error {
 	return r.db.Model(&sp.SpProduct{}).
 		Where("id = ?", id).
 		Update("sold_num", gorm.Expr("sold_num + ?", num)).Error
 }
 
 // 软删除商品（GORM 自动处理）
-func (r *SpProductRepository) SoftDelete(id uint) error {
+func (r *SpProductRepository) SoftDelete(id common.MyID) error {
     return r.db.Delete(&sp.SpProduct{}, id).Error
 }

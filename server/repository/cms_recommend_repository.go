@@ -2,6 +2,7 @@ package repository
 
 import (
 	"server/models/cms"
+	"server/models/common"
 	"time"
 
 	"gorm.io/gorm"
@@ -27,7 +28,7 @@ func (r *CmsRecommendRepository) Update(recommend *cms.CmsRecommend) error {
 	return r.db.Updates(recommend).Error
 }
 
-func (r *CmsRecommendRepository) Delete(id int) error {
+func (r *CmsRecommendRepository) Delete(id common.MyID) error {
 	result := r.db.Model(&cms.CmsRecommend{}).
 		Where("id = ?", id).
 		Update("deleted_time", time.Now())
@@ -35,7 +36,7 @@ func (r *CmsRecommendRepository) Delete(id int) error {
 	return result.Error
 }
 
-func (r *CmsRecommendRepository) FindByID(id int) (*cms.CmsRecommend, error) {
+func (r *CmsRecommendRepository) FindByID(id common.MyID) (*cms.CmsRecommend, error) {
 	var recommend cms.CmsRecommend
 	err := r.db.First(&recommend, id).Error
 	return &recommend, err

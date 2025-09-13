@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"server/models/common"
 	"strings"
 	"time"
 
@@ -15,12 +16,12 @@ import (
 
 // CoreLoginUserInfoModel 定义用户信息结构体
 type CoreLoginUserInfoModel struct {
-	ID         int64  `json:"id"`
-	Nickname   string `json:"nickname"`
-	Account    string `json:"account"`
-	DeptID     int64 `json:"dept_id"`
-	Avatar     string `json:"avatar"`
-	Permission string `json:"permission"`
+	ID         common.MyID `json:"id"`
+	Nickname   string      `json:"nickname"`
+	Account    string      `json:"account"`
+	DeptID     common.MyID `json:"dept_id"`
+	Avatar     string      `json:"avatar"`
+	Permission string      `json:"permission"`
 }
 
 // RedisPrefixKey Redis 键前缀
@@ -77,13 +78,13 @@ func GetSession(rdb *redis.Client, key string, defaultVal *CoreLoginUserInfoMode
 }
 
 // GetIDFromSession 从会话中获取用户ID
-func GetIDFromSession(rdb *redis.Client, key string, defaultVal int64) (int64, error) {
+func GetIDFromSession(rdb *redis.Client, key string, defaultVal int64) (common.MyID, error) {
 	user, err := GetSession(rdb, key, nil)
 	if err != nil {
-		return defaultVal, err
+		return common.MyID(defaultVal), err
 	}
 	if user == nil {
-		return defaultVal, nil
+		return common.MyID(defaultVal), nil
 	}
 	return user.ID, nil
 }
