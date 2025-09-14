@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { SkuConfigList } from '../../api/type'
 const props = withDefaults(defineProps<{
-  list: any[],
-  defaultSelected?: string // 添加默认选中的SKU值
+  list: SkuConfigList,              // sku_config_list
+  defaultSelected?: string          // 添加默认选中的SKU值
 }>(), {
   list: () => [] 
 })
@@ -76,6 +77,9 @@ const emitChange = () => {
   emit('change', ids.join(';'))
 };
 
+onMounted(() => {
+  console.log("productSkuBox props list",props.list)
+})
 </script>
 
 <template>

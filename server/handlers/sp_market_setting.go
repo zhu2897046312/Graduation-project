@@ -109,7 +109,7 @@ func (h *SpMarketSettingHandler) GetBreadcrumb(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, out)
+	Success(c, out)
 }
 
 func (h *SpMarketSettingHandler) GetFreight(c *gin.Context) {

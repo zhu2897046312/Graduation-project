@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import api from '../../api';
+import type { DocumentList,DocumentItem } from '../../api/type';
+import { useSiteInfo } from '../composable/useSiteInfo';
 import {  NBreadcrumb, NBreadcrumbItem, useDialog, useMessage} from 'naive-ui'
 const route = useRoute();
 const router = useRouter();
@@ -10,34 +12,28 @@ const cartNum = useState('cartNum', () => 0)
 const showLoginModal = useState('showLoginModal', () => false)
 const loginModalRef = ref()
 const search = useState('search', () => route.query.q as string || '')
-// const showCart = useState('showCart', () => false)
-// const { data: footer_list } = await useAsyncData('footer_list', async () => {
-//   const res = await api.blogs.recommend.list({code: 'FOOTER_LIST', page_no: 1, page_size: 50})
-//   return res
-// })
-const{data: footer_list} = await useAsyncData('footer_list_',async ()=> {
+const { data: footer_list } = await useAsyncData('footer_list_', async () => {
   const res = await api.blogs.document.list({});
-  
-  return res.map((item:any) => ({
+  return res.list.map((item: DocumentItem) => ({
     ...item,
-    link: `/blogs/${item.code}`  // 根据实际路由结构修改
-  }))
-})
-const { data: siteInfo } = await useAsyncData('siteInfo', async () => {
-  return await api.shop.market.siteInfo()
-})
+    link: `/blogs/${item.code}` // 动态生成 link 字段
+  })) as DocumentList;
+});
+
+const { data: siteInfo } = await useSiteInfo();
+
 const { data: breadcrumb, refresh: breadcrumbRefresh } = await useAsyncData('breadcrumb', async () => {
   if (route.path === '/') {
     return []
   }
   console.log('router', route.name)
-  let out: any[] = [];
+  let out 
   if (route.name === 'collections-code') {
     out = await api.shop.market.breadcrumb({ mode: '1', category_code: route.params.code as string })
   } else if (route.name === 'product-id') {
     out = await api.shop.market.breadcrumb({ mode: '2', product_id: route.params.id as string })
   }
-  return out
+  return out.list
 })
 const {data: user, refresh} = await useAsyncData('user-info', async () => {
   if (accessToken.value) {
@@ -109,7 +105,9 @@ watch(() => route.fullPath, () => {
   breadcrumbRefresh()
 }, { deep: true })
 
-
+onMounted(() => {
+  console.log("default layouts breadcrumb list", breadcrumb.value)
+}) 
 </script>
 
 <template>

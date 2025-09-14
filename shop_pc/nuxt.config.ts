@@ -31,7 +31,8 @@ export default defineNuxtConfig({
           href: 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css' 
         }
       ]
-    }
+    },
+    
   },
   $development: {
     runtimeConfig: {
@@ -59,6 +60,8 @@ export default defineNuxtConfig({
       allowedHosts: ['true']
     }
   },
-  
+  routeRules: {
+    '/blogs': { redirect: '/' },
+  },
 })
 

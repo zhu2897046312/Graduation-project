@@ -14,8 +14,7 @@ class HttpRequest {
     const config = useRuntimeConfig()
     const accessToken = useCookie('accessToken')
     const deviceId = getDeviceId(); // 获取设备ID
-    // console.log(config)
-    // console.log(deviceId)
+    
     const options: any = {
       baseURL: config.public.apiUrl,
       method: method,
@@ -40,6 +39,8 @@ class HttpRequest {
       
       if (data.code === 0) {
         console.log(data)
+        console.log(config)
+        console.log(deviceId)
         return Promise.resolve(data.result)
       }
       return Promise.reject(new Error(data.message))

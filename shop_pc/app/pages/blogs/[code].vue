@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import api from '../../../api';
-
-
 const route = useRoute()
 const code = route.params.code as any
-
 const {data: info, status} = await useAsyncData(`document:${code}`, async() => {
   const res = await api.blogs.document.info(code)
   return res
@@ -13,6 +10,9 @@ if (!info.value) {
   throw createError({ statusCode: 404, message: 'Page not found' })
 }
 
+onMounted(() => {
+  console.log("ducment info by code", info.value)
+})
 </script>
 
 <template>

@@ -127,6 +127,19 @@ func (h *CmsDocumentHandler) ListDocuments(c *gin.Context) {
 	})
 }
 
+func (h *CmsDocumentHandler) GetAll(c *gin.Context) {
+	documents, total, err := h.service.ListDocuments(0,0,"")
+	if err != nil {
+		ServerError(c, err)
+		return
+	}
+
+	Success(c, gin.H{
+		"list":  documents,
+		"total": total,
+	})
+}
+
 // cms_document_handler.go
 // 替换现有的 SaveDocument 方法
 

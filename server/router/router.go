@@ -274,7 +274,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			{
 				documentGroup := shopGroup.Group("/document")
 				{
-					documentGroup.GET("/list", documentHandler.ListDocuments)
+					documentGroup.GET("/list", documentHandler.GetAll)
 					documentGroup.GET("/info", documentHandler.GetDocumentByCode)
 				}
 

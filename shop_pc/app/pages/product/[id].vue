@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import api from '../../../api';
+import type { ProductInfo } from '../../../api/type';
 import useCart from '../../../hook/useCartHook';
 import { NButton, NInputNumber, NTag, NIcon, NEmpty} from 'naive-ui';
 // import { CartOutline } from '@vicons/ionicons5'
@@ -19,7 +20,7 @@ const { data: info, status } = await useAsyncData(`product-${productId}`,async()
 
   try {
     console.log('Fetching product info for ID:', productId)
-    const res: any = await api.shop.product.info(productId)
+    const res = await api.shop.product.info(productId)
     console.log('API response:', res)
     price.value = res.price
     original_price.value = res.original_price

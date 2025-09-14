@@ -810,3 +810,70 @@ func (h *SpProductHandler) convertToFrontInfo(fullInfo gin.H) gin.H {
 		"tags":            tags,
 	}
 }
+
+// GetProduct 获取商品详情
+func (h *SpProductHandler) GetClientProduct(c *gin.Context) {
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
+		return
+	}
+
+	product, err := h.service.GetProductByID(common.MyID(uintId))
+	if err != nil {
+		Error(c, 3103, "商品不存在")
+		return
+	}
+
+	// 获取商品内容
+	content, err := h.contentService.GetContentByProductID(product.ID)
+	if err != nil {
+		content = &sp.SpProductContent{
+			ProductID: common.MyID(uintId),
+		}
+	}
+
+	// 获取商品属性列表
+	properties, err := h.propertyService.GetPropertiesByProductID(common.MyID(uintId))
+	if err != nil {
+		properties = []sp.SpProductProperty{}
+	}
+
+	// 获取SKU列表
+	skus, err := h.skuService.GetSkusByProductID(common.MyID(uintId))
+	if err != nil {
+		skus = []sp.SpSku{}
+	}
+
+	// 获取SKU配置列表
+	skuConfigList, err := h.skuIndexService.GetIndicesByProductID(common.MyID(uintId))
+	if err != nil {
+		skuConfigList = []sp.SpSkuIndex{}
+	}
+
+	// 获取标签
+	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(common.MyID(uintId))
+	var tags []shop.ShopTag
+	if err == nil && len(tagIds) > 0 {
+		// 使用循环逐个获取标签
+		for _, tagId := range tagIds {
+			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
+			if err == nil {
+				tags = append(tags, *tag)
+			}
+			// 如果获取失败，可以选择记录日志但继续处理其他标签
+		}
+	}
+
+	// 构建返回结构
+	response := gin.H{
+		"product":         product,
+		"content":         content,
+		"property_list":   properties,
+		"sku_list":        skus,
+		"sku_config_list": skuConfigList,
+		"tags":            tags,
+	}
+	Success(c, response)
+}
