@@ -4,10 +4,17 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   build: {
-    transpile: ['naive-ui','vueuc'],
+    transpile: [
+      'naive-ui',
+      'vueuc',
+      '@css-render/vue3-ssr',
+    ],
     
   },
-  css: ['~/assets/css/main.css'],
+  css: [
+    '~/assets/css/main.css',
+    // '~/assets/css/naive-ui.css'
+  ],
   imports: {
     autoImport: true // 确保自动导入开启
   },
@@ -15,9 +22,6 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'node-server',
   },
-  // css: [
-  //   './assets/css/main.css'
-  // ],
   app: {
     head: {
       charset: 'utf-8',

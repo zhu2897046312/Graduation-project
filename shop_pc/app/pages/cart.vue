@@ -150,7 +150,24 @@ onMounted(() => {
               </div>
             </div>
             <div class="cart-item-quantity"> 
-              <NInputNumber :disabled="lock" :min="1" :max="50" :value="item.quantity" @update-value="(e: any) => handleChangeCartItem(index, e)" />
+                <NInputNumber 
+                  :disabled="lock" 
+                  :min="1" 
+                  :max="50" 
+                  :value="item.quantity" 
+                  @update-value="(e: any) => handleChangeCartItem(index, e)"
+                >
+                  <template #add-icon>
+                    <svg width="16" height="16" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M256 112V400M400 256H112" stroke="currentColor" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </template>
+                  <template #minus-icon>
+                    <svg width="16" height="16" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <line x1="400" y1="256" x2="112" y2="256" stroke="currentColor" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </template>
+                </NInputNumber>
             </div>
             <div class="cart-item-action">
               <NPopconfirm :disabled="lock" @positive-click="handleRemoveCartItem(index)" positive-text="Confirm" negative-text="Cancel">
