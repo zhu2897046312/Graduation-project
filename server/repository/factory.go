@@ -7,40 +7,40 @@ import (
 type RepositoryFactory struct {
 	db                  *gorm.DB
 	cms_category        *CmsCategoryRepository
-	cms_comment         *CmsCommentRepository
+	// cms_comment         *CmsCommentRepository
 	cms_document        *CmsDocumentRepository
-	cms_place           *CmsAssociatedPlaceRepository
+	// cms_place           *CmsAssociatedPlaceRepository
 	cms_archive         *CmsDocumentArchiveRepository
-	cms_doc_tag         *CmsDocumentTagRepository
-	cms_doc_video       *CmsDocumentVideoRepository
-	cms_file            *CmsFileRepository
+	// cms_doc_tag         *CmsDocumentTagRepository
+	// cms_doc_video       *CmsDocumentVideoRepository
+	// cms_file            *CmsFileRepository
 	cms_recommend       *CmsRecommendRepository
 	cms_recommend_idx   *CmsRecommendIndexRepository
-	cms_scenic_spot     *CmsScenicSpotRepository
-	cms_tag             *CmsTagRepository
-	cms_user_like       *CmsUserLikeHistoryRepository
+	// cms_scenic_spot     *CmsScenicSpotRepository
+	// cms_tag             *CmsTagRepository
+	// cms_user_like       *CmsUserLikeHistoryRepository
 	core_admin          *CoreAdminRepository
 	core_admin_role     *CoreAdminRoleIndexRepository
 	core_config         *CoreConfigRepository
 	core_dept           *CoreDeptRepository
 	core_permission     *CorePermissionRepository
-	core_request_log    *CoreRequestLogRepository
+	// core_request_log    *CoreRequestLogRepository
 	core_role           *CoreRoleRepository
-	mp_order            *MpOrderRepository
-	mp_pay_config       *MpPayConfigRepository
-	mp_product          *MpProductRepository
-	mp_reset_pwd        *MpResetPwdTokensRepository
+	// mp_order            *MpOrderRepository
+	// mp_pay_config       *MpPayConfigRepository
+	// mp_product          *MpProductRepository
+	// mp_reset_pwd        *MpResetPwdTokensRepository
 	mp_user             *MpUserRepository
 	mp_user_token       *MpUserTokenRepository
-	paypal_order_logs   *PaypalOrderLogsRepository
-	paypal_webhook_logs *PaypalWebhookLogsRepository
+	// paypal_order_logs   *PaypalOrderLogsRepository
+	// paypal_webhook_logs *PaypalWebhookLogsRepository
 	shop_tag            *ShopTagRepository
 	shop_tag_index      *ShopTagIndexRepository
 	shop_tag_mate       *ShopTagMateRepository
 	sp_category         *SpCategoryRepository
 	sp_order            *SpOrderRepository
 	sp_order_item       *SpOrderItemRepository
-	sp_order_history    *SpOrderOperateHistoryRepository
+	// sp_order_history    *SpOrderOperateHistoryRepository
 	sp_order_address    *SpOrderReceiveAddressRepository
 	sp_order_refund     *SpOrderRefundRepository
 	sp_prod_attr        *SpProdAttributesRepository
@@ -50,7 +50,7 @@ type RepositoryFactory struct {
 	sp_product_prop     *SpProductPropertyRepository
 	sp_sku              *SpSkuRepository
 	sp_sku_index        *SpSkuIndexRepository
-	sp_user_address     *SpUserAddressRepository
+	// sp_user_address     *SpUserAddressRepository
 	sp_user_cart        *SpUserCartRepository
 }
 
@@ -69,12 +69,12 @@ func (f *RepositoryFactory) GetCmsCategoryRepository() *CmsCategoryRepository {
 	return f.cms_category
 }
 
-func (f *RepositoryFactory) GetCmsCommentRepository() *CmsCommentRepository {
-	if f.cms_comment == nil {
-		f.cms_comment = NewCmsCommentRepository(f.db)
-	}
-	return f.cms_comment
-}
+// func (f *RepositoryFactory) GetCmsCommentRepository() *CmsCommentRepository {
+// 	if f.cms_comment == nil {
+// 		f.cms_comment = NewCmsCommentRepository(f.db)
+// 	}
+// 	return f.cms_comment
+// }
 
 func (f *RepositoryFactory) GetCmsDocumentRepository() *CmsDocumentRepository {
 	if f.cms_document == nil {
@@ -84,12 +84,12 @@ func (f *RepositoryFactory) GetCmsDocumentRepository() *CmsDocumentRepository {
 }
 
 // 新增方法
-func (f *RepositoryFactory) GetCmsPlaceRepository() *CmsAssociatedPlaceRepository {
-	if f.cms_place == nil {
-		f.cms_place = NewCmsAssociatedPlaceRepository(f.db)
-	}
-	return f.cms_place
-}
+// func (f *RepositoryFactory) GetCmsPlaceRepository() *CmsAssociatedPlaceRepository {
+// 	if f.cms_place == nil {
+// 		f.cms_place = NewCmsAssociatedPlaceRepository(f.db)
+// 	}
+// 	return f.cms_place
+// }
 
 func (f *RepositoryFactory) GetCmsDocumentArchiveRepository() *CmsDocumentArchiveRepository {
 	if f.cms_archive == nil {
@@ -98,26 +98,26 @@ func (f *RepositoryFactory) GetCmsDocumentArchiveRepository() *CmsDocumentArchiv
 	return f.cms_archive
 }
 
-func (f *RepositoryFactory) GetCmsDocumentTagRepository() *CmsDocumentTagRepository {
-	if f.cms_doc_tag == nil {
-		f.cms_doc_tag = NewCmsDocumentTagRepository(f.db)
-	}
-	return f.cms_doc_tag
-}
+// func (f *RepositoryFactory) GetCmsDocumentTagRepository() *CmsDocumentTagRepository {
+// 	if f.cms_doc_tag == nil {
+// 		f.cms_doc_tag = NewCmsDocumentTagRepository(f.db)
+// 	}
+// 	return f.cms_doc_tag
+// }
 
-func (f *RepositoryFactory) GetCmsDocumentVideoRepository() *CmsDocumentVideoRepository {
-	if f.cms_doc_video == nil {
-		f.cms_doc_video = NewCmsDocumentVideoRepository(f.db)
-	}
-	return f.cms_doc_video
-}
+// func (f *RepositoryFactory) GetCmsDocumentVideoRepository() *CmsDocumentVideoRepository {
+// 	if f.cms_doc_video == nil {
+// 		f.cms_doc_video = NewCmsDocumentVideoRepository(f.db)
+// 	}
+// 	return f.cms_doc_video
+// }
 
-func (f *RepositoryFactory) GetCmsFileRepository() *CmsFileRepository {
-	if f.cms_file == nil {
-		f.cms_file = NewCmsFileRepository(f.db)
-	}
-	return f.cms_file
-}
+// func (f *RepositoryFactory) GetCmsFileRepository() *CmsFileRepository {
+// 	if f.cms_file == nil {
+// 		f.cms_file = NewCmsFileRepository(f.db)
+// 	}
+// 	return f.cms_file
+// }
 
 func (f *RepositoryFactory) GetCmsRecommendRepository() *CmsRecommendRepository {
 	if f.cms_recommend == nil {
@@ -133,26 +133,26 @@ func (f *RepositoryFactory) GetCmsRecommendIndexRepository() *CmsRecommendIndexR
 	return f.cms_recommend_idx
 }
 
-func (f *RepositoryFactory) GetCmsScenicSpotRepository() *CmsScenicSpotRepository {
-	if f.cms_scenic_spot == nil {
-		f.cms_scenic_spot = NewCmsScenicSpotRepository(f.db)
-	}
-	return f.cms_scenic_spot
-}
+// func (f *RepositoryFactory) GetCmsScenicSpotRepository() *CmsScenicSpotRepository {
+// 	if f.cms_scenic_spot == nil {
+// 		f.cms_scenic_spot = NewCmsScenicSpotRepository(f.db)
+// 	}
+// 	return f.cms_scenic_spot
+// }
 
-func (f *RepositoryFactory) GetCmsTagRepository() *CmsTagRepository {
-	if f.cms_tag == nil {
-		f.cms_tag = NewCmsTagRepository(f.db)
-	}
-	return f.cms_tag
-}
+// func (f *RepositoryFactory) GetCmsTagRepository() *CmsTagRepository {
+// 	if f.cms_tag == nil {
+// 		f.cms_tag = NewCmsTagRepository(f.db)
+// 	}
+// 	return f.cms_tag
+// }
 
-func (f *RepositoryFactory) GetCmsUserLikeHistoryRepository() *CmsUserLikeHistoryRepository {
-	if f.cms_user_like == nil {
-		f.cms_user_like = NewCmsUserLikeHistoryRepository(f.db)
-	}
-	return f.cms_user_like
-}
+// func (f *RepositoryFactory) GetCmsUserLikeHistoryRepository() *CmsUserLikeHistoryRepository {
+// 	if f.cms_user_like == nil {
+// 		f.cms_user_like = NewCmsUserLikeHistoryRepository(f.db)
+// 	}
+// 	return f.cms_user_like
+// }
 
 func (f *RepositoryFactory) GetCoreAdminRepository() *CoreAdminRepository {
 	if f.core_admin == nil {
@@ -189,12 +189,12 @@ func (f *RepositoryFactory) GetCorePermissionRepository() *CorePermissionReposit
 	return f.core_permission
 }
 
-func (f *RepositoryFactory) GetCoreRequestLogRepository() *CoreRequestLogRepository {
-	if f.core_request_log == nil {
-		f.core_request_log = NewCoreRequestLogRepository(f.db)
-	}
-	return f.core_request_log
-}
+// func (f *RepositoryFactory) GetCoreRequestLogRepository() *CoreRequestLogRepository {
+// 	if f.core_request_log == nil {
+// 		f.core_request_log = NewCoreRequestLogRepository(f.db)
+// 	}
+// 	return f.core_request_log
+// }
 
 func (f *RepositoryFactory) GetCoreRoleRepository() *CoreRoleRepository {
 	if f.core_role == nil {
@@ -203,33 +203,33 @@ func (f *RepositoryFactory) GetCoreRoleRepository() *CoreRoleRepository {
 	return f.core_role
 }
 
-func (f *RepositoryFactory) GetMpOrderRepository() *MpOrderRepository {
-	if f.mp_order == nil {
-		f.mp_order = NewMpOrderRepository(f.db)
-	}
-	return f.mp_order
-}
+// func (f *RepositoryFactory) GetMpOrderRepository() *MpOrderRepository {
+// 	if f.mp_order == nil {
+// 		f.mp_order = NewMpOrderRepository(f.db)
+// 	}
+// 	return f.mp_order
+// }
 
-func (f *RepositoryFactory) GetMpPayConfigRepository() *MpPayConfigRepository {
-	if f.mp_pay_config == nil {
-		f.mp_pay_config = NewMpPayConfigRepository(f.db)
-	}
-	return f.mp_pay_config
-}
+// func (f *RepositoryFactory) GetMpPayConfigRepository() *MpPayConfigRepository {
+// 	if f.mp_pay_config == nil {
+// 		f.mp_pay_config = NewMpPayConfigRepository(f.db)
+// 	}
+// 	return f.mp_pay_config
+// }
 
-func (f *RepositoryFactory) GetMpProductRepository() *MpProductRepository {
-	if f.mp_product == nil {
-		f.mp_product = NewMpProductRepository(f.db)
-	}
-	return f.mp_product
-}
+// func (f *RepositoryFactory) GetMpProductRepository() *MpProductRepository {
+// 	if f.mp_product == nil {
+// 		f.mp_product = NewMpProductRepository(f.db)
+// 	}
+// 	return f.mp_product
+// }
 
-func (f *RepositoryFactory) GetMpResetPwdTokensRepository() *MpResetPwdTokensRepository {
-	if f.mp_reset_pwd == nil {
-		f.mp_reset_pwd = NewMpResetPwdTokensRepository(f.db)
-	}
-	return f.mp_reset_pwd
-}
+// func (f *RepositoryFactory) GetMpResetPwdTokensRepository() *MpResetPwdTokensRepository {
+// 	if f.mp_reset_pwd == nil {
+// 		f.mp_reset_pwd = NewMpResetPwdTokensRepository(f.db)
+// 	}
+// 	return f.mp_reset_pwd
+// }
 
 func (f *RepositoryFactory) GetMpUserRepository() *MpUserRepository {
 	if f.mp_user == nil {
@@ -245,19 +245,19 @@ func (f *RepositoryFactory) GetMpUserTokenRepository() *MpUserTokenRepository {
 	return f.mp_user_token
 }
 
-func (f *RepositoryFactory) GetPaypalOrderLogsRepository() *PaypalOrderLogsRepository {
-	if f.paypal_order_logs == nil {
-		f.paypal_order_logs = NewPaypalOrderLogsRepository(f.db)
-	}
-	return f.paypal_order_logs
-}
+// func (f *RepositoryFactory) GetPaypalOrderLogsRepository() *PaypalOrderLogsRepository {
+// 	if f.paypal_order_logs == nil {
+// 		f.paypal_order_logs = NewPaypalOrderLogsRepository(f.db)
+// 	}
+// 	return f.paypal_order_logs
+// }
 
-func (f *RepositoryFactory) GetPaypalWebhookLogsRepository() *PaypalWebhookLogsRepository {
-	if f.paypal_webhook_logs == nil {
-		f.paypal_webhook_logs = NewPaypalWebhookLogsRepository(f.db)
-	}
-	return f.paypal_webhook_logs
-}
+// func (f *RepositoryFactory) GetPaypalWebhookLogsRepository() *PaypalWebhookLogsRepository {
+// 	if f.paypal_webhook_logs == nil {
+// 		f.paypal_webhook_logs = NewPaypalWebhookLogsRepository(f.db)
+// 	}
+// 	return f.paypal_webhook_logs
+// }
 
 func (f *RepositoryFactory) GetShopTagRepository() *ShopTagRepository {
 	if f.shop_tag == nil {
@@ -301,12 +301,12 @@ func (f *RepositoryFactory) GetSpOrderItemRepository() *SpOrderItemRepository {
 	return f.sp_order_item
 }
 
-func (f *RepositoryFactory) GetSpOrderOperateHistoryRepository() *SpOrderOperateHistoryRepository {
-	if f.sp_order_history == nil {
-		f.sp_order_history = NewSpOrderOperateHistoryRepository(f.db)
-	}
-	return f.sp_order_history
-}
+// func (f *RepositoryFactory) GetSpOrderOperateHistoryRepository() *SpOrderOperateHistoryRepository {
+// 	if f.sp_order_history == nil {
+// 		f.sp_order_history = NewSpOrderOperateHistoryRepository(f.db)
+// 	}
+// 	return f.sp_order_history
+// }
 
 func (f *RepositoryFactory) GetSpOrderReceiveAddressRepository() *SpOrderReceiveAddressRepository {
 	if f.sp_order_address == nil {
@@ -371,12 +371,12 @@ func (f *RepositoryFactory) GetSpSkuIndexRepository() *SpSkuIndexRepository {
 	return f.sp_sku_index
 }
 
-func (f *RepositoryFactory) GetSpUserAddressRepository() *SpUserAddressRepository {
-	if f.sp_user_address == nil {
-		f.sp_user_address = NewSpUserAddressRepository(f.db)
-	}
-	return f.sp_user_address
-}
+// func (f *RepositoryFactory) GetSpUserAddressRepository() *SpUserAddressRepository {
+// 	if f.sp_user_address == nil {
+// 		f.sp_user_address = NewSpUserAddressRepository(f.db)
+// 	}
+// 	return f.sp_user_address
+// }
 
 func (f *RepositoryFactory) GetSpUserCartRepository() *SpUserCartRepository {
 	if f.sp_user_cart == nil {
