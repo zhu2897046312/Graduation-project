@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"gorm.io/gorm"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
+
+	"gorm.io/gorm"
 )
 
 type SpProductPropertyRepository struct {
@@ -33,6 +34,14 @@ func (r *SpProductPropertyRepository) FindByProductID(productID common.MyID) ([]
 		Order("sort_num ASC").
 		Find(&properties).Error
 	return properties, err
+}
+
+func (r *SpProductPropertyRepository) FindByID(ID common.MyID) (*sp.SpProductProperty, error) {
+	var properties sp.SpProductProperty
+	err := r.db.Where("id = ?", ID).
+		Order("sort_num ASC").
+		Find(&properties).Error
+	return &properties, err
 }
 
 // 批量创建商品属性

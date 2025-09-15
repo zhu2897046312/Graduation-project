@@ -39,6 +39,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpSkuIndexService(),
 			factory.GetShopTagIndexService(),
 			factory.GetShopTagService(),
+			factory.GetSpProdAttributesService(),
 			factory.GetSpProdAttributesValueService(),
 		)
 		// 系统配置路由组
@@ -281,7 +282,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				productGroup := shopGroup.Group("/product")
 				{
 					productGroup.POST("/list", productHandler.ListProducts)
-					productGroup.GET("/info", productHandler.GetProductFrontInfo)
+					productGroup.GET("/info", productHandler.GetClientProduct)
 				}
 
 				categoryGroup := shopGroup.Group("/category")
@@ -711,6 +712,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 	cartGroup.DELETE("/user/:user_id/clear", cartHandler.ClearCart)
 		// }
 	}
-	
+
 	return r
 }

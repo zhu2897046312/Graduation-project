@@ -9,8 +9,8 @@ const route = useRoute()
 const productId = route.params.id as any
 const activeTab = ref('details') 
 
-const price = useState<string>('price', () => '')
-const original_price = useState<string>('original_price', () => '')
+const price = useState<number>('price', () => 0)
+const original_price = useState<number>('original_price', () => 0)
 const current_sku_id = useState<number>('current_sku_id', () => 0)
 const defaultSkuCode = useState<string>('defaultSkuCode', () => '') // 新增：存储默认SKU code
 // 商品的数量
@@ -20,8 +20,8 @@ const { data: info, status } = await useAsyncData(`product-${productId}`,async()
 
   try {
     console.log('Fetching product info for ID:', productId)
-    const res = await api.shop.product.info(productId)
-    console.log('API response:', res)
+    const res = await api.shop.product.info(productId) 
+    console.log('API response:', res) 
     price.value = res.price
     original_price.value = res.original_price
     quantity.value = 1

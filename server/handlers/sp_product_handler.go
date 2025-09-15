@@ -3,9 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"server/models/common"
 	"server/models/shop"
 	"server/models/sp"
-	"server/models/common"
 	"server/service"
 	"server/utils"
 	"strconv"
@@ -52,7 +52,7 @@ type CreateProductRequest struct {
 	SortNum        int64          `json:"sort_num"`
 	State          int64          `json:"state"`
 	Stock          int64          `json:"stock"`
-	Tags           []common.MyID          `json:"tags"`
+	Tags           []common.MyID  `json:"tags"`
 	Title          string         `json:"title"`
 }
 
@@ -78,7 +78,7 @@ type UpdateProductRequest struct {
 	SortNum        int64          `json:"sort_num"`
 	State          int64          `json:"state"`
 	Stock          int64          `json:"stock"`
-	Tags           []common.MyID          `json:"tags"`
+	Tags           []common.MyID  `json:"tags"`
 	Title          string         `json:"title"`
 }
 
@@ -117,6 +117,7 @@ type SpProductHandler struct {
 	skuIndexService      *service.SpSkuIndexService
 	tagIndexService      *service.ShopTagIndexService
 	tagService           *service.ShopTagService
+	ProdAttributes       *service.SpProdAttributesService
 	ProdAttributesValues *service.SpProdAttributesValueService
 }
 
@@ -129,6 +130,7 @@ func NewSpProductHandler(
 	skuIndexService *service.SpSkuIndexService,
 	tagIndexService *service.ShopTagIndexService,
 	tagService *service.ShopTagService,
+	ProdAttributes *service.SpProdAttributesService,
 	prodAttributes *service.SpProdAttributesValueService,
 
 ) *SpProductHandler {
@@ -141,6 +143,7 @@ func NewSpProductHandler(
 		skuIndexService:      skuIndexService,
 		tagIndexService:      tagIndexService,
 		tagService:           tagService,
+		ProdAttributes:       ProdAttributes,
 		ProdAttributesValues: prodAttributes,
 	}
 }
@@ -811,7 +814,7 @@ func (h *SpProductHandler) convertToFrontInfo(fullInfo gin.H) gin.H {
 	}
 }
 
-// GetProduct 获取商品详情
+// GetClientProduct 获取前端商品详情
 func (h *SpProductHandler) GetClientProduct(c *gin.Context) {
 	id := c.Query("id")
 	uintId := utils.ConvertToUint(id)
@@ -827,7 +830,7 @@ func (h *SpProductHandler) GetClientProduct(c *gin.Context) {
 	}
 
 	// 获取商品内容
-	content, err := h.contentService.GetContentByProductID(product.ID)
+	content, err := h.contentService.GetContentByProductID(common.MyID(uintId))
 	if err != nil {
 		content = &sp.SpProductContent{
 			ProductID: common.MyID(uintId),
@@ -846,34 +849,132 @@ func (h *SpProductHandler) GetClientProduct(c *gin.Context) {
 		skus = []sp.SpSku{}
 	}
 
-	// 获取SKU配置列表
-	skuConfigList, err := h.skuIndexService.GetIndicesByProductID(common.MyID(uintId))
+	// 转换SKU配置为前端需要的格式
+	frontSkuConfig, err := h.getSkuConfig(common.MyID(uintId))
 	if err != nil {
-		skuConfigList = []sp.SpSkuIndex{}
+		frontSkuConfig = []SpProductProdFrontVo{}
 	}
 
 	// 获取标签
 	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(common.MyID(uintId))
 	var tags []shop.ShopTag
 	if err == nil && len(tagIds) > 0 {
-		// 使用循环逐个获取标签
 		for _, tagId := range tagIds {
 			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
 			if err == nil {
 				tags = append(tags, *tag)
 			}
-			// 如果获取失败，可以选择记录日志但继续处理其他标签
 		}
 	}
 
-	// 构建返回结构
+	// 处理图片集
+	var pictureGallery []string
+	if product.PictureGallery != nil {
+		json.Unmarshal(product.PictureGallery, &pictureGallery)
+	}
+
+	// 构建前端需要的响应结构 - ProductInfo
 	response := gin.H{
-		"product":         product,
-		"content":         content,
+		"id":              product.ID,
+		"category_id":     product.CategoryID,
+		"title":           product.Title,
+		"state":           product.State,
+		"price":           product.Price,
+		"original_price":  product.OriginalPrice,
+		"stock":           product.Stock,
+		"picture":         product.Picture,
+		"picture_gallery": pictureGallery,
+		"description":     product.Description,
+		"sold_num":        product.SoldNum,
+		"open_sku":        product.OpenSku,
+		"sort_num":        product.SortNum,
+		"putaway_time":    product.PutawayTime,
+		"content":         content.Content,
+		"seo_title":       content.SeoTitle,
+		"seo_keyword":     content.SeoKeyword,
+		"seo_description": content.SeoDescription,
 		"property_list":   properties,
 		"sku_list":        skus,
-		"sku_config_list": skuConfigList,
+		"sku_config":      frontSkuConfig,
 		"tags":            tags,
 	}
+
 	Success(c, response)
+}
+
+type SpProductProdFrontVo struct {
+	ID      common.MyID                 `json:"id"`
+	Title   string                      `json:"title"` //属性名称
+	SortNum uint16                      `json:"sort_num"`
+	Value   []SpProductProdValueFrontVo `json:"value"` // 属性值
+}
+type SpProductProdValueFrontVo struct {
+	ID      common.MyID `json:"id"`
+	Title   string      `json:"title"` //值名称
+	SortNum uint16      `json:"sort_num"`
+}
+
+func (h *SpProductHandler) getSkuConfig(productID common.MyID) ([]SpProductProdFrontVo, error) {
+	// 获取 SKU 索引列表
+	skuIndices, err := h.skuIndexService.GetIndicesByProductID(productID)
+	if err != nil {
+		return nil, err
+	}
+	if len(skuIndices) == 0 {
+		return []SpProductProdFrontVo{}, nil
+	}
+
+	// 收集属性 ID 和属性值 ID
+	var attributeIDs []common.MyID
+	var attributeValueIDs []common.MyID
+	for _, index := range skuIndices {
+		attributeIDs = append(attributeIDs, index.ProdAttributesID)
+		attributeValueIDs = append(attributeValueIDs, index.ProdAttributesValueID)
+	}
+
+	// 获取属性列表
+	var attributes []sp.SpProdAttributes
+	for _, id := range attributeIDs {
+		attr, err := h.ProdAttributes.GetAttributeByID(id)
+		if err != nil {
+			return nil, err
+		}
+		attributes = append(attributes, *attr)
+	}
+
+	// 获取属性值列表
+	var attributeValues []sp.SpProdAttributesValue
+	for _, id := range attributeValueIDs {
+		val, err := h.ProdAttributesValues.GetValueByID(id)
+		if err != nil {
+			return nil, err
+		}
+		attributeValues = append(attributeValues, *val)
+	}
+
+	// 构建返回结果
+	var result []SpProductProdFrontVo
+	for _, attr := range attributes {
+		vo := SpProductProdFrontVo{
+			ID:      attr.ID,
+			Title:   attr.Title,
+			SortNum: attr.SortNum,
+		}
+
+		// 过滤并匹配属性值
+		var values []SpProductProdValueFrontVo
+		for _, val := range attributeValues {
+			if val.ProdAttributesID == attr.ID {
+				values = append(values, SpProductProdValueFrontVo{
+					ID:      val.ID,
+					Title:   val.Title,
+					SortNum: val.SortNum,
+				})
+			}
+		}
+		vo.Value = values
+		result = append(result, vo)
+	}
+
+	return result, nil
 }

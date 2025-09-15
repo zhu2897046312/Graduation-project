@@ -56,6 +56,13 @@ func (s *SpProductPropertyService) GetPropertiesByProductID(productID common.MyI
 	return s.repoFactory.GetSpProductPropertyRepository().FindByProductID(productID)
 }
 
+func (s *SpProductPropertyService) GetPropertiesByID(ID common.MyID) (*sp.SpProductProperty, error) {
+	if ID == 0 {
+		return nil, errors.New("无效的商品ID")
+	}
+	return s.repoFactory.GetSpProductPropertyRepository().FindByID(ID)
+}
+
 // BatchCreateProperties 批量创建商品属性
 func (s *SpProductPropertyService) BatchCreateProperties(properties []sp.SpProductProperty) error {
 	if len(properties) == 0 {
