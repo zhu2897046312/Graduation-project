@@ -1,34 +1,20 @@
 <script setup lang="ts">
-import type { SkuConfigList } from '../../api/type'
+import type { SpProductProdFrontVo } from '../../api/type'
+
 const props = withDefaults(defineProps<{
-  list: SkuConfigList,              // sku_config_list
-  defaultSelected?: string          // 添加默认选中的SKU值
+  list: SpProductProdFrontVo[],
+  defaultSelected?: string
 }>(), {
   list: () => [] 
 })
+
 const emit = defineEmits(['change'])
 
-const current_list = computed(() => {
-  // 添加防御性检查
-  if (!props.list || props.list.length === 0) {
-    return []
-  }
-  const list: any[] = JSON.parse(JSON.stringify(props.list))
-  return list.map(warp => {
-    warp.value = warp.value.map((item: any) => {
-      if (current_selected.value.find(ic => ic.prop_id === warp.id && ic.value_id === item.id)) {
-        item.selected = true;
-      } else {
-        item.selected = false;
-      }
-      return item;
-    })
-    return warp;
-  })
-})
+// 使用 ref 而不是 useState 来避免 SSR 问题
+const current_selected = ref<{prop_id: number, value_id: number}[]>([])
 
-const current_selected = useState<{prop_id: number, value_id: number}[]>('current_selected', () => {
-  // 如果有默认选中的SKU，解析并设置初始状态
+// 在 onMounted 中设置初始选中状态，确保只在客户端执行
+onMounted(() => {
   if (props.defaultSelected) {
     const valueIds = props.defaultSelected.split(';').map(Number)
     const selectedItems: {prop_id: number, value_id: number}[] = []
@@ -43,55 +29,68 @@ const current_selected = useState<{prop_id: number, value_id: number}[]>('curren
         }
       })
     })
-    console.log(selectedItems)
-    return selectedItems
+    current_selected.value = selectedItems
+    emitChange() // 初始化后触发一次 change 事件
   }
-  return []
+})
+
+const current_list = computed(() => {
+  if (!props.list || props.list.length === 0) {
+    return []
+  }
+  
+  const list: any[] = JSON.parse(JSON.stringify(props.list))
+  return list.map(warp => {
+    warp.value = warp.value.map((item: any) => {
+      // 使用可选链操作符避免 SSR 期间的错误
+      const isSelected = current_selected.value?.find(ic => 
+        ic.prop_id === warp.id && ic.value_id === item.id
+      )
+      item.selected = !!isSelected
+      return item
+    })
+    return warp
+  })
 })
 
 const handleSelect = (prop_id: number, value_id: number) => {
   let hit = false
-  for(var i = 0; i < current_selected.value.length; i++) {
-    // 添加非空断言操作符 (!) 告诉 TypeScript 这个值不会为 null 或 undefined
-    if (current_selected.value[i]!.prop_id === prop_id) {
-      hit = true
-      current_selected.value[i]!.value_id = value_id;
+  for(let i = 0; i < current_selected.value.length; i++) {
+    const item = current_selected.value[i];
+    if (item?.prop_id === prop_id) {
+      hit = true;
+      item.value_id = value_id;
       break;
     }
   }
-  if (hit === false) {
+  
+  if (!hit) {
     current_selected.value.push({
       prop_id,
       value_id
     })
   }
   emitChange()
-};
+}
 
 const emitChange = () => {
-  let ids: number[] = []
-  for(var i = 0; i < current_selected.value.length; i++) {
-    // 同样添加非空断言
-    ids.push(current_selected.value[i]!.value_id)
-  }
+  const ids = current_selected.value
+    .filter(item => item !== null && item !== undefined)
+    .map(item => item.value_id)
   emit('change', ids.join(';'))
-};
-
-onMounted(() => {
-  console.log("productSkuBox props list",props.list)
-})
+}
 </script>
 
 <template>
   <div class="sku-box py-2">
-    <div class="sku-item flex gap-2 mb-4" v-for="item in current_list">
+    <div class="sku-item flex gap-2 mb-4" v-for="item in current_list" :key="item.id">
       <div class="sku-item-title text-[#333] text-sm py-4">{{ item.title }}:</div>
       <div class="sku-item-value flex items-center flex-wrap gap-2">
         <div
-          class=""
-          :class="{'selected': child.selected}"
+          :class="{'selected': child.selected, 'able': !child.disabled, 'disabled': child.disabled}"
           v-for="child in item.value"
-          @click="handleSelect(item.id, child.id)">
+          :key="child.id"
+          @click="!child.disabled && handleSelect(item.id, child.id)">
           {{ child.title }}
         </div>
       </div>
@@ -99,23 +98,9 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式保持不变 -->
+
 <style lang="css" scoped>
-/* .sku-item {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-} */
-/* .sku-item-title {
-  font-size: 14px;
-  color: #333;
-  padding: 7px 0px;
-} */
-/* .sku-item-value {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-} */
 .sku-item-value>div {
   display: block;
   border: 1px solid #c7c7c7;

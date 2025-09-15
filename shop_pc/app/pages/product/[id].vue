@@ -19,9 +19,7 @@ const quantity = useState<number>('quantity', () => 1)
 const { data: info, status } = await useAsyncData(`product-${productId}`,async() => {
 
   try {
-    console.log('Fetching product info for ID:', productId)
     const res = await api.shop.product.info(productId) 
-    console.log('API response:', res) 
     price.value = res.price
     original_price.value = res.original_price
     quantity.value = 1
@@ -34,15 +32,9 @@ const { data: info, status } = await useAsyncData(`product-${productId}`,async()
       current_sku_id.value = defaultSku.id
     }
 
-    return {
-      ...res,
-      // Set default SEO values if null
-      seo_title: res.seo_title || `${res.title} | Shop Name`,
-      seo_keyword: res.seo_keyword || `${res.title}, ${res.tags?.map((t : any) => t.title).join(', ') || ''}`,
-      seo_description: res.seo_description || `Buy ${res.title} at best price. ${res.property_list?.map((p : any) => `${p.title}: ${p.value}`).join('. ') || ''}`
-    };
-  } catch (_) {
-    return false
+    return res as ProductInfo
+  } catch (error) {
+    throw createError({ statusCode: 404, message: 'Product not found' })
   }
 })
 
@@ -52,7 +44,8 @@ const { data: recommendedProducts } = await useAsyncData(
     try {
       // 获取当前商品的所有标签ID
       console.log('Fetching product recommendedInfo for ID:',productId)
-      const tagIds = info.value.tags?.map((tag: any) => tag.id) || []
+      const tagIDs_1 = info.value!.tags
+      const tagIds = info.value?.tags?.map((tag: any) => tag.id) || []
       console.log('Fetching tags list',tagIds)
       // 随机选择最多4个标签（如果标签数超过4个）
       const randomTagIds = tagIds
@@ -87,7 +80,8 @@ const { addCart } = useCart()
  */
 const handleAddCart = async () => {
   try {
-    await addCart(info.value.id, current_sku_id.value , quantity.value)    
+    const productID = info!.value?.id as number
+    await addCart(productID, current_sku_id.value , quantity.value)    
   } catch (_) {
     // console.error(error)
   }
@@ -98,7 +92,8 @@ const handleAddCart = async () => {
  * @param sku_code 
  */
 const handleOnSkuChange = (sku_code: string) => {
-  const hit = info.value.sku_list.filter((it: any) => it.sku_code === sku_code)
+  const skuList = info.value!.sku_list || []
+  const hit = skuList.filter((it: any) => it.sku_code === sku_code) as any[]
   console.log(sku_code, hit)
   if (hit.length > 0) {
     price.value = hit[0].price
@@ -110,25 +105,27 @@ const handleOnSkuChange = (sku_code: string) => {
 }
 
 
-console.log(info.value)
+onMounted(() => {
+  console.log('info:', info.value)
+})
 </script>
 
 <template>
   <div v-if="status == 'success'">
-    <Title>{{ info.seo_title }}</Title>
-    <Meta name="keywords" :content="info.seo_keyword" />
-    <Meta name="description" :content="info.seo_description" />
+    <Title>{{ info?.seo_title }}</Title>
+    <Meta name="keywords" :content="info?.seo_keyword" />
+    <Meta name="description" :content="info?.seo_description" />
 
     <div class="container product-header">
       <div class="product-image">
         <ProductGrllery
-          :grllery="info.picture_gallery && info.picture_gallery.length > 0 ? info.picture_gallery : [info.picture]"
+          :grllery="info?.picture_gallery && info.picture_gallery.length > 0 ? info.picture_gallery : [info?.picture]"
         />
       </div>
       <div class="product-info">
-        <h1 class="product-title">{{ info.title }}</h1>
+        <h1 class="product-title">{{ info?.title }}</h1>
         <div class="tags-container">
-          <NuxtLink class="tag-item" v-for="item in info.tags" :to="`/tag/${item.code}`">
+          <NuxtLink class="tag-item" v-for="item in info?.tags" :to="`/tag/${item.code}`">
             <NTag :bordered="false" type="info">{{ item.title }}</NTag>
           </NuxtLink>
         </div>
@@ -137,15 +134,16 @@ console.log(info.value)
           <span class="original-price">${{ original_price }}</span>
         </div>
         <div class="shipping-info">Tax included. Shipping cost calculated at checkout.</div>
-        <div v-if="info.property_list.length > 0" class="property-container">
-          <div v-for="item in info.property_list" class="property-item">
+        <div v-if="info!.property_list.length > 0" class="property-container">
+          <div v-for="item in info?.property_list" class="property-item">
             <span class="property-item-label">{{ item.title }}:</span>
             <span class="property-item-value">{{ item.value }}</span>
           </div>
         </div>
         <div class="sku-container">
           <ProductSkuBox 
-          :list="info.sku_config" 
+          v-if="info && info.sku_config"
+          :list="info!.sku_config" 
           :defaultSelected="defaultSkuCode"
           @change="handleOnSkuChange" 
           />
@@ -179,7 +177,7 @@ console.log(info.value)
             Product Details
           </div>
           <div 
-            v-if="info.property_list && info.property_list.length > 0"
+            v-if="info?.property_list && info.property_list.length > 0"
             @click="activeTab = 'specs'"
             :class="[
               'px-4 py-2 text-sm font-medium cursor-pointer',
@@ -197,12 +195,12 @@ console.log(info.value)
     <!-- 根据选项卡显示不同内容 -->
     <div v-if="activeTab === 'details'" class="container product-body">
       <h2>Product Details</h2>
-      <div class="blogs_box" v-html="info.content"></div>
+      <div class="blogs_box" v-html="info?.content"></div>
     </div>
 
     <div v-if="activeTab === 'specs'" class="property my-2 px-3">
       <NEmpty 
-        v-if="!info.property_list || info.property_list.length === 0"
+        v-if="!info?.property_list || info.property_list.length === 0"
         description="No specifications available"
         class="py-8"
       >

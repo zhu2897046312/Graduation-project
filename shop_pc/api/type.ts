@@ -154,6 +154,7 @@ export interface SpProductProdValueFrontVo {
     id: number;
     title: string;
     sort_num: number;
+    selected : boolean;
   }
   
   // 商品属性前端VO
