@@ -66,7 +66,30 @@ func (r *SpOrderRepository) FindByState(state uint8) ([]sp.SpOrder, error) {
 }
 
 // 更新订单状态
-func (r *SpOrderRepository) UpdateState(id common.MyID, state uint8,remark string) error {
+func (r *SpOrderRepository) UpdateState(code string, state uint8,remark string) error {
+	updates := map[string]interface{}{
+		"state": state,
+		"remark": remark,
+	}
+	
+	switch state {
+	case 2: // 已支付
+		now := time.Now()
+		updates["payment_time"] = &now
+	case 3: // 已发货
+		now := time.Now()
+		updates["delivery_time"] = &now
+	case 4: // 已完成
+		now := time.Now()
+		updates["receive_time"] = &now
+	}
+	
+	return r.db.Model(&sp.SpOrder{}).
+		Where("visitor_query_code = ?", code).
+		Updates(updates).Error
+}
+
+func (r *SpOrderRepository) UpdateStateByID(id common.MyID, state uint8,remark string) error {
 	updates := map[string]interface{}{
 		"state": state,
 		"remark": remark,

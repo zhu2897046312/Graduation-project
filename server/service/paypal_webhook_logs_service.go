@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"server/models/paypal"
+	"server/models/mypaypal"
 )
 
 type PaypalWebhookLogsService struct {
@@ -14,7 +14,7 @@ func NewPaypalWebhookLogsService(base *Service) *PaypalWebhookLogsService {
 }
 
 // CreateWebhookLog 创建PayPal Webhook日志
-func (s *PaypalWebhookLogsService) CreateWebhookLog(log *paypal.PaypalWebhookLogs) error {
+func (s *PaypalWebhookLogsService) CreateWebhookLog(log *mypaypal.PaypalWebhookLogs) error {
 	if log.EventID == "" {
 		return errors.New("事件ID不能为空")
 	}
@@ -26,7 +26,7 @@ func (s *PaypalWebhookLogsService) CreateWebhookLog(log *paypal.PaypalWebhookLog
 }
 
 // GetLogByEventID 根据事件ID获取日志
-func (s *PaypalWebhookLogsService) GetLogByEventID(eventID string) (*paypal.PaypalWebhookLogs, error) {
+func (s *PaypalWebhookLogsService) GetLogByEventID(eventID string) (*mypaypal.PaypalWebhookLogs, error) {
 	if eventID == "" {
 		return nil, errors.New("事件ID不能为空")
 	}
@@ -34,7 +34,7 @@ func (s *PaypalWebhookLogsService) GetLogByEventID(eventID string) (*paypal.Payp
 }
 
 // GetLogsByLocalOrderID 根据本地订单ID获取日志
-func (s *PaypalWebhookLogsService) GetLogsByLocalOrderID(localOrderID string) ([]paypal.PaypalWebhookLogs, error) {
+func (s *PaypalWebhookLogsService) GetLogsByLocalOrderID(localOrderID string) ([]mypaypal.PaypalWebhookLogs, error) {
 	if localOrderID == "" {
 		return nil, errors.New("本地订单ID不能为空")
 	}
@@ -42,7 +42,7 @@ func (s *PaypalWebhookLogsService) GetLogsByLocalOrderID(localOrderID string) ([
 }
 
 // GetLogsByPaypalOrderID 根据PayPal订单ID获取日志
-func (s *PaypalWebhookLogsService) GetLogsByPaypalOrderID(paypalOrderID string) ([]paypal.PaypalWebhookLogs, error) {
+func (s *PaypalWebhookLogsService) GetLogsByPaypalOrderID(paypalOrderID string) ([]mypaypal.PaypalWebhookLogs, error) {
 	if paypalOrderID == "" {
 		return nil, errors.New("PayPal订单ID不能为空")
 	}
@@ -50,7 +50,7 @@ func (s *PaypalWebhookLogsService) GetLogsByPaypalOrderID(paypalOrderID string) 
 }
 
 // GetLogsByEventType 根据事件类型获取日志
-func (s *PaypalWebhookLogsService) GetLogsByEventType(eventType string) ([]paypal.PaypalWebhookLogs, error) {
+func (s *PaypalWebhookLogsService) GetLogsByEventType(eventType string) ([]mypaypal.PaypalWebhookLogs, error) {
 	if eventType == "" {
 		return nil, errors.New("事件类型不能为空")
 	}

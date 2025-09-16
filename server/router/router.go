@@ -107,7 +107,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 用户路由组
 		mpUserHandler := handlers.NewMpUserHandler(factory.GetMpUserService(), factory.GetMpUserTokenService())
 
-		payHandler := handlers.NewPaymentHandler(factory.GetSpOrderService())
+		payHandler := handlers.NewPaymentHandler(factory.GetSpOrderService(),factory.GetPaypalOrderLogsService())
 
 		// 公开路由（不需要认证）
 		public := api.Group("")
@@ -334,18 +334,16 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				}
 
 				paymentGroup := clientAuth.Group("/payment")
-				// 模拟支付接口（开发环境使用）
-				paymentGroup.POST("/paypal/create-order", payHandler.SimulatePayment)
-				paymentGroup.GET("/simulate", payHandler.SimulatePayment) // 支持GET请求
-
-				// 支付回调页面
-				paymentGroup.GET("/callback", payHandler.PaymentCallback)
-
-				// 支付状态查询
-				paymentGroup.GET("/status/:id", payHandler.GetPaymentStatus)
+				{
+					paymentGroup.POST("/paypal/create-order", payHandler.CreatePayment)
+					paymentGroup.GET("/capture-order", payHandler.CapturePayment)
+					paymentGroup.POST("/webhook", payHandler.PaymentWebhook)
+					paymentGroup.GET("/status/:id", payHandler.GetPaymentStatus)
+				}
 
 			}
 		}
+
 	}
 	return r
 }

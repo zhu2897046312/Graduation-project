@@ -65,7 +65,14 @@ type EmailConfig struct {
 type PaymentConfig struct {
     WechatPay WechatPayConfig `mapstructure:"wechat"`
     Alipay    AlipayConfig    `mapstructure:"alipay"`
+    PayPal    PayPal           `mapstructure:"paypal"`
 }
+
+type PayPal struct {
+    ClientID string `mapstructure:"paypal_client_id"`
+    Secret   string `mapstructure:"paypal_secret"`
+    APIBase  string `mapstructure:"paypal_api_base"`
+} 
 
 type WechatPayConfig struct {
     AppID     string `mapstructure:"app_id"`

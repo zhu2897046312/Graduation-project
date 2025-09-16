@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"server/models/paypal"
+	"server/models/mypaypal"
 )
 
 type PaypalOrderLogsService struct {
@@ -14,7 +14,7 @@ func NewPaypalOrderLogsService(base *Service) *PaypalOrderLogsService {
 }
 
 // CreateOrderLog 创建PayPal订单日志
-func (s *PaypalOrderLogsService) CreateOrderLog(log *paypal.PaypalOrderLogs) error {
+func (s *PaypalOrderLogsService) CreateOrderLog(log *mypaypal.PaypalOrderLogs) error {
 	if log.LocalOrderID == "" {
 		return errors.New("本地订单ID不能为空")
 	}
@@ -26,7 +26,7 @@ func (s *PaypalOrderLogsService) CreateOrderLog(log *paypal.PaypalOrderLogs) err
 }
 
 // GetLogsByLocalOrderID 根据本地订单ID获取日志
-func (s *PaypalOrderLogsService) GetLogsByLocalOrderID(localOrderID string) ([]paypal.PaypalOrderLogs, error) {
+func (s *PaypalOrderLogsService) GetLogsByLocalOrderID(localOrderID string) (*mypaypal.PaypalOrderLogs, error) {
 	if localOrderID == "" {
 		return nil, errors.New("本地订单ID不能为空")
 	}
@@ -34,7 +34,7 @@ func (s *PaypalOrderLogsService) GetLogsByLocalOrderID(localOrderID string) ([]p
 }
 
 // GetLogByPaypalOrderID 根据PayPal订单ID获取日志
-func (s *PaypalOrderLogsService) GetLogByPaypalOrderID(paypalOrderID string) (*paypal.PaypalOrderLogs, error) {
+func (s *PaypalOrderLogsService) GetLogByPaypalOrderID(paypalOrderID string) (*mypaypal.PaypalOrderLogs, error) {
 	if paypalOrderID == "" {
 		return nil, errors.New("PayPal订单ID不能为空")
 	}
@@ -42,6 +42,6 @@ func (s *PaypalOrderLogsService) GetLogByPaypalOrderID(paypalOrderID string) (*p
 }
 
 // GetAllOrderLogs 获取所有日志
-func (s *PaypalOrderLogsService) GetAllOrderLogs() ([]paypal.PaypalOrderLogs, error) {
+func (s *PaypalOrderLogsService) GetAllOrderLogs() ([]mypaypal.PaypalOrderLogs, error) {
 	return s.repoFactory.GetPaypalOrderLogsRepository().FindAll()
 }

@@ -32,8 +32,8 @@ type RepositoryFactory struct {
 	// mp_reset_pwd        *MpResetPwdTokensRepository
 	mp_user             *MpUserRepository
 	mp_user_token       *MpUserTokenRepository
-	// paypal_order_logs   *PaypalOrderLogsRepository
-	// paypal_webhook_logs *PaypalWebhookLogsRepository
+	paypal_order_logs   *PaypalOrderLogsRepository
+	paypal_webhook_logs *PaypalWebhookLogsRepository
 	shop_tag            *ShopTagRepository
 	shop_tag_index      *ShopTagIndexRepository
 	shop_tag_mate       *ShopTagMateRepository
@@ -245,19 +245,19 @@ func (f *RepositoryFactory) GetMpUserTokenRepository() *MpUserTokenRepository {
 	return f.mp_user_token
 }
 
-// func (f *RepositoryFactory) GetPaypalOrderLogsRepository() *PaypalOrderLogsRepository {
-// 	if f.paypal_order_logs == nil {
-// 		f.paypal_order_logs = NewPaypalOrderLogsRepository(f.db)
-// 	}
-// 	return f.paypal_order_logs
-// }
+func (f *RepositoryFactory) GetPaypalOrderLogsRepository() *PaypalOrderLogsRepository {
+	if f.paypal_order_logs == nil {
+		f.paypal_order_logs = NewPaypalOrderLogsRepository(f.db)
+	}
+	return f.paypal_order_logs
+}
 
-// func (f *RepositoryFactory) GetPaypalWebhookLogsRepository() *PaypalWebhookLogsRepository {
-// 	if f.paypal_webhook_logs == nil {
-// 		f.paypal_webhook_logs = NewPaypalWebhookLogsRepository(f.db)
-// 	}
-// 	return f.paypal_webhook_logs
-// }
+func (f *RepositoryFactory) GetPaypalWebhookLogsRepository() *PaypalWebhookLogsRepository {
+	if f.paypal_webhook_logs == nil {
+		f.paypal_webhook_logs = NewPaypalWebhookLogsRepository(f.db)
+	}
+	return f.paypal_webhook_logs
+}
 
 func (f *RepositoryFactory) GetShopTagRepository() *ShopTagRepository {
 	if f.shop_tag == nil {

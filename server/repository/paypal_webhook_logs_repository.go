@@ -2,7 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
-	"server/models/paypal"
+	"server/models/mypaypal"
 )
 
 type PaypalWebhookLogsRepository struct {
@@ -16,20 +16,20 @@ func NewPaypalWebhookLogsRepository(db *gorm.DB) *PaypalWebhookLogsRepository {
 }
 
 // 创建PayPal Webhook日志
-func (r *PaypalWebhookLogsRepository) Create(log *paypal.PaypalWebhookLogs) error {
+func (r *PaypalWebhookLogsRepository) Create(log *mypaypal.PaypalWebhookLogs) error {
 	return r.db.Create(log).Error
 }
 
 // 根据事件ID获取日志
-func (r *PaypalWebhookLogsRepository) FindByEventID(eventID string) (*paypal.PaypalWebhookLogs, error) {
-	var log paypal.PaypalWebhookLogs
+func (r *PaypalWebhookLogsRepository) FindByEventID(eventID string) (*mypaypal.PaypalWebhookLogs, error) {
+	var log mypaypal.PaypalWebhookLogs
 	err := r.db.Where("event_id = ?", eventID).First(&log).Error
 	return &log, err
 }
 
 // 根据本地订单ID获取日志
-func (r *PaypalWebhookLogsRepository) FindByLocalOrderID(localOrderID string) ([]paypal.PaypalWebhookLogs, error) {
-	var logs []paypal.PaypalWebhookLogs
+func (r *PaypalWebhookLogsRepository) FindByLocalOrderID(localOrderID string) ([]mypaypal.PaypalWebhookLogs, error) {
+	var logs []mypaypal.PaypalWebhookLogs
 	err := r.db.Where("local_order_id = ?", localOrderID).
 		Order("create_time DESC").
 		Find(&logs).Error
@@ -37,8 +37,8 @@ func (r *PaypalWebhookLogsRepository) FindByLocalOrderID(localOrderID string) ([
 }
 
 // 根据PayPal订单ID获取日志
-func (r *PaypalWebhookLogsRepository) FindByPaypalOrderID(paypalOrderID string) ([]paypal.PaypalWebhookLogs, error) {
-	var logs []paypal.PaypalWebhookLogs
+func (r *PaypalWebhookLogsRepository) FindByPaypalOrderID(paypalOrderID string) ([]mypaypal.PaypalWebhookLogs, error) {
+	var logs []mypaypal.PaypalWebhookLogs
 	err := r.db.Where("paypal_order_id = ?", paypalOrderID).
 		Order("create_time DESC").
 		Find(&logs).Error
@@ -46,8 +46,8 @@ func (r *PaypalWebhookLogsRepository) FindByPaypalOrderID(paypalOrderID string) 
 }
 
 // 根据事件类型获取日志
-func (r *PaypalWebhookLogsRepository) FindByEventType(eventType string) ([]paypal.PaypalWebhookLogs, error) {
-	var logs []paypal.PaypalWebhookLogs
+func (r *PaypalWebhookLogsRepository) FindByEventType(eventType string) ([]mypaypal.PaypalWebhookLogs, error) {
+	var logs []mypaypal.PaypalWebhookLogs
 	err := r.db.Where("event_type = ?", eventType).
 		Order("create_time DESC").
 		Find(&logs).Error
@@ -56,7 +56,7 @@ func (r *PaypalWebhookLogsRepository) FindByEventType(eventType string) ([]paypa
 
 // 更新处理结果
 func (r *PaypalWebhookLogsRepository) UpdateProcessResult(id uint, result string) error {
-	return r.db.Model(&paypal.PaypalWebhookLogs{}).
+	return r.db.Model(&mypaypal.PaypalWebhookLogs{}).
 		Where("id = ?", id).
 		Update("process_result", result).Error
 }

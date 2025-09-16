@@ -103,7 +103,21 @@ func (s *SpOrderService) List(param sp.ListOrdersQueryParam) ([]sp.SpOrder,int64
 	return s.repoFactory.GetSpOrderRepository().ListWithPagination(param)
 }
 // UpdateOrderState 更新订单状态
-func (s *SpOrderService) UpdateOrderState(id common.MyID, state uint8,remark string) error {
+func (s *SpOrderService) UpdateOrderState(code string, state uint8,remark string) error {
+	if code == "" {
+		return errors.New("订单ID不能为空")
+	}
+	_,err :=  s.repoFactory.GetSpOrderRepository().FindByVisitorQueryCode(code)
+	if err != nil {
+		return errors.New("订单不存在")
+	}
+
+	return s.repoFactory.GetSpOrderRepository().UpdateState(code, state, remark)
+}
+
+
+
+func (s *SpOrderService) UpdateOrderStateByOrderID(id common.MyID, state uint8,remark string) error {
 	if id == 0 {
 		return errors.New("订单ID不能为空")
 	}
@@ -112,7 +126,7 @@ func (s *SpOrderService) UpdateOrderState(id common.MyID, state uint8,remark str
 		return errors.New("订单不存在")
 	}
 
-	return s.repoFactory.GetSpOrderRepository().UpdateState(id, state, remark)
+	return s.repoFactory.GetSpOrderRepository().UpdateStateByID(id, state, remark)
 }
 
 // UpdateDeliveryInfo 更新物流信息

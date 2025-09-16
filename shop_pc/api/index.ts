@@ -33,7 +33,8 @@ const shop = {
     create: async (data: any ) => httpRequest.exec('POST', '/shop/order/create', data),
     list: async (data: any ) => httpRequest.exec('POST', '/shop/order/list', data),
     get: async (queryCode : string) => httpRequest.exec('GET', '/shop/order/query-code', { queryCode }),
-    getPaymentUrl: async (params: { orderId: string; payType: string }) => httpRequest.exec('POST', `/payment/paypal/create-order?${new URLSearchParams(params)}`, null),
+    getPaymentUrl: async (data:any) => httpRequest.exec('POST', `/payment/paypal/create-order`, data),
+    captureOrder: async (data:any) => httpRequest.exec('POST', `/payment/paypal/capture-order`, data),
   },
   market: {
     breadcrumb: async (data: any ) => httpRequest.exec('POST', '/shop/market/breadcrumb', data),

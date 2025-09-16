@@ -429,7 +429,7 @@ func (h *SpOrderHandler) UpdateOrderState(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	if err := h.service.UpdateOrderState(common.MyID(orderID), req.State, req.Remark); err != nil {
+	if err := h.service.UpdateOrderStateByOrderID(common.MyID(orderID), req.State, req.Remark); err != nil {
 		Error(c, 27007, err.Error())
 		return
 	}
@@ -455,7 +455,7 @@ func (h *SpOrderHandler) UpdateDeliveryInfo(c *gin.Context) {
 		Error(c, 27008, err.Error())
 		return
 	}
-	if err := h.service.UpdateOrderState(common.MyID(orderID), 3, ""); err != nil {
+	if err := h.service.UpdateOrderStateByOrderID(common.MyID(orderID), 3, ""); err != nil {
 		Error(c, 27007, err.Error())
 		return
 	}

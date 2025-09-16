@@ -2,7 +2,7 @@ package paypal
 
 import (
 	"gorm.io/gorm"
-	"server/models/paypal"
+	"server/models/mypaypal"
 	"server/repository/base"
 )
 
@@ -17,13 +17,13 @@ func NewPaypalOrderLogsRepository(DB *gorm.DB) *PaypalOrderLogsRepository {
 }
 
 // 创建PayPal订单日志
-func (r *PaypalOrderLogsRepository) Create(log *paypal.PaypalOrderLogs) error {
+func (r *PaypalOrderLogsRepository) Create(log *mypaypal.PaypalOrderLogs) error {
 	return r.DB.Create(log).Error
 }
 
 // 根据本地订单ID获取日志
-func (r *PaypalOrderLogsRepository) FindByLocalOrderID(localOrderID string) ([]paypal.PaypalOrderLogs, error) {
-	var logs []paypal.PaypalOrderLogs
+func (r *PaypalOrderLogsRepository) FindByLocalOrderID(localOrderID string) ([]mypaypal.PaypalOrderLogs, error) {
+	var logs []mypaypal.PaypalOrderLogs
 	err := r.DB.Where("local_order_id = ?", localOrderID).
 		Order("create_time DESC").
 		Find(&logs).Error
@@ -31,15 +31,15 @@ func (r *PaypalOrderLogsRepository) FindByLocalOrderID(localOrderID string) ([]p
 }
 
 // 根据PayPal订单ID获取日志
-func (r *PaypalOrderLogsRepository) FindByPaypalOrderID(paypalOrderID string) (*paypal.PaypalOrderLogs, error) {
-	var log paypal.PaypalOrderLogs
+func (r *PaypalOrderLogsRepository) FindByPaypalOrderID(paypalOrderID string) (*mypaypal.PaypalOrderLogs, error) {
+	var log mypaypal.PaypalOrderLogs
 	err := r.DB.Where("paypal_order_id = ?", paypalOrderID).First(&log).Error
 	return &log, err
 }
 
 // 获取所有日志
-func (r *PaypalOrderLogsRepository) FindAll() ([]paypal.PaypalOrderLogs, error) {
-	var logs []paypal.PaypalOrderLogs
+func (r *PaypalOrderLogsRepository) FindAll() ([]mypaypal.PaypalOrderLogs, error) {
+	var logs []mypaypal.PaypalOrderLogs
 	err := r.DB.Order("create_time DESC").Find(&logs).Error
 	return logs, err
 }

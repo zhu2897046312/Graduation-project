@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"server/models/paypal"
+	"server/models/mypaypal"
 	"server/service"
 	"strconv"
 )
@@ -17,7 +17,7 @@ func NewPaypalWebhookLogsHandler(service *service.PaypalWebhookLogsService) *Pay
 
 // 创建Webhook日志
 func (h *PaypalWebhookLogsHandler) CreateWebhookLog(c *gin.Context) {
-	var log paypal.PaypalWebhookLogs
+	var log mypaypal.PaypalWebhookLogs
 	if err := c.ShouldBindJSON(&log); err != nil {
 		InvalidParams(c)
 		return

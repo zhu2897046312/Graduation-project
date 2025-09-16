@@ -37,3 +37,8 @@ payment:
     private_key: "your_alipay_privatekey"
     public_key: "your_alipay_publickey"
     notify_url: "http://your.domain/api/v1/payments/alipay/callback"
+
+  paypal: 
+    paypal_client_id: "Aa-gSJ9un3HBdjCxdkxlEiDo4UAvypyTHmGsFBSo1x2G34zL4B1QHfvLqPmEXlUitXZYbFj8APJ0Furj"
+    paypal_secret: "EIX90rm7Ll_l61HHY51ncgvqRWKJ80Qp1Ex4BNIHUFAK0d7HE9PUpjxdrH_lQWNJfLcQ0aeiRTnZ3dkC"
+    paypal_api_base: "https://api.sandbox.paypal.com"

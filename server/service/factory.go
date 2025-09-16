@@ -122,13 +122,13 @@ func (f *ServiceFactory) GetMpUserTokenService() *MpUserTokenService {
 }
 
 // 添加PayPal服务的工厂方法
-// func (f *ServiceFactory) GetPaypalOrderLogsService() *PaypalOrderLogsService {
-// 	return NewPaypalOrderLogsService(f.base)
-// }
+func (f *ServiceFactory) GetPaypalOrderLogsService() *PaypalOrderLogsService {
+	return NewPaypalOrderLogsService(f.base)
+}
 
-// func (f *ServiceFactory) GetPaypalWebhookLogsService() *PaypalWebhookLogsService {
-// 	return NewPaypalWebhookLogsService(f.base)
-// }
+func (f *ServiceFactory) GetPaypalWebhookLogsService() *PaypalWebhookLogsService {
+	return NewPaypalWebhookLogsService(f.base)
+}
 
 // 添加商店服务的工厂方法
 func (f *ServiceFactory) GetShopTagIndexService() *ShopTagIndexService {

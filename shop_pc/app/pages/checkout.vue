@@ -170,11 +170,12 @@ const handleCheckout = async () => {
 
   try {
     const res = await api.shop.order.create(payload)
-
-    const paymentRes = await api.shop.order.getPaymentUrl({
-      orderId: res, 
-      payType: selectedPayType.value.toString()
-    })
+    console.log("checkout result",res)
+    const data = {
+      order_id: res.toString(),
+      pay_type: selectedPayType.value
+    }
+    const paymentRes = await api.shop.order.getPaymentUrl(data)
     console.log(paymentRes.value)
     window.location.href = paymentRes.approveUrl;
   } catch (error: any) {
@@ -187,7 +188,9 @@ const handleCheckout = async () => {
 watch(() => address.value.country, (newCountry) => {
   address.value.province = '' // 切换国家时清空省份选择
 })
-
+onMounted(() => {
+  console.log('mounted')
+})
 </script>
 
 <template>
