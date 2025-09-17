@@ -1,4 +1,4 @@
-package handlers
+package client
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type MpUserHandler struct {
+type ClientMpUserHandler struct {
 	service        *service.MpUserService
 	mpTokenService *service.MpUserTokenService
 }
@@ -34,18 +34,18 @@ type MpUserLoginParam struct {
 	UserAgent string `json:"user_agent"`
 }
 
-func NewMpUserHandler(service *service.MpUserService, mpTokenService *service.MpUserTokenService) *MpUserHandler {
-	return &MpUserHandler{
+func NewClientMpUserHandler(service *service.MpUserService, mpTokenService *service.MpUserTokenService) *ClientMpUserHandler {
+	return &ClientMpUserHandler{
 		service:        service,
 		mpTokenService: mpTokenService,
 	}
 }
 
 // 创建用户
-func (h *MpUserHandler) Register(c *gin.Context) {
+func (h *ClientMpUserHandler) Register(c *gin.Context) {
 	var req MpUserRegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
+		utils.InvalidParams(c)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *MpUserHandler) Register(c *gin.Context) {
 	}
 
 	if err := h.service.CreateUser(&user); err != nil {
-		Error(c, 15001, err.Error())
+		utils.Error(c, 15001, err.Error())
 		return
 	}
 
@@ -67,35 +67,35 @@ func (h *MpUserHandler) Register(c *gin.Context) {
 		UserAgent: c.Request.UserAgent(),
 	})
 	if err_1 != nil {
-		Error(c, 15001, err_1.Error())
+		utils.Error(c, 15001, err_1.Error())
 		return
 	}
 
-	Success(c, token)
+	utils.Success(c, token)
 }
 
-func (h *MpUserHandler) Login(c *gin.Context) {
+func (h *ClientMpUserHandler) Login(c *gin.Context) {
 	var req MpUserLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
+		utils.InvalidParams(c)
 		return
 	}
 
 	token, err := h.login(&MpUserLoginParam{
 		Email:     req.Email,
-		Password:  utils.HashPwd(req.Password),
+		Password:  req.Password,
 		Ip:        c.ClientIP(),
 		UserAgent: c.Request.UserAgent(),
 	})
 	if err != nil {
-		Error(c, 15001, err.Error())
+		utils.Error(c, 15001, err.Error())
 		return
 	}
 
-	Success(c, token)
+	utils.Success(c, token)
 }
 
-func (h *MpUserHandler) login(LoginRequest *MpUserLoginParam) (string, error) {
+func (h *ClientMpUserHandler) login(LoginRequest *MpUserLoginParam) (string, error) {
 	user, err := h.service.GetUserByEmail(LoginRequest.Email)
 	if err != nil {
 		return "", err

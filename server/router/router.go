@@ -1,7 +1,8 @@
 package router
 
 import (
-	"server/handlers"
+	"server/handlers/admin"
+	"server/handlers/client"
 	"server/middleware"
 	"server/service"
 
@@ -17,20 +18,34 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 	r.Static("/api/oss", "./oss")
 	api := r.Group("/api")
 	{
-		ossHandler := handlers.NewOssHandler()
+		ossHandler := admin.NewOssHandler()
 		// SP分类路由组
-		spCategoryHandler := handlers.NewSpCategoryHandler(factory.GetSpCategoryService())
+		spCategoryHandler := admin.NewSpCategoryHandler(factory.GetSpCategoryService())
+		clientSpCategoryHandler := client.NewClientSpCategoryHandler(factory.GetSpCategoryService())
 		// SP商品属性路由组
-		spAttrHandler := handlers.NewSpProdAttributesHandler(
+		spAttrHandler := admin.NewSpProdAttributesHandler(
 			factory.GetSpProdAttributesService(),
 			factory.GetSpProdAttributesValueService(),
 		)
 		// 商品标签路由组
-		tagHandler := handlers.NewShopTagHandler(factory.GetShopTagService(), factory.GetShopTagMateService())
+		tagHandler := admin.NewShopTagHandler(factory.GetShopTagService(), factory.GetShopTagMateService())
+		clientTagHandler := client.NewClientShopTagHandler(factory.GetShopTagService(), factory.GetShopTagMateService())
 		// SP商品属性值路由组
-		spAttrValueHandler := handlers.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
+		spAttrValueHandler := admin.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
 		//商品路由组
-		productHandler := handlers.NewSpProductHandler(
+		productHandler := admin.NewSpProductHandler(
+			factory.GetSpProductService(),
+			factory.GetSpCategoryService(),
+			factory.GetSpProductContentService(),
+			factory.GetSpProductPropertyService(),
+			factory.GetSpSkuService(),
+			factory.GetSpSkuIndexService(),
+			factory.GetShopTagIndexService(),
+			factory.GetShopTagService(),
+			factory.GetSpProdAttributesService(),
+			factory.GetSpProdAttributesValueService(),
+		)
+		clientProductHandler := client.NewClientSpProductHandler(
 			factory.GetSpProductService(),
 			factory.GetSpCategoryService(),
 			factory.GetSpProductContentService(),
@@ -43,19 +58,31 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpProdAttributesValueService(),
 		)
 		// 系统配置路由组
-		configHandler := handlers.NewCoreConfigHandler(factory.GetCoreConfigService())
+		configHandler := admin.NewCoreConfigHandler(factory.GetCoreConfigService())
+		clientConfigHandler := client.NewClientCoreConfigHandler(factory.GetCoreConfigService())
+		
 
 		// 文档路由组
-		documentHandler := handlers.NewCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
-
+		documentHandler := admin.NewCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
+		clientDocumentHandler := client.NewClientCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
 		// 推荐路由组
-		recommendHandler := handlers.NewCmsRecommendHandler(factory.GetCmsRecommendService(), factory.GetCmsRecommendIndexService())
-
+		recommendHandler := admin.NewCmsRecommendHandler(factory.GetCmsRecommendService(), factory.GetCmsRecommendIndexService())
+		clientRecommendHandler := client.NewClientCmsRecommendHandler(factory.GetCmsRecommendService(), factory.GetCmsRecommendIndexService())
 		// 推荐索引路由组
-		recIndexHandler := handlers.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
+		recIndexHandler := admin.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
 
 		// SP订单路由组
-		spOrderHandler := handlers.NewSpOrderHandler(
+		spOrderHandler := admin.NewSpOrderHandler(
+			factory.GetSpOrderService(),
+			factory.GetSpOrderItemService(),
+			factory.GetSpOrderReceiveAddressService(),
+			factory.GetSpOrderRefundService(),
+			factory.GetSpOrderReceiveAddressService(),
+			factory.GetSpProductService(),
+			factory.GetSpUserCartService(),
+		)
+
+		clientSpOrderHandler := client.NewClientSpOrderHandler(
 			factory.GetSpOrderService(),
 			factory.GetSpOrderItemService(),
 			factory.GetSpOrderReceiveAddressService(),
@@ -66,16 +93,16 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		)
 
 		// SP订单退款路由组
-		spRefundHandler := handlers.NewSpOrderRefundHandler(
+		spRefundHandler := admin.NewSpOrderRefundHandler(
 			factory.GetSpOrderRefundService(),
 			factory.GetSpOrderService(),
 		)
 
 		// 部门路由组
-		deptHandler := handlers.NewCoreDeptHandler(factory.GetCoreDeptService())
+		deptHandler := admin.NewCoreDeptHandler(factory.GetCoreDeptService())
 
 		// 获取当前管理员信息
-		adminHandler := handlers.NewCoreAdminHandler(
+		adminHandler := admin.NewCoreAdminHandler(
 			factory.GetCoreAdminService(),
 			factory.GetCoreDeptService(),
 			factory.GetCoreRoleService(),
@@ -84,36 +111,35 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		)
 
 		// 管理员角色路由组
-		// adminRoleHandler := handlers.NewCoreAdminRoleIndexHandler(factory.GetCoreAdminRoleIndexService())
+		// adminRoleHandler := admin.NewCoreAdminRoleIndexHandler(factory.GetCoreAdminRoleIndexService())
 
 		// 角色路由组
-		roleHandler := handlers.NewCoreRoleHandler(factory.GetCoreRoleService())
+		roleHandler := admin.NewCoreRoleHandler(factory.GetCoreRoleService())
 
 		// 权限路由组
-		permissionHandler := handlers.NewCorePermissionHandler(factory.GetCorePermissionService())
+		permissionHandler := admin.NewCorePermissionHandler(factory.GetCorePermissionService())
 
-		marketSettingHandler := handlers.NewSpMarketSettingHandler(
+		clientMarketSettingHandler := client.NewClientSpMarketSettingHandler(
 			factory.GetSpCategoryService(),
 			factory.GetSpProductService(),
 		)
 
-		// 用户购物车路由组
-		cartHandler := handlers.NewSpUserCartHandler(
+		clientCartHandler := client.NewClientSpUserCartHandler(
 			factory.GetSpUserCartService(),
 			factory.GetSpProductService(),
 			factory.GetSpSkuService(),
 		)
 
 		// 用户路由组
-		mpUserHandler := handlers.NewMpUserHandler(factory.GetMpUserService(), factory.GetMpUserTokenService())
+		clientMpUserHandler := client.NewClientMpUserHandler(factory.GetMpUserService(), factory.GetMpUserTokenService())
 
-		payHandler := handlers.NewPaymentHandler(factory.GetSpOrderService(),factory.GetPaypalOrderLogsService())
+		clientPayHandler := client.NewClientPaymentHandler(factory.GetSpOrderService(), factory.GetPaypalOrderLogsService())
 
 		// 公开路由（不需要认证）
 		public := api.Group("")
 		{
 			// // 管理员登录
-			// adminHandler := handlers.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
+			// adminHandler := admin.NewCoreAdminHandler(factory.GetCoreAdminService(), rdb)
 			public.POST("/manage/core/auth/login", adminHandler.LoginAdmin)
 		}
 
@@ -271,70 +297,67 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			{
 				documentGroup := shopGroup.Group("/document")
 				{
-					documentGroup.GET("/list", documentHandler.GetAll)
-					documentGroup.GET("/info", documentHandler.GetDocumentByCode)
+					documentGroup.GET("/list", clientDocumentHandler.GetAll)
+					documentGroup.GET("/info", clientDocumentHandler.GetDocumentByCode)
 				}
 
 				productGroup := shopGroup.Group("/product")
 				{
-					productGroup.POST("/list", productHandler.ListProducts)
-					productGroup.GET("/info", productHandler.GetClientProduct)
+					productGroup.POST("/list", clientProductHandler.ListProducts)
+					productGroup.GET("/info", clientProductHandler.GetClientProduct)
 				}
 
 				categoryGroup := shopGroup.Group("/category")
 				{
-					categoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
-					categoryGroup.GET("/info", spCategoryHandler.GetCategory)
-					categoryGroup.GET("/getInfoByCode", spCategoryHandler.GetCategoryByCode)
-					categoryGroup.GET("/getParents", spCategoryHandler.GetCategoryParents)
+					categoryGroup.GET("/tree", clientSpCategoryHandler.GetCategoryTree)
+					categoryGroup.GET("/info", clientSpCategoryHandler.GetCategory)
+					categoryGroup.GET("/getInfoByCode", clientSpCategoryHandler.GetCategoryByCode)
+					categoryGroup.GET("/getParents", clientSpCategoryHandler.GetCategoryParents)
 				}
 
 				marketGroup := shopGroup.Group("/market")
 				{
-					marketGroup.GET("/siteInfo", configHandler.GetMarketInfo)
-					marketGroup.POST("/breadcrumb", marketSettingHandler.GetBreadcrumb)
+					marketGroup.GET("/siteInfo", clientConfigHandler.GetMarketInfo)
+					marketGroup.POST("/breadcrumb", clientMarketSettingHandler.GetBreadcrumb)
+					marketGroup.GET("/freight", clientMarketSettingHandler.GetFreight)
 				}
 
 				tagGroup := shopGroup.Group("/tag")
 				{
-					tagGroup.GET("/info", tagHandler.GetTagByCode)
-					tagGroup.POST("/list", tagHandler.ListTags)
+					tagGroup.GET("/info", clientTagHandler.GetTagByCode)
+					tagGroup.POST("/list", clientTagHandler.ListTags)
 				}
 
 				recommendIndexGrop := shopGroup.Group("/recommendIndex")
 				{
-					recommendIndexGrop.GET("/list", recommendHandler.ListRecommendsIndex)
+					recommendIndexGrop.GET("/list", clientRecommendHandler.ListRecommendsIndex)
 				}
 
 				cartGroup := shopGroup.Group("/userCart")
 				{
-					cartGroup.POST("/list", cartHandler.List)
-					cartGroup.POST("/act", cartHandler.CarAction)
+					cartGroup.POST("/list", clientCartHandler.List)
+					cartGroup.POST("/act", clientCartHandler.CarAction)
 				}
 
 				mpUserGroup := shopGroup.Group("/userAuth")
 				{
-					mpUserGroup.POST("/login", mpUserHandler.Login)
-					mpUserGroup.POST("/register", mpUserHandler.Register)
-				}
-
-				marketClientGroup := shopGroup.Group("/market")
-				{
-					marketClientGroup.GET("/freight", marketSettingHandler.GetFreight)
+					mpUserGroup.POST("/login", clientMpUserHandler.Login)
+					mpUserGroup.POST("/register", clientMpUserHandler.Register)
 				}
 
 				orderGrop := shopGroup.Group("/order")
 				{
-					orderGrop.POST("/create", spOrderHandler.CreateOrder)
-					orderGrop.GET("/query-code", spOrderHandler.GetOrderByQueryCode)
+					orderGrop.POST("/create", clientSpOrderHandler.CreateOrder)
+					orderGrop.GET("/query-code", clientSpOrderHandler.GetOrderByQueryCode)
+					orderGrop.POST("/list", clientSpOrderHandler.ListOrders)
 				}
 
 				paymentGroup := clientAuth.Group("/payment")
 				{
-					paymentGroup.POST("/paypal/create-order", payHandler.CreatePayment)
-					paymentGroup.GET("/capture-order", payHandler.CapturePayment)
-					paymentGroup.POST("/webhook", payHandler.PaymentWebhook)
-					paymentGroup.GET("/status/:id", payHandler.GetPaymentStatus)
+					paymentGroup.POST("/paypal/create-order", clientPayHandler.CreatePayment)
+					paymentGroup.GET("/capture-order", clientPayHandler.CapturePayment)
+					paymentGroup.POST("/webhook", clientPayHandler.PaymentWebhook)
+					paymentGroup.GET("/status/:id", clientPayHandler.GetPaymentStatus)
 				}
 
 			}

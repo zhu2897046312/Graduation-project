@@ -1,5 +1,5 @@
 // handlers/payment_handler.go
-package handlers
+package client
 
 import (
 	"context"
@@ -33,13 +33,13 @@ type PaymentResponse struct {
 	Message    string `json:"message"`
 }
 
-type PaymentHandler struct {
+type ClientPaymentHandler struct {
 	orderService    *service.SpOrderService
 	paypalOrderLogs *service.PaypalOrderLogsService
 	paypalClient    *paypal.Client
 }
 
-func NewPaymentHandler(orderService *service.SpOrderService, paypalOrderLogs *service.PaypalOrderLogsService) *PaymentHandler {
+func NewClientPaymentHandler(orderService *service.SpOrderService, paypalOrderLogs *service.PaypalOrderLogsService) *ClientPaymentHandler {
 	cfg := config.GlobalConfig.Payment
 
 	// 创建 PayPal 客户端
@@ -51,7 +51,7 @@ func NewPaymentHandler(orderService *service.SpOrderService, paypalOrderLogs *se
 	// 设置 PayPal API 基础 URL
 	client.SetLog(os.Stdout) // 可选：启用日志记录
 
-	return &PaymentHandler{
+	return &ClientPaymentHandler{
 		orderService:    orderService,
 		paypalOrderLogs: paypalOrderLogs,
 		paypalClient:    client,
@@ -69,23 +69,23 @@ func getAPIBase(apiBase string) string {
 }
 
 // CreatePayment 创建支付订单
-func (h *PaymentHandler) CreatePayment(c *gin.Context) {
+func (h *ClientPaymentHandler) CreatePayment(c *gin.Context) {
 	var req PaymentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		Error(c, 17000, "无效的请求参数")
+		utils.Error(c, 17000, "无效的请求参数")
 		return
 	}
 
 	// 根据订单ID类型查询订单
 	order, err := h.orderService.GetByVisitorQueryCode(req.OrderCode)
 	if err != nil {
-		Error(c, 17001, "订单不存在")
+		utils.Error(c, 17001, "订单不存在")
 		return
 	}
 
 	// 检查订单状态
 	if order.State != 2 {
-		Error(c, 17002, "订单状态不支持支付")
+		utils.Error(c, 17002, "订单状态不支持支付")
 		return
 	}
 
@@ -98,19 +98,19 @@ func (h *PaymentHandler) CreatePayment(c *gin.Context) {
 	case 1: // PayPal支付
 		resp, err := h.createPayPalPayment(order, req)
 		if err != nil {
-			Error(c, 17004, "创建支付订单失败: "+err.Error())
+			utils.Error(c, 17004, "创建支付订单失败: "+err.Error())
 			return
 		}
-		Success(c, resp)
+		utils.Success(c, resp)
 	case 2: // 信用卡支付
-		Error(c, 17005, "暂不支持该支付方式")
+	utils.Error(c, 17005, "暂不支持该支付方式")
 	default:
-		Error(c, 17006, "不支持的支付类型")
+		utils.Error(c, 17006, "不支持的支付类型")
 	}
 }
 
 // createPayPalPayment 创建PayPal支付订单
-func (h *PaymentHandler) createPayPalPayment(order *sp.SpOrder, req PaymentRequest) (*PaymentResponse, error) {
+func (h *ClientPaymentHandler) createPayPalPayment(order *sp.SpOrder, req PaymentRequest) (*PaymentResponse, error) {
 	purchaseUnits := []paypal.PurchaseUnitRequest{
 		{
 			ReferenceID: order.VisitorQueryCode,
@@ -176,12 +176,12 @@ func (h *PaymentHandler) createPayPalPayment(order *sp.SpOrder, req PaymentReque
 
 
 // CapturePayment 捕获支付（确认支付）
-func (h *PaymentHandler) CapturePayment(c *gin.Context) {
+func (h *ClientPaymentHandler) CapturePayment(c *gin.Context) {
     paymentID := c.Query("token")   // PayPal 会带 token=订单ID
     redirectURL := c.Query("redirect")
 
     if paymentID == "" {
-        Error(c, 17007, "支付ID不能为空")
+        utils.Error(c, 17007, "支付ID不能为空")
         return
     }
 
@@ -191,7 +191,7 @@ func (h *PaymentHandler) CapturePayment(c *gin.Context) {
             c.Redirect(302, redirectURL+"?status=failed")
             return
         }
-        Error(c, 17009, "捕获支付失败: "+err.Error())
+        utils.Error(c, 17009, "捕获支付失败: "+err.Error())
         return
     }
 
@@ -206,7 +206,7 @@ func (h *PaymentHandler) CapturePayment(c *gin.Context) {
         return
     }
 
-    Success(c, gin.H{"status": "success"})
+    utils.Success(c, gin.H{"status": "success"})
 }
 
 
@@ -216,10 +216,10 @@ type PaypalWebhookPayload struct {
 	Resource json.RawMessage `json:"resource"`
 }
 
-func (h *PaymentHandler) PaymentWebhook(c *gin.Context) {
+func (h *ClientPaymentHandler) PaymentWebhook(c *gin.Context) {
 	var payload PaypalWebhookPayload
 	if err := c.BindJSON(&payload); err != nil {
-		InvalidParams(c)
+		utils.InvalidParams(c)
 		return
 	}
 
@@ -241,39 +241,39 @@ func (h *PaymentHandler) PaymentWebhook(c *gin.Context) {
 		}
 	}
 
-	Success(c, gin.H{"status": "success"})
+	utils.Success(c, gin.H{"status": "success"})
 }
 
 // GetPaymentStatus 获取支付状态
-func (h *PaymentHandler) GetPaymentStatus(c *gin.Context) {
+func (h *ClientPaymentHandler) GetPaymentStatus(c *gin.Context) {
 	orderIDStr := c.Param("id")
 	if orderIDStr == "" {
-		Error(c, 17002, "订单ID不能为空")
+		utils.Error(c, 17002, "订单ID不能为空")
 		return
 	}
 
 	// 使用 PayPal API 获取订单详情
 	orderDetails, err := h.paypalClient.GetOrder(context.Background(), orderIDStr)
 	if err != nil {
-		Error(c, 17013, "获取支付状态失败: "+err.Error())
+		utils.Error(c, 17013, "获取支付状态失败: "+err.Error())
 		return
 	}
 
 	// 根据 PayPal 订单 ID 查找本地订单记录
 	orderLog, err := h.paypalOrderLogs.GetLogByPaypalOrderID(orderIDStr)
 	if err != nil {
-		Error(c, 17001, "订单不存在")
+		utils.Error(c, 17001, "订单不存在")
 		return
 	}
 
 	// 获取本地订单信息
 	localOrderInfo, err := h.orderService.GetByVisitorQueryCode(orderLog.LocalOrderID)
 	if err != nil {
-		Error(c, 17001, "订单不存在")
+		utils.Error(c, 17001, "订单不存在")
 		return
 	}
 
-	Success(c, gin.H{
+	utils.Success(c, gin.H{
 		"order_id":      localOrderInfo.ID,
 		"status":        localOrderInfo.State,
 		"paid":          localOrderInfo.State == 1,

@@ -1,4 +1,4 @@
-package handlers
+package client
 
 import (
 	"errors"
@@ -6,52 +6,53 @@ import (
 	"server/models/sp"
 	"server/models/common"
 	"server/service"
+	"server/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-type SpUserCartHandler struct {
+type ClientSpUserCartHandler struct {
 	service        *service.SpUserCartService
 	productService *service.SpProductService
 	skuService     *service.SpSkuService
 }
 
-func NewSpUserCartHandler(
+func NewClientSpUserCartHandler(
 	service *service.SpUserCartService,
 	productService *service.SpProductService,
 	skuService     *service.SpSkuService,
-	) *SpUserCartHandler {
-	return &SpUserCartHandler{
+	) *ClientSpUserCartHandler {
+	return &ClientSpUserCartHandler{
 		service: service,
 		productService: productService,
 		skuService:     skuService,
 	}
 }
 
-func (h *SpUserCartHandler) List(c *gin.Context) {
+func (h *ClientSpUserCartHandler) List(c *gin.Context) {
 	fingerprint := middleware.GetDeviceFingerprintFromContext(c)
 	// userID := middleware.GetUserIDFromContext(c)
 
 	if fingerprint == "" {
-		InvalidParams(c)
+		utils.InvalidParams(c)
 		return
 	}
 
 	cartItems, total, err := h.service.List(0, fingerprint, 0, 0)
 	if err != nil {
-		Error(c, 3406, err.Error())
+		utils.Error(c, 3406, err.Error())
 		return
 	}
 
-	Success(c, gin.H{
+	utils.Success(c, gin.H{
 		"list":  cartItems,
 		"total": total,
 	})
 }
 
-func (h *SpUserCartHandler) CarAction(c *gin.Context) {
+func (h *ClientSpUserCartHandler) CarAction(c *gin.Context) {
 	type SpUserCartActRequest struct {
 		ProductID common.MyID `json:"product_id"` // 商品ID
 		SkuID     common.MyID `json:"sku_id"`                        // SKU ID
@@ -61,14 +62,14 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 
 	var req SpUserCartActRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
+		utils.InvalidParams(c)
 		return
 	}
 
 	userID := middleware.GetUserIDFromContext(c)
 	fingerprint := middleware.GetDeviceFingerprintFromContext(c)
 	if userID == 0 && fingerprint == "" {
-		Error(c, 3407, "用户未登录且缺少设备指纹")
+		utils.Error(c, 3407, "用户未登录且缺少设备指纹")
 		return
 	}
 	
@@ -79,7 +80,7 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 	currentCarts, err := h.service.GetCartItemByProduct(common.MyID(userID), fingerprint, req.ProductID, req.SkuID)
 
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		Error(c, 3408, err.Error())
+		utils.Error(c, 3408, err.Error())
 		return
 	}
 
@@ -96,12 +97,12 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 			}
 			// 同步商品信息
 			if err_1 := h.syncCartProductInfo(newCart); err_1 != nil {
-				Error(c, 3409, err_1.Error())
+				utils.Error(c, 3409, err_1.Error())
 				return
 			}
 
 			h.service.AddToCart(newCart)
-			Success(c, newCart)
+			utils.Success(c, newCart)
 		}else{
 			currentCarts.Quantity += req.Quantity
 			// 重新计算金额
@@ -109,19 +110,19 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 				return 
 			}
 			if err_2 := h.service.UpdateCartItem(currentCarts); err_2 != nil {
-				Error(c, 3410, err_2.Error())
+				utils.Error(c, 3410, err_2.Error())
 				return
 			}
-			Success(c, currentCarts)
+			utils.Success(c, currentCarts)
 		}
 	} else {
 		if currentCarts == nil {
-			Error(c, 3411, "购物车中无此商品")
+			utils.Error(c, 3411, "购物车中无此商品")
 			return
 		}
 		if req.Quantity >= currentCarts.Quantity {
 			h.service.DeleteCartItem(currentCarts.ID)
-			Success(c, nil)
+			utils.Success(c, nil)
 		} else {
 			currentCarts.Quantity -= req.Quantity
 			// 重新计算金额
@@ -129,15 +130,15 @@ func (h *SpUserCartHandler) CarAction(c *gin.Context) {
 				return 
 			}
 			if err_3 := h.service.UpdateCartItem(currentCarts); err_3 != nil {
-				Error(c, 3412, err_3.Error())
+				utils.Error(c, 3412, err_3.Error())
 				return
 			}
-			Success(c, currentCarts) 
+			utils.Success(c, currentCarts) 
 		}
 	}
 }
 
-func (h *SpUserCartHandler) syncCartProductInfo(cart *sp.SpUserCart) error {
+func (h *ClientSpUserCartHandler) syncCartProductInfo(cart *sp.SpUserCart) error {
 
 	product, err := h.productService.GetProductByID(cart.ProductID)
 	if err != nil {
