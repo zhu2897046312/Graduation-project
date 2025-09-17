@@ -710,30 +710,6 @@ func (h *SpProductHandler) enrichProductsWithCategory(products []sp.SpProduct) (
 	return result, nil
 }
 
-// UpdateStock 更新库存
-func (h *SpProductHandler) UpdateStock(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		Stock int `json:"stock"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateStock(common.MyID(id), req.Stock); err != nil {
-		Error(c, 3104, err.Error())
-		return
-	}
-
-	Success(c, nil)
-}
-
 // SoftDeleteProduct 软删除商品
 func (h *SpProductHandler) SoftDeleteProduct(c *gin.Context) {
 	id := c.Query("id")
@@ -749,69 +725,6 @@ func (h *SpProductHandler) SoftDeleteProduct(c *gin.Context) {
 	}
 
 	Success(c, nil)
-}
-
-// GetProductFrontInfo 获取前端商品详情
-func (h *SpProductHandler) GetProductFrontInfo(c *gin.Context) {
-	id := c.Query("id")
-	uintId := utils.ConvertToUint(id)
-	if uintId == 0 {
-		InvalidParams_1(c, uintId)
-		return
-	}
-
-	// 获取完整的商品信息
-	fullInfo, err := h.getFullProductInfo(common.MyID(uintId))
-	if err != nil {
-		Error(c, 3103, "商品不存在")
-		return
-	}
-
-	// 转换为前端需要的格式
-	frontInfo := h.convertToFrontInfo(fullInfo)
-	Success(c, frontInfo)
-}
-
-// convertToFrontInfo 将内部数据结构转换为前端需要的格式
-func (h *SpProductHandler) convertToFrontInfo(fullInfo gin.H) gin.H {
-	product := fullInfo["product"].(*sp.SpProduct)
-	content := fullInfo["content"].(*sp.SpProductContent)
-	properties := fullInfo["property_list"].([]sp.SpProductProperty)
-	skus := fullInfo["sku_list"].([]sp.SpSku)
-	skuConfig := fullInfo["sku_config_list"].([]sp.SpSkuIndex)
-	tags := fullInfo["tags"].([]shop.ShopTag)
-
-	// 处理图片集
-	var pictureGallery []string
-	if product.PictureGallery != nil {
-		json.Unmarshal(product.PictureGallery, &pictureGallery)
-	}
-
-	// 转换为前端需要的结构
-	return gin.H{
-		"id":              product.ID,
-		"category_id":     product.CategoryID,
-		"title":           product.Title,
-		"state":           product.State,
-		"price":           product.Price,
-		"original_price":  product.OriginalPrice,
-		"stock":           product.Stock,
-		"picture":         product.Picture,
-		"picture_gallery": pictureGallery,
-		"description":     product.Description,
-		"sold_num":        product.SoldNum,
-		"open_sku":        product.OpenSku,
-		"sort_num":        product.SortNum,
-		"putaway_time":    product.PutawayTime,
-		"content":         content.Content,
-		"seo_title":       content.SeoTitle,
-		"seo_keyword":     content.SeoKeyword,
-		"seo_description": content.SeoDescription,
-		"property_list":   properties,
-		"sku_list":        skus,
-		"sku_config":      skuConfig,
-		"tags":            tags,
-	}
 }
 
 // GetClientProduct 获取前端商品详情

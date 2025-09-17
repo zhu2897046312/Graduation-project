@@ -7,7 +7,6 @@ import (
 	"server/models/common"
 	"server/service"
 	"server/utils"
-	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -53,23 +52,6 @@ type SaveDocumentRequest struct {
 	Title          string      `json:"title"`
 }
 
-// 根据分类ID获取文档
-func (h *CmsDocumentHandler) GetByCategoryID(c *gin.Context) {
-	categoryID, err := strconv.ParseInt(c.Param("category_id"), 10, 64)
-	if err != nil || categoryID <= 0 {
-		InvalidParams(c)
-		return
-	}
-	myID := common.MyID(uint64(categoryID))
-	documents, err := h.service.GetDocumentsByCategoryID(myID)
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-
-	Success(c, documents)
-}
-
 func (h *CmsDocumentHandler) GetDocumentByCode(c *gin.Context) {
 	code := c.Query("code")
 
@@ -91,23 +73,6 @@ func (h *CmsDocumentHandler) GetDocumentByCode(c *gin.Context) {
 	})
 }
 
-// 获取热门文档
-func (h *CmsDocumentHandler) GetPopular(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	if limit <= 0 || limit > 100 {
-		limit = 10
-	}
-
-	documents, err := h.service.GetPopularDocuments(limit)
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-
-	Success(c, documents)
-}
-
-// 分页获取文档
 func (h *CmsDocumentHandler) ListDocuments(c *gin.Context) {
 	var req ListDocumentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -139,9 +104,6 @@ func (h *CmsDocumentHandler) GetAll(c *gin.Context) {
 		"total": total,
 	})
 }
-
-// cms_document_handler.go
-// 替换现有的 SaveDocument 方法
 
 func (h *CmsDocumentHandler) SaveDocument(c *gin.Context) {
 	var req SaveDocumentRequest

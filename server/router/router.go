@@ -137,7 +137,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				adminGroup.POST("/create", adminHandler.CreateAdmin)
 				adminGroup.GET("/info", adminHandler.GetAdmin)
 				adminGroup.POST("/update", adminHandler.UpdateAdmin)
-				adminGroup.PATCH("/:id/password", adminHandler.UpdateAdminPassword)
 			}
 
 			productGroup := adminAuth.Group("/shop/product")
@@ -231,11 +230,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			spRefundGroup := adminAuth.Group("/shop/refund")
 			{
 				spRefundGroup.POST("/list", spRefundHandler.ListSpOrderRefund)
-				spRefundGroup.PUT("/:id", spRefundHandler.UpdateRefund)
 				spRefundGroup.GET("/info", spRefundHandler.GetRefundByOrder)
 				spRefundGroup.GET("/:refund_no", spRefundHandler.GetRefundByRefundNo)
-				spRefundGroup.PATCH("/:id/status", spRefundHandler.UpdateRefundStatus)
-				// spRefundGroup.PATCH("/:id/amount", spRefundHandler.UpdateRefundAmount)
 			}
 
 			deptGroup := adminAuth.Group("/core/dept")

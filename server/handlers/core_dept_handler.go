@@ -154,27 +154,6 @@ func (h *CoreDeptHandler) GetDept(c *gin.Context) {
 	Success(c, dept)
 }
 
-// 获取子部门
-func (h *CoreDeptHandler) GetSubDepts(c *gin.Context) {
-	pid, err := strconv.ParseInt(c.Query("pid"), 10, 64)
-	if err != nil {
-		pid = 0 // 默认获取顶级部门
-	}
-
-	if pid < 0 {
-		InvalidParams(c)
-		return
-	}
-
-	depts, err := h.service.GetSubDepts(common.MyID(pid))
-	if err != nil {
-		Error(c, 7004, "获取子部门失败")
-		return
-	}
-
-	Success(c, depts)
-}
-
 // 删除部门
 func (h *CoreDeptHandler) DeleteDept(c *gin.Context) {
 	var req DeptUpdateRequest

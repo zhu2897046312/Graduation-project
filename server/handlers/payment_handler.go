@@ -110,7 +110,6 @@ func (h *PaymentHandler) CreatePayment(c *gin.Context) {
 }
 
 // createPayPalPayment 创建PayPal支付订单
-// createPayPalPayment 创建PayPal支付订单
 func (h *PaymentHandler) createPayPalPayment(order *sp.SpOrder, req PaymentRequest) (*PaymentResponse, error) {
 	purchaseUnits := []paypal.PurchaseUnitRequest{
 		{

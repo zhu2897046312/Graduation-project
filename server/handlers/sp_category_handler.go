@@ -53,17 +53,6 @@ type SpProductUpdateReq struct {
 	SortNum        uint16 `json:"sort_num"`        // 排序值（可选）
 }
 
-// // Validate 自定义验证逻辑
-// func (r *SpProductUpdateReq) Validate() error {
-// 	validate := validator.New()
-// 	return validate.Struct(r)
-// }
-// // Validate 自定义验证逻辑
-// func (r *SpProductCreateReq) Validate() error {
-// 	validate := validator.New()
-// 	return validate.Struct(r)
-// }
-
 func NewSpCategoryHandler(service *service.SpCategoryService) *SpCategoryHandler {
 	return &SpCategoryHandler{service: service}
 }
@@ -174,22 +163,6 @@ func (h *SpCategoryHandler) GetCategoryParents(c *gin.Context) {
 	Success(c, category)
 }
 
-// 获取子分类
-func (h *SpCategoryHandler) GetSubCategories(c *gin.Context) {
-	pid, err := strconv.ParseUint(c.Query("pid"), 10, 32)
-	if err != nil {
-		pid = 0 // 默认获取顶级分类
-	}
-
-	categories, err := h.service.GetCategoriesByPid(common.MyID(pid))
-	if err != nil {
-		Error(c, 22004, "获取子分类失败")
-		return
-	}
-
-	Success(c, categories)
-}
-
 // 获取分类树
 func (h *SpCategoryHandler) GetCategoryTree(c *gin.Context) {
 	pid, err := strconv.ParseUint(c.Query("pid"), 10, 32)
@@ -243,52 +216,4 @@ func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid common.My
 	}
 
 	return tree
-}
-
-// 更新分类状态
-func (h *SpCategoryHandler) UpdateCategoryState(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		State uint8 `json:"state"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateCategoryState(common.MyID(id), req.State); err != nil {
-		Error(c, 22005, err.Error())
-		return
-	}
-
-	Success(c, nil)
-}
-
-// 更新分类排序
-func (h *SpCategoryHandler) UpdateCategorySortNum(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		SortNum uint16 `json:"sort_num"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateCategorySortNum(common.MyID(id), req.SortNum); err != nil {
-		Error(c, 22006, err.Error())
-		return
-	}
-
-	Success(c, nil)
 }

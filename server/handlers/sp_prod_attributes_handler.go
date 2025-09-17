@@ -6,7 +6,6 @@ import (
 	"server/models/common"
 	"server/service"
 	"server/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -144,30 +143,6 @@ func (h *SpProdAttributesHandler) GetAttributesByPage(c *gin.Context) {
 	}
 
 	Success(c, response)
-}
-
-// 更新属性排序
-func (h *SpProdAttributesHandler) UpdateAttributeSortNum(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		SortNum uint16 `json:"sort_num"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateAttributeSortNum(common.MyID(id), req.SortNum); err != nil {
-		Error(c, 28005, err.Error())
-		return
-	}
-
-	Success(c, nil)
 }
 
 // 删除属性

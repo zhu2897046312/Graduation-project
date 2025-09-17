@@ -49,29 +49,6 @@ func (h *SpProdAttributesValueHandler) CreateAttributeValue(c *gin.Context) {
 	Success(c, value)
 }
 
-// 更新属性值
-func (h *SpProdAttributesValueHandler) UpdateAttributeValue(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var value sp.SpProdAttributesValue
-	if err := c.ShouldBindJSON(&value); err != nil {
-		InvalidParams(c)
-		return
-	}
-	value.ID = common.MyID(id)
-
-	if err := h.service.UpdateAttributeValue(&value); err != nil {
-		Error(c, 29002, err.Error())
-		return
-	}
-
-	Success(c, value)
-}
-
 // 根据属性ID获取值列表
 func (h *SpProdAttributesValueHandler) List(c *gin.Context) {
 	var req ListProdAttributesRequest
@@ -95,39 +72,6 @@ func (h *SpProdAttributesValueHandler) List(c *gin.Context) {
 		"list": values,
 		"total":  len,
 	})
-}
-
-// 获取属性值详情
-func (h *SpProdAttributesValueHandler) GetValue(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil || id == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	value, err := h.service.GetValueByID(common.MyID(id))
-	if err != nil {
-		Error(c, 29004, "属性值不存在")
-		return
-	}
-
-	Success(c, value)
-}
-
-// 批量创建属性值
-func (h *SpProdAttributesValueHandler) BatchCreateAttributeValues(c *gin.Context) {
-	var values []sp.SpProdAttributesValue
-	if err := c.ShouldBindJSON(&values); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.BatchCreateAttributeValues(values); err != nil {
-		Error(c, 29005, err.Error())
-		return
-	}
-
-	Success(c, nil)
 }
 
 // 删除属性的所有值

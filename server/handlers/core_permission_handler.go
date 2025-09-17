@@ -95,23 +95,6 @@ func (h *CorePermissionHandler) GetPermission(c *gin.Context) {
 	Success(c, permission)
 }
 
-// 根据Code获取权限
-func (h *CorePermissionHandler) GetPermissionByCode(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
-		InvalidParams(c)
-		return
-	}
-
-	permission, err := h.service.GetPermissionByCode(code)
-	if err != nil {
-		Error(c, 8004, "权限不存在")
-		return
-	}
-
-	Success(c, permission)
-}
-
 func (h *CorePermissionHandler) List(c *gin.Context) {
 	onlyTop := c.Query("onlyTop") == "true" // 获取是否只返回顶级分类
 

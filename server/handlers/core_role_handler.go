@@ -6,7 +6,6 @@ import (
 	"server/service"
 	"server/models/common"
 	"server/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -108,59 +107,6 @@ func (h *CoreRoleHandler) GetAllRoles(c *gin.Context) {
 	}
 
 	Success(c, roles)
-}
-
-// 更新角色状态
-func (h *CoreRoleHandler) UpdateRoleStatus(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		Status int8 `json:"status"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateRoleStatus(common.MyID(id), req.Status); err != nil {
-		Error(c, 10005, err.Error())
-		return
-	}
-
-	Success(c, nil)
-}
-
-// 更新角色权限
-func (h *CoreRoleHandler) UpdateRolePermissions(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		Permissions json.RawMessage `json:"permissions"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if len(req.Permissions) == 0 {
-		Error(c, 10006, "权限数据不能为空")
-		return
-	}
-
-	if err := h.service.UpdateRolePermissions(common.MyID(id), []byte(req.Permissions)); err != nil {
-		Error(c, 10007, err.Error())
-		return
-	}
-
-	Success(c, nil)
 }
 
 func (h *CoreRoleHandler) List(c *gin.Context) {

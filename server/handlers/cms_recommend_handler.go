@@ -5,7 +5,6 @@ import (
 	"server/models/common"
 	"server/service"
 	"server/utils"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -98,34 +97,6 @@ func (h *CmsRecommendHandler) UpdateRecommend(c *gin.Context) {
 	}
 
 	Success(c, nil)
-}
-
-// 获取有效推荐
-func (h *CmsRecommendHandler) GetActiveRecommends(c *gin.Context) {
-	recommends, err := h.service.GetActiveRecommends()
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-
-	Success(c, recommends)
-}
-
-// 根据状态获取推荐
-func (h *CmsRecommendHandler) GetRecommendsByState(c *gin.Context) {
-	state, err := strconv.Atoi(c.Query("state"))
-	if err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	recommends, err := h.service.GetRecommendsByState(int8(state))
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-
-	Success(c, recommends)
 }
 
 func (h *CmsRecommendHandler) ListRecommends(c *gin.Context) {

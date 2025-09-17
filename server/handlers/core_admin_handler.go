@@ -8,7 +8,6 @@ import (
 	"server/models/common"
 	"server/service"
 	"server/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -211,54 +210,6 @@ func (h *CoreAdminHandler) GetAdmin(c *gin.Context) {
 		"created_time": admin.CreatedTime,
 		"updated_time": admin.UpdatedTime,
 	})
-}
-
-// 更新管理员状态
-func (h *CoreAdminHandler) UpdateAdminStatus(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		Status int8 `json:"status"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateAdminStatus(common.MyID(id), req.Status); err != nil {
-		Error(c, 5004, err.Error())
-		return
-	}
-
-	Success(c, nil)
-}
-
-// 更新管理员密码
-func (h *CoreAdminHandler) UpdateAdminPassword(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var req struct {
-		NewPassword string `json:"new_password"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.UpdateAdminPassword(common.MyID(id), req.NewPassword); err != nil {
-		Error(c, 5005, err.Error())
-		return
-	}
-
-	Success(c, nil)
 }
 
 // LoginRequest 定义登录请求结构体

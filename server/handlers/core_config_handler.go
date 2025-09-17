@@ -234,22 +234,6 @@ func (h *CoreConfigHandler) GetSiteInfo(c *gin.Context) {
 	Success(c, response)
 }
 
-// 批量更新配置
-func (h *CoreConfigHandler) BatchUpdateConfigs(c *gin.Context) {
-	var configs []core.CoreConfig
-	if err := c.ShouldBindJSON(&configs); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.BatchUpdateConfigs(configs); err != nil {
-		Error(c, 6005, err.Error())
-		return
-	}
-
-	Success(c, nil)
-}
-
 func (h *CoreConfigHandler) SaveMarketSetting(c *gin.Context) {
 	var req MarketRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

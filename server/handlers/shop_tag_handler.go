@@ -6,7 +6,6 @@ import (
 	"server/service"
 	"server/models/common"
 	"server/utils"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -172,56 +171,6 @@ func (h *ShopTagHandler) GetTag(c *gin.Context) {
 	}
 	Success(c, resonse)
 }
-
-// 根据状态获取标签列表
-func (h *ShopTagHandler) GetTagsByState(c *gin.Context) {
-	state, err := strconv.ParseInt(c.Query("state"), 10, 8)
-	if err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	tags, err := h.service.GetTagsByState(int8(state))
-	if err != nil {
-		Error(c, 21004, "获取标签列表失败")
-		return
-	}
-
-	Success(c, tags)
-}
-
-// 根据匹配词搜索标签
-func (h *ShopTagHandler) SearchTags(c *gin.Context) {
-	matchWord := c.Query("match_word")
-	if matchWord == "" {
-		InvalidParams(c)
-		return
-	}
-
-	tags, err := h.service.SearchTagsByMatchWord(matchWord)
-	if err != nil {
-		Error(c, 21005, "搜索标签失败")
-		return
-	}
-
-	Success(c, tags)
-}
-
-// 增加标签阅读量
-// func (h *ShopTagHandler) IncrementTagReadNum(c *gin.Context) {
-// 	id, err := strconv.Atoi(c.Param("id"))
-// 	if err != nil || id == 0 {
-// 		InvalidParams(c)
-// 		return
-// 	}
-
-// 	if err := h.service.IncrementTagReadNum(id); err != nil {
-// 		Error(c, 21006, err.Error())
-// 		return
-// 	}
-
-// 	Success(c, nil)
-// }
 
 // 分页获取标签
 func (h *ShopTagHandler) ListTags(c *gin.Context) {

@@ -8,7 +8,6 @@ import (
 	"server/models/common"
 	"server/service"
 	"server/utils"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -379,40 +378,6 @@ func (h *SpOrderHandler) GetOrderByCode(c *gin.Context) {
 	Success(c, order)
 }
 
-// 根据用户ID获取订单列表
-func (h *SpOrderHandler) GetOrdersByUser(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 32)
-	if err != nil || userID == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	orders, err := h.service.GetOrdersByUserID(common.MyID(userID))
-	if err != nil {
-		Error(c, 27005, "获取订单列表失败")
-		return
-	}
-
-	Success(c, orders)
-}
-
-// 根据状态获取订单列表
-func (h *SpOrderHandler) GetOrdersByState(c *gin.Context) {
-	state, err := strconv.ParseUint(c.Query("state"), 10, 8)
-	if err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	orders, err := h.service.GetOrdersByState(uint8(state))
-	if err != nil {
-		Error(c, 27006, "获取订单列表失败")
-		return
-	}
-
-	Success(c, orders)
-}
-
 // 更新订单状态
 func (h *SpOrderHandler) UpdateOrderState(c *gin.Context) {
 	var req struct {
@@ -577,7 +542,6 @@ func (h *SpOrderHandler) OrderRefund(c *gin.Context) {
 	Success(c, nil)
 }
 
-// GetOrderByQueryCode 根据访客查询码获取订单详情
 // GetOrderByQueryCode 根据访客查询码获取订单详情
 func (h *SpOrderHandler) GetOrderByQueryCode(c *gin.Context) {
 	queryCode := c.Query("queryCode")
