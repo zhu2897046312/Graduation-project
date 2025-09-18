@@ -195,9 +195,9 @@ func (f *ServiceFactory) GetSpSkuService() *SpSkuService {
 	return NewSpSkuService(f.base)
 }
 
-// func (f *ServiceFactory) GetSpUserAddressService() *SpUserAddressService {
-// 	return NewSpUserAddressService(f.base)
-// }
+func (f *ServiceFactory) GetSpUserAddressService() *SpUserAddressService {
+	return NewSpUserAddressService(f.base)
+}
 
 func (f *ServiceFactory) GetSpUserCartService() *SpUserCartService {
 	return NewSpUserCartService(f.base)

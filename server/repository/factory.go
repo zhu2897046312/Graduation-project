@@ -50,7 +50,7 @@ type RepositoryFactory struct {
 	sp_product_prop     *SpProductPropertyRepository
 	sp_sku              *SpSkuRepository
 	sp_sku_index        *SpSkuIndexRepository
-	// sp_user_address     *SpUserAddressRepository
+	sp_user_address     *SpUserAddressRepository
 	sp_user_cart        *SpUserCartRepository
 }
 
@@ -371,12 +371,12 @@ func (f *RepositoryFactory) GetSpSkuIndexRepository() *SpSkuIndexRepository {
 	return f.sp_sku_index
 }
 
-// func (f *RepositoryFactory) GetSpUserAddressRepository() *SpUserAddressRepository {
-// 	if f.sp_user_address == nil {
-// 		f.sp_user_address = NewSpUserAddressRepository(f.db)
-// 	}
-// 	return f.sp_user_address
-// }
+func (f *RepositoryFactory) GetSpUserAddressRepository() *SpUserAddressRepository {
+	if f.sp_user_address == nil {
+		f.sp_user_address = NewSpUserAddressRepository(f.db)
+	}
+	return f.sp_user_address
+}
 
 func (f *RepositoryFactory) GetSpUserCartRepository() *SpUserCartRepository {
 	if f.sp_user_cart == nil {

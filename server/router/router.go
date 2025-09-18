@@ -21,7 +21,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		ossHandler := admin.NewOssHandler()
 		// SP分类路由组
 		spCategoryHandler := admin.NewSpCategoryHandler(factory.GetSpCategoryService())
-		clientSpCategoryHandler := client.NewClientSpCategoryHandler(factory.GetSpCategoryService())
+
 		// SP商品属性路由组
 		spAttrHandler := admin.NewSpProdAttributesHandler(
 			factory.GetSpProdAttributesService(),
@@ -29,7 +29,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		)
 		// 商品标签路由组
 		tagHandler := admin.NewShopTagHandler(factory.GetShopTagService(), factory.GetShopTagMateService())
-		clientTagHandler := client.NewClientShopTagHandler(factory.GetShopTagService(), factory.GetShopTagMateService())
+
 		// SP商品属性值路由组
 		spAttrValueHandler := admin.NewSpProdAttributesValueHandler(factory.GetSpProdAttributesValueService())
 		//商品路由组
@@ -45,44 +45,20 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			factory.GetSpProdAttributesService(),
 			factory.GetSpProdAttributesValueService(),
 		)
-		clientProductHandler := client.NewClientSpProductHandler(
-			factory.GetSpProductService(),
-			factory.GetSpCategoryService(),
-			factory.GetSpProductContentService(),
-			factory.GetSpProductPropertyService(),
-			factory.GetSpSkuService(),
-			factory.GetSpSkuIndexService(),
-			factory.GetShopTagIndexService(),
-			factory.GetShopTagService(),
-			factory.GetSpProdAttributesService(),
-			factory.GetSpProdAttributesValueService(),
-		)
+
 		// 系统配置路由组
 		configHandler := admin.NewCoreConfigHandler(factory.GetCoreConfigService())
-		clientConfigHandler := client.NewClientCoreConfigHandler(factory.GetCoreConfigService())
-		
 
 		// 文档路由组
 		documentHandler := admin.NewCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
-		clientDocumentHandler := client.NewClientCmsDocumentHandler(factory.GetCmsDocumentService(), factory.GetCmsDocumentArchiveService())
+
 		// 推荐路由组
 		recommendHandler := admin.NewCmsRecommendHandler(factory.GetCmsRecommendService(), factory.GetCmsRecommendIndexService())
-		clientRecommendHandler := client.NewClientCmsRecommendHandler(factory.GetCmsRecommendService(), factory.GetCmsRecommendIndexService())
-		// 推荐索引路由组
+
 		recIndexHandler := admin.NewCmsRecommendIndexHandler(factory.GetCmsRecommendIndexService())
 
 		// SP订单路由组
 		spOrderHandler := admin.NewSpOrderHandler(
-			factory.GetSpOrderService(),
-			factory.GetSpOrderItemService(),
-			factory.GetSpOrderReceiveAddressService(),
-			factory.GetSpOrderRefundService(),
-			factory.GetSpOrderReceiveAddressService(),
-			factory.GetSpProductService(),
-			factory.GetSpUserCartService(),
-		)
-
-		clientSpOrderHandler := client.NewClientSpOrderHandler(
 			factory.GetSpOrderService(),
 			factory.GetSpOrderItemService(),
 			factory.GetSpOrderReceiveAddressService(),
@@ -119,21 +95,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 权限路由组
 		permissionHandler := admin.NewCorePermissionHandler(factory.GetCorePermissionService())
 
-		clientMarketSettingHandler := client.NewClientSpMarketSettingHandler(
-			factory.GetSpCategoryService(),
-			factory.GetSpProductService(),
-		)
-
-		clientCartHandler := client.NewClientSpUserCartHandler(
-			factory.GetSpUserCartService(),
-			factory.GetSpProductService(),
-			factory.GetSpSkuService(),
-		)
-
 		// 用户路由组
-		clientMpUserHandler := client.NewClientMpUserHandler(factory.GetMpUserService(), factory.GetMpUserTokenService())
-
-		clientPayHandler := client.NewClientPaymentHandler(factory.GetSpOrderService(), factory.GetPaypalOrderLogsService())
 
 		// 公开路由（不需要认证）
 		public := api.Group("")
@@ -289,6 +251,61 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			}
 		}
 
+		clientSpUserAddressHandler := client.NewSpUserAddressHandler(factory.GetSpUserAddressService())
+		clientConfigHandler := client.NewClientCoreConfigHandler(factory.GetCoreConfigService())
+		clientSpCategoryHandler := client.NewClientSpCategoryHandler(factory.GetSpCategoryService())
+		clientTagHandler := client.NewClientShopTagHandler(
+			factory.GetShopTagService(),
+			factory.GetShopTagMateService(),
+		)
+		clientDocumentHandler := client.NewClientCmsDocumentHandler(
+			factory.GetCmsDocumentService(),
+			factory.GetCmsDocumentArchiveService(),
+		)
+		clientMpUserHandler := client.NewClientMpUserHandler(
+			factory.GetMpUserService(),
+			factory.GetMpUserTokenService(),
+		)
+
+		clientPayHandler := client.NewClientPaymentHandler(
+			factory.GetSpOrderService(),
+			factory.GetPaypalOrderLogsService(),
+		)
+		clientMarketSettingHandler := client.NewClientSpMarketSettingHandler(
+			factory.GetSpCategoryService(),
+			factory.GetSpProductService(),
+		)
+		clientRecommendHandler := client.NewClientCmsRecommendHandler(
+			factory.GetCmsRecommendService(),
+			factory.GetCmsRecommendIndexService(),
+		)
+		clientCartHandler := client.NewClientSpUserCartHandler(
+			factory.GetSpUserCartService(),
+			factory.GetSpProductService(),
+			factory.GetSpSkuService(),
+		)
+		clientSpOrderHandler := client.NewClientSpOrderHandler(
+			factory.GetSpOrderService(),
+			factory.GetSpOrderItemService(),
+			factory.GetSpOrderReceiveAddressService(),
+			factory.GetSpOrderRefundService(),
+			factory.GetSpOrderReceiveAddressService(),
+			factory.GetSpProductService(),
+			factory.GetSpUserCartService(),
+		)
+		// 推荐索引路由组
+		clientProductHandler := client.NewClientSpProductHandler(
+			factory.GetSpProductService(),
+			factory.GetSpCategoryService(),
+			factory.GetSpProductContentService(),
+			factory.GetSpProductPropertyService(),
+			factory.GetSpSkuService(),
+			factory.GetSpSkuIndexService(),
+			factory.GetShopTagIndexService(),
+			factory.GetShopTagService(),
+			factory.GetSpProdAttributesService(),
+			factory.GetSpProdAttributesValueService(),
+		)
 		clientAuth := api.Group("/client")
 		clientAuth.Use(middleware.DeviceFingerprintMiddleware())
 		clientAuth.Use(middleware.OptionalClientAuthMiddleware())
@@ -360,6 +377,14 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 					paymentGroup.GET("/status/:id", clientPayHandler.GetPaymentStatus)
 				}
 
+				SpUerAddressGroup := clientAuth.Group("/userAddress")
+				{
+					SpUerAddressGroup.POST("/list", clientSpUserAddressHandler.ListAddress)
+					SpUerAddressGroup.POST("/create", clientSpUserAddressHandler.CreateAddress)
+					SpUerAddressGroup.POST("/modify", clientSpUserAddressHandler.UpdateAddress)
+					SpUerAddressGroup.GET("/info", clientSpUserAddressHandler.GetAddress)
+					SpUerAddressGroup.GET("/del", clientSpUserAddressHandler.DeleteAddress)
+				}
 			}
 		}
 

@@ -24,6 +24,12 @@ type SpUserAddress struct {
 	PostalCode    string      `gorm:"size:64;not null;default:''" json:"postal_code"`
 }
 
+type SpUserAddressListParam struct {
+	UserID   common.MyID `json:"user_id"`
+	Page     int         `json:"page"`
+	PageSize int         `json:"page_size"`
+}
+
 func (SpUserAddress) TableName() string {
 	return "sp_user_address"
 }
