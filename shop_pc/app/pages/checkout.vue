@@ -3,7 +3,7 @@ import { NForm, NFormItem, NInput, NSelect, NCard, NButton, useMessage, useDialo
 import type { FormRules } from 'naive-ui'
 import addressJson from '../../data/address.json'
 import api from '../../api';
-setPageLayout('minilayout')
+// setPageLayout('minilayout')
 useSeoMeta({
   title: 'checkout',
   description: 'checkout',

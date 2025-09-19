@@ -58,10 +58,14 @@ const handleLogout = () => {
     }
   });
 }
-
-const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter' && search.value.length > 0) {
+const handleSearch = () => {
+  if (search.value.length > 0) {
     navigateTo({path: '/search', query: {q: search.value}})
+  }
+}
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    handleSearch()
   }
 }
 
@@ -132,7 +136,10 @@ onMounted(() => {
                 placeholder="Search"
                 class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-white focus:ring-1 focus:ring-[#f4b3c2] focus:outline-none"
               />
-              <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <span 
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              @click="handleSearch"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>

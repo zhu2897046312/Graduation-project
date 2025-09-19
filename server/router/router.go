@@ -199,7 +199,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 
 			spOrderGroup := adminAuth.Group("/shop/order")
 			{
-				spOrderGroup.POST("", spOrderHandler.CreateOrder)
 				spOrderGroup.PUT("/:id", spOrderHandler.UpdateOrder)
 				spOrderGroup.GET("/info", spOrderHandler.GetOrder)
 				spOrderGroup.GET("/code/:code", spOrderHandler.GetOrderByCode)
@@ -377,7 +376,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 					paymentGroup.GET("/status/:id", clientPayHandler.GetPaymentStatus)
 				}
 
-				SpUerAddressGroup := clientAuth.Group("/userAddress")
+				SpUerAddressGroup := clientAuth.Group("/shop/userAddress")
 				{
 					SpUerAddressGroup.POST("/list", clientSpUserAddressHandler.ListAddress)
 					SpUerAddressGroup.POST("/create", clientSpUserAddressHandler.CreateAddress)

@@ -40,9 +40,6 @@ func (s *SpUserAddressService) Create(address *sp.SpUserAddress) error {
 	if address.City == "" {
 		return errors.New("市不能为空")
 	}
-	if address.Region == "" {
-		return errors.New("区不能为空")
-	}
 	if address.DetailAddress == "" {
 		return errors.New("详细地址不能为空")
 	}
@@ -64,7 +61,7 @@ func (s *SpUserAddressService) Update(address *sp.SpUserAddress) error {
 		return errors.New("地址ID不能为空")
 	}
 	_,err := s.repoFactory.GetSpUserAddressRepository().FindByID(address.ID)
-	if err == nil{
+	if err != nil{
 		return errors.New("该id地址已经存在")
 	}
 	address.UpdatedTime = time.Now()

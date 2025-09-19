@@ -9,7 +9,7 @@ type SpUserAddress struct {
 	ID            common.MyID `gorm:"primaryKey;autoIncrement" json:"id"`
 	UserID        common.MyID `gorm:"not null;default:0" json:"user_id"`
 	Title         string      `gorm:"size:200;not null" json:"title"`
-	DefaultStatus *bool       `json:"default_status"`
+	DefaultStatus int16      `json:"default_status"`
 	FirstName     string      `gorm:"size:64;not null;default:''" json:"first_name"`
 	LastName      string      `gorm:"size:64;not null;default:''" json:"last_name"`
 	Email         string      `gorm:"size:128;not null;default:''" json:"email"`

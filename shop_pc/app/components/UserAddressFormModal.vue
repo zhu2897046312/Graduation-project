@@ -85,7 +85,6 @@ const handleValidate = async () => {
   console.log(info.value)
   console.log(formRef.value)
   formRef.value.validate((errors: any) => {
-    console.log(errors)
     if (!errors) {
       handleSubmit()
     } else {
@@ -99,6 +98,7 @@ const handleSubmit = async () => {
   try {
     if (id > 0) {
       values.id = id
+      console.log("userAddressFormModal.vue - handleSubmit - values",values)
       await api.shop.address.modify(values)
     } else {
       await api.shop.address.create(values)

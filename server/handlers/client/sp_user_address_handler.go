@@ -23,6 +23,23 @@ type ListAddressRequest struct {
 	PageSize int `json:"page_size"`
 }
 
+type SpUserAddressCreateRequest struct {
+	ID            common.MyID `json:"id"`
+	UserID        common.MyID `json:"user_id"`
+	Title         string      `json:"title"`
+	DefaultStatus int16       `json:"default_status"`
+	FirstName     string      `json:"first_name"`
+	LastName      string      `json:"last_name"`
+	Email         string      `json:"email"`
+	Phone         string      `json:"phone"`
+	Province      string      `json:"province"`
+	City          string      `json:"city"`
+	Region        string      `json:"region"`
+	DetailAddress string      `json:"detail_address"`
+	Country       string      `json:"country"`
+	PostalCode    string      `json:"postal_code"`
+}
+
 func (h *SpUserAddressHandler) ListAddress(c *gin.Context) {
 	var req ListAddressRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -48,12 +65,27 @@ func (h *SpUserAddressHandler) ListAddress(c *gin.Context) {
 }
 
 func (h *SpUserAddressHandler) CreateAddress(c *gin.Context) {
-	var address sp.SpUserAddress
-	if err := c.ShouldBindJSON(&address); err != nil {
+	var req SpUserAddressCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.InvalidParams(c)
 	}
 	userId := middleware.GetUserIDFromContext(c)
-	address.UserID = common.MyID(userId)
+
+	address := sp.SpUserAddress{
+		UserID:        common.MyID(userId),
+		Title:         req.Title,
+		DefaultStatus: req.DefaultStatus,
+		FirstName:     req.FirstName,
+		LastName:      req.LastName,
+		Email:         req.Email,
+		Phone:         req.Phone,
+		Province:      req.Province,
+		City:          req.City,
+		Region:        req.Region,
+		DetailAddress: req.DetailAddress,
+		Country:       req.Country,
+		PostalCode:    req.PostalCode,
+	}
 
 	if err := h.service.Create(&address); err != nil {
 		utils.ServerError(c, err)

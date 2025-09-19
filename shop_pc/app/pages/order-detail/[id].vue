@@ -13,6 +13,20 @@ const orderStatusMap = {
   5: 'Closed',
   6: 'Invalid Order'
 } as const
+
+const getProductImage = (thumb: string) => {
+  try {
+    // 解析 JSON 字符串数组
+    const images = JSON.parse(thumb)
+    // 返回第一个图片 URL
+    return images && images.length > 0 ? images[0] : '/placeholder-product.jpg'
+  } catch (error) {
+    console.error('Failed to parse thumb:', error)
+    // 如果解析失败，尝试直接使用（可能是普通字符串）
+    return thumb && thumb !== '' ? thumb : '/placeholder-product.jpg'
+  }
+}
+
 // 订单状态映射
 const stateArr = ['', 'Pending Payment', 'Pending Shipment', 'Shipped', 'Completed', 'Canceled', 'Invalid Order']
 
@@ -35,19 +49,7 @@ const handleBack = () => {
     router.push('/')
   }
 }
-// 处理商品图片
-const getProductImage = (thumb: string) => {
-  try {
-    // 解析 JSON 字符串数组
-    const images = JSON.parse(thumb)
-    // 返回第一个图片 URL
-    return images && images.length > 0 ? images[0] : '/placeholder-product.jpg'
-  } catch (error) {
-    console.error('Failed to parse thumb:', error)
-    // 如果解析失败，尝试直接使用（可能是普通字符串）
-    return thumb && thumb !== '' ? thumb : '/placeholder-product.jpg'
-  }
-}
+
 onMounted(() => {
   console.log('Order Detail:', res.value)
 })

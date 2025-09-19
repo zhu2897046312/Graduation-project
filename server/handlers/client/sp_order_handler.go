@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"server/middleware"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
 	"server/service"
 	"server/utils"
 	"time"
@@ -14,23 +14,24 @@ import (
 )
 
 type SpOrderListVo struct {
-	ID              common.MyID             `json:"id"`
-	Code            string           `json:"code"`
-	UserID          common.MyID             `json:"user_id"`
-	Nickname        string           `json:"nickname"`
-	Email           string           `json:"email"`
-	TotalAmount     float64          `json:"total_amount"`
-	PayAmount       float64          `json:"pay_amount"`
-	State           uint8            `json:"state"`
-	PaymentTime     *time.Time       `json:"payment_time"`
-	DeliveryTime    *time.Time       `json:"delivery_time"`
-	ReceiveTime     *time.Time       `json:"receive_time"`
-	DeliveryCompany string           `json:"delivery_company"`
-	DeliverySn      string           `json:"delivery_sn"`
-	Remark          string           `json:"remark"`
-	Freight         float64          `json:"freight"`
-	CreatedTime     time.Time        `json:"created_time"`
-	Items           []sp.SpOrderItem `json:"items"`
+	ID               common.MyID      `json:"id"`
+	Code             string           `json:"code"`
+	UserID           common.MyID      `json:"user_id"`
+	Nickname         string           `json:"nickname"`
+	Email            string           `json:"email"`
+	TotalAmount      float64          `json:"total_amount"`
+	PayAmount        float64          `json:"pay_amount"`
+	State            uint8            `json:"state"`
+	PaymentTime      *time.Time       `json:"payment_time"`
+	DeliveryTime     *time.Time       `json:"delivery_time"`
+	ReceiveTime      *time.Time       `json:"receive_time"`
+	DeliveryCompany  string           `json:"delivery_company"`
+	DeliverySn       string           `json:"delivery_sn"`
+	Remark           string           `json:"remark"`
+	Freight          float64          `json:"freight"`
+	CreatedTime      time.Time        `json:"created_time"`
+	Items            []sp.SpOrderItem `json:"items"`
+	VisitorQueryCode string           `json:"visitor_query_code"`
 }
 
 type OrderListResponse struct {
@@ -50,7 +51,7 @@ type ListOrdersRequest struct {
 type ProductItemRequest struct {
 	ProductID common.MyID `json:"product_id"`
 	SkuID     common.MyID `json:"sku_id"`
-	Quantity  uint `json:"quantity"`
+	Quantity  uint        `json:"quantity"`
 }
 
 type OrderCreateRequest struct {
@@ -77,6 +78,7 @@ type SpOrderCreateResp struct {
 	PayAmount        string `json:"pay_amount"`
 	Freight          string `json:"freight"`
 }
+
 // SpOrderFrontInfoVo 前端订单信息视图对象
 type SpOrderFrontInfoVo struct {
 	Order   SpOrderFrontQueryVo      `json:"order"`
@@ -86,39 +88,39 @@ type SpOrderFrontInfoVo struct {
 
 // SpOrderFrontQueryVo 前端订单查询视图对象
 type SpOrderFrontQueryVo struct {
-	ID               common.MyID                `json:"id" description:"主键"`
-	Code             string              `json:"code" description:"订单号"`
-	UserID           common.MyID                `json:"user_id" description:"用户id"`
-	VisitorQueryCode string              `json:"visitor_query_code" description:"访客查询码"`
-	Nickname         string              `json:"nickname" description:"昵称"`
-	Email            string              `json:"email" description:"邮箱"`
-	TotalAmount      float64             `json:"total_amount" description:"订单总金额"`
-	PayAmount        float64             `json:"pay_amount" description:"实际支付总金额"`
-	PayType          uint8               `json:"pay_type" description:"支付方式:1=货到付款"`
-	State            uint8               `json:"state" description:"订单状态:1=待付款;2=待发货;3=已发货;4=已完成;5=已关闭;6=无效订单"`
-	PaymentTime      time.Time           `json:"payment_time" description:"支付时间"`
-	DeliveryTime     time.Time           `json:"delivery_time" description:"发货时间"`
-	ReceiveTime      time.Time           `json:"receive_time" description:"确认收货时间"`
-	DeliveryCompany  string              `json:"delivery_company" description:"物流公司(配送方式)"`
-	DeliverySn       string              `json:"delivery_sn" description:"物流单号"`
+	ID               common.MyID          `json:"id" description:"主键"`
+	Code             string               `json:"code" description:"订单号"`
+	UserID           common.MyID          `json:"user_id" description:"用户id"`
+	VisitorQueryCode string               `json:"visitor_query_code" description:"访客查询码"`
+	Nickname         string               `json:"nickname" description:"昵称"`
+	Email            string               `json:"email" description:"邮箱"`
+	TotalAmount      float64              `json:"total_amount" description:"订单总金额"`
+	PayAmount        float64              `json:"pay_amount" description:"实际支付总金额"`
+	PayType          uint8                `json:"pay_type" description:"支付方式:1=货到付款"`
+	State            uint8                `json:"state" description:"订单状态:1=待付款;2=待发货;3=已发货;4=已完成;5=已关闭;6=无效订单"`
+	PaymentTime      time.Time            `json:"payment_time" description:"支付时间"`
+	DeliveryTime     time.Time            `json:"delivery_time" description:"发货时间"`
+	ReceiveTime      time.Time            `json:"receive_time" description:"确认收货时间"`
+	DeliveryCompany  string               `json:"delivery_company" description:"物流公司(配送方式)"`
+	DeliverySn       string               `json:"delivery_sn" description:"物流单号"`
 	Items            []SpOrderItemFrontVo `json:"items" description:"商品信息"`
-	Freight          float64             `json:"freight" description:"运费"`
+	Freight          float64              `json:"freight" description:"运费"`
 }
 
 // SpOrderItemFrontVo 前端订单项视图对象
 type SpOrderItemFrontVo struct {
-	ID            common.MyID    `json:"id" description:"主键"`
-	Title         string  `json:"title" description:"商品标题"`
-	SkuTitle      string  `json:"sku_title" description:"商品SKU内容"`
-	Thumb         string  `json:"thumb" description:"商品图片"`
-	OrderID       common.MyID    `json:"order_id" description:"订单id"`
-	ProductID     common.MyID    `json:"product_id" description:"商品id"`
-	SkuID         common.MyID    `json:"sku_id" description:"商品SKUid"`
-	TotalAmount   float64 `json:"total_amount" description:"总金额"`
-	PayAmount     float64 `json:"pay_amount" description:"实际支付金额"`
-	Quantity      uint    `json:"quantity" description:"购买数量"`
-	Price         float64 `json:"price" description:"单价"`
-	OriginalPrice float64 `json:"original_price" description:"原价单价"`
+	ID            common.MyID `json:"id" description:"主键"`
+	Title         string      `json:"title" description:"商品标题"`
+	SkuTitle      string      `json:"sku_title" description:"商品SKU内容"`
+	Thumb         string      `json:"thumb" description:"商品图片"`
+	OrderID       common.MyID `json:"order_id" description:"订单id"`
+	ProductID     common.MyID `json:"product_id" description:"商品id"`
+	SkuID         common.MyID `json:"sku_id" description:"商品SKUid"`
+	TotalAmount   float64     `json:"total_amount" description:"总金额"`
+	PayAmount     float64     `json:"pay_amount" description:"实际支付金额"`
+	Quantity      uint        `json:"quantity" description:"购买数量"`
+	Price         float64     `json:"price" description:"单价"`
+	OriginalPrice float64     `json:"original_price" description:"原价单价"`
 }
 
 type ClientSpOrderHandler struct {
@@ -321,13 +323,9 @@ func (h *ClientSpOrderHandler) ListOrders(c *gin.Context) {
 		utils.InvalidParams(c)
 		return
 	}
+	userID := middleware.GetUserIDFromContext(c)
 	val := sp.ListOrdersQueryParam{
-		NikeName: req.NikeName,
-		Email:    req.Email,
-		Code:     req.Code,
-		State:    req.State,
-		Page:     req.Page,
-		PageSize: req.PageSize,
+		UserID: common.MyID(userID),
 	}
 	orders, total, err := h.service.List(val)
 	if err != nil {
@@ -339,7 +337,6 @@ func (h *ClientSpOrderHandler) ListOrders(c *gin.Context) {
 		orderVo := SpOrderListVo{
 			ID:              order.ID,
 			Code:            order.Code,
-			UserID:          order.UserID,
 			Nickname:        order.Nickname,
 			Email:           order.Email,
 			TotalAmount:     order.TotalAmount,
@@ -353,6 +350,7 @@ func (h *ClientSpOrderHandler) ListOrders(c *gin.Context) {
 			Remark:          order.Remark,
 			Freight:         order.Freight,
 			CreatedTime:     order.CreatedTime,
+			VisitorQueryCode: order.VisitorQueryCode,
 		}
 		items, err := h.orderItemService.GetItemsByOrderID(order.ID)
 		if err != nil {

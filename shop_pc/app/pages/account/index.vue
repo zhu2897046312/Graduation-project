@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import api from "../../../api";
-import { NList, NListItem, NThing,NButton } from "naive-ui"
-
+import { NList, NListItem, NThing,NButton } from "naive-ui";
+const getProductImage = (thumb: string) => {
+  try {
+    // 解析 JSON 字符串数组
+    const images = JSON.parse(thumb)
+    // 返回第一个图片 URL
+    return images && images.length > 0 ? images[0] : '/placeholder-product.jpg'
+  } catch (error) {
+    console.error('Failed to parse thumb:', error)
+    // 如果解析失败，尝试直接使用（可能是普通字符串）
+    return thumb && thumb !== '' ? thumb : '/placeholder-product.jpg'
+  }
+}
 
 const { data: siteInfo } = await useAsyncData('siteInfo', async () => {
   return await api.shop.market.siteInfo()
@@ -27,7 +38,9 @@ const {data: order, status: orderStatus} = await useAsyncData('orders', async ()
 // 订单状态:1=待付款;2=待发货;3=已发货;4=已完成;5=已关闭;6=无效订单
 const stateArr = ['', 'Pending Payment', 'Pending Shipment', 'Shipped', 'Completed', 'Canceled', 'Invalid Order']
 
-
+onMounted(() => {
+  console.log("account index address: ",order.value)
+})
 </script>
 
 <template>
@@ -48,7 +61,7 @@ const stateArr = ['', 'Pending Payment', 'Pending Shipment', 'Shipped', 'Complet
               <div class="order-products">
                 <NThing class="product" v-for="p in item.items" :key="p.id">
                   <template #avatar>
-                    <img class="product-thumb" :src="p.thumb" />
+                    <img class="product-thumb" :src="getProductImage(p.thumb)" />
                   </template>
                   <template #header>
                     <span class="product-header">{{ p.title }}</span>

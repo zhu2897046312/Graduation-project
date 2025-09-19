@@ -1,10 +1,11 @@
 package repository
 
 import (
-	"gorm.io/gorm"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type SpOrderRepository struct {
@@ -66,12 +67,12 @@ func (r *SpOrderRepository) FindByState(state uint8) ([]sp.SpOrder, error) {
 }
 
 // 更新订单状态
-func (r *SpOrderRepository) UpdateState(code string, state uint8,remark string) error {
+func (r *SpOrderRepository) UpdateState(code string, state uint8, remark string) error {
 	updates := map[string]interface{}{
-		"state": state,
+		"state":  state,
 		"remark": remark,
 	}
-	
+
 	switch state {
 	case 2: // 已支付
 		now := time.Now()
@@ -83,18 +84,18 @@ func (r *SpOrderRepository) UpdateState(code string, state uint8,remark string) 
 		now := time.Now()
 		updates["receive_time"] = &now
 	}
-	
+
 	return r.db.Model(&sp.SpOrder{}).
 		Where("visitor_query_code = ?", code).
 		Updates(updates).Error
 }
 
-func (r *SpOrderRepository) UpdateStateByID(id common.MyID, state uint8,remark string) error {
+func (r *SpOrderRepository) UpdateStateByID(id common.MyID, state uint8, remark string) error {
 	updates := map[string]interface{}{
-		"state": state,
+		"state":  state,
 		"remark": remark,
 	}
-	
+
 	switch state {
 	case 2: // 已支付
 		now := time.Now()
@@ -106,7 +107,7 @@ func (r *SpOrderRepository) UpdateStateByID(id common.MyID, state uint8,remark s
 		now := time.Now()
 		updates["receive_time"] = &now
 	}
-	
+
 	return r.db.Model(&sp.SpOrder{}).
 		Where("id = ?", id).
 		Updates(updates).Error
@@ -145,6 +146,10 @@ func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) (
 
 	if params.State != 0 {
 		query = query.Where("state = ?", params.State)
+	}
+
+	if params.UserID != 0 {
+		query = query.Where("user_id = ?", params.UserID)
 	}
 
 	if params.Code != "" {

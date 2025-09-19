@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import api from "../../../api";
+import type { AddressList } from "../../../api/type";
 import { NButton, NPopconfirm } from "naive-ui";
 
 
@@ -9,7 +10,7 @@ const { data: siteInfo } = await useAsyncData('siteInfo', async () => {
 
 const { data, refresh, status } = await useAsyncData('addresses', async () => {
   const res = await api.shop.address.list({ page_no: 1, page_size: 999})
-  return { addresses: res.list }
+  return { addresses: res.list as AddressList}
 })
 
 const addressFormRef = ref()
@@ -27,7 +28,9 @@ const handleEdit = (id: number) => {
 const handleAddressChange = () => {
   refresh()
 }
-
+onMounted(() => {
+  console.log("addresses vue - addressFormRef : ",addressFormRef.value) 
+})
 </script>
 
 <template>
@@ -51,7 +54,7 @@ const handleAddressChange = () => {
           <span>{{ item.first_name }} {{ item.last_name }}</span>
           <span>{{ item.detail_address }}</span>
           <span>{{ item.region }}</span>
-          <span>{{ item.area_code }} {{ item.city }}</span>
+          <span>{{ item.city }}</span>
           <span>{{ item.province }}</span>
           <div class="flex gap-2 mt-2">
             <span style="color: #878787;cursor: pointer;" @click="handleEdit(item.id)">Edit</span>

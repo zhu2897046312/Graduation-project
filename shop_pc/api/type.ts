@@ -227,5 +227,31 @@ export interface ProductInfo{
     sku_list: SpProductSkuFrontInfoVo[];
     sku_config: SpProductProdFrontVo[];
     tags: SpTagEntity[];
-  }
+  };
 
+// 单个地址的数据类型
+export interface Address {
+  id: number;
+  title: string;
+  default_status: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  province: string;
+  city: string;
+  region: string;
+  detail_address: string;
+  created_time: string; // 或者可以使用 Date 类型，但需要转换
+  updated_time: string; // 或者可以使用 Date 类型，但需要转换
+  country: string;
+  postal_code: string;
+};
+
+export type AddressList = Address[];
+
+// 地址列表响应的数据类型
+export interface AddressListResponse {
+  address: Address;
+  total: number;
+};

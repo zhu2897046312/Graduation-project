@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
+
 	"gorm.io/gorm"
 )
 
@@ -18,20 +19,20 @@ func NewSpUserAddressRepository(db *gorm.DB) *SpUserAddressRepository {
 
 func (r *SpUserAddressRepository) FindByID(id common.MyID) (*sp.SpUserAddress, error) {
 	var address sp.SpUserAddress
-	err := r.db.Model(&sp.SpUserAddress{}).Where("id = ?", id).First(&address).Error
+	err := r.db.First(&address, id).Error
 	return &address, err
 }
 
 func (r *SpUserAddressRepository) Create(address *sp.SpUserAddress) error {
-	return r.db.Model(&sp.SpUserAddress{}).Create(address).Error
+	return r.db.Create(address).Error
 }
 
 func (r *SpUserAddressRepository) Update(address *sp.SpUserAddress) error {
-	return r.db.Model(&sp.SpUserAddress{}).Updates(address).Error
+	return r.db.Updates(address).Error
 }
 
 func (r *SpUserAddressRepository) Delete(id common.MyID) error {
-	return r.db.Model(&sp.SpUserAddress{}).Where("id = ?", id).Delete(&sp.SpUserAddress{}).Error
+	return r.db.Delete(&sp.SpUserAddress{}, id).Error
 }
 
 func (r *SpUserAddressRepository) ListAddress(params *sp.SpUserAddressListParam) ([]*sp.SpUserAddress, int64, error) {
@@ -56,7 +57,7 @@ func (r *SpUserAddressRepository) ListAddress(params *sp.SpUserAddressListParam)
 		if params.Page < 1 {
 			params.Page = 1
 		}
-		
+
 		// 限制最大分页大小
 		if params.PageSize > 100 {
 			params.PageSize = 100
