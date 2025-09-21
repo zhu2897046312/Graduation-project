@@ -83,23 +83,6 @@ func (h *SpOrderRefundHandler) GetOrderInfoByOrderCode(c *gin.Context) {
 	Success(c, order)
 }
 
-// 根据退款单号获取退款记录
-func (h *SpOrderRefundHandler) GetRefundByRefundNo(c *gin.Context) {
-	refundNo := c.Param("refund_no")
-	if refundNo == "" {
-		InvalidParams(c)
-		return
-	}
-
-	refund, err := h.service.GetRefundByRefundNo(refundNo)
-	if err != nil {
-		Error(c, 26004, "退款记录不存在")
-		return
-	}
-
-	Success(c, refund)
-}
-
 func (h *SpOrderRefundHandler) ListSpOrderRefund(c *gin.Context) {
 	var req ListSpOrderRefundRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

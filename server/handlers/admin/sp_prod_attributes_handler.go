@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"fmt"
 	"server/models/sp"
 	"server/models/common"
 	"server/service"
@@ -80,24 +79,6 @@ func (h *SpProdAttributesHandler) UpdateAttribute(c *gin.Context) {
 	Success(c, attr)
 }
 
-// 获取属性详情
-func (h *SpProdAttributesHandler) GetAttribute(c *gin.Context) {
-	id := c.Query("id")
-	uintId := utils.ConvertToUint(id)
-	if uintId == 0 {
-		InvalidParams_1(c, uintId)
-		return
-	}
-	fmt.Println(uintId)
-	attr, err := h.service.GetAttributeByID(common.MyID(uintId))
-	if err != nil {
-		Error(c, 28003, "属性不存在")
-		return
-	}
-
-	Success(c, attr)
-}
-
 // 获取所有属性
 func (h *SpProdAttributesHandler) GetAllAttributes(c *gin.Context) {
 	attrs, err := h.service.GetAllAttributes()
@@ -110,7 +91,7 @@ func (h *SpProdAttributesHandler) GetAllAttributes(c *gin.Context) {
 }
 
 // 分页获取属性
-func (h *SpProdAttributesHandler) GetAttributesByPage(c *gin.Context) {
+func (h *SpProdAttributesHandler) List(c *gin.Context) {
 	var req SpProdAttributesPageRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		InvalidParams(c)

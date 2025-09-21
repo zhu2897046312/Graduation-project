@@ -130,7 +130,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			productGroup := adminAuth.Group("/shop/product")
 			{
 				productGroup.POST("/create", productHandler.CreateProduct)
-				productGroup.PUT("/:id", productHandler.UpdateProduct)
 				productGroup.GET("/info", productHandler.GetProduct)
 				productGroup.POST("/list", productHandler.ListProducts)
 				productGroup.POST("/modify", productHandler.UpdateProduct)
@@ -138,14 +137,14 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			}
 			spCategoryGroup := adminAuth.Group("/shop/category")
 			{
-				spCategoryGroup.GET("/tree", spCategoryHandler.GetCategoryTree)
+				spCategoryGroup.GET("/tree", spCategoryHandler.Tree)
 				spCategoryGroup.POST("/create", spCategoryHandler.CreateCategory)
 				spCategoryGroup.GET("/info", spCategoryHandler.GetCategory)
 				spCategoryGroup.POST("/modify", spCategoryHandler.UpdateCategory)
 			}
 			spAttrGroup := adminAuth.Group("/shop/prodAttributes")
 			{
-				spAttrGroup.POST("/list", spAttrHandler.GetAttributesByPage)
+				spAttrGroup.POST("/list", spAttrHandler.List)
 				spAttrGroup.POST("/create", spAttrHandler.CreateAttribute)
 				spAttrGroup.GET("/info", spAttrHandler.GetAllAttributes)
 				spAttrGroup.POST("/modify", spAttrHandler.UpdateAttribute)
@@ -199,9 +198,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 
 			spOrderGroup := adminAuth.Group("/shop/order")
 			{
-				spOrderGroup.PUT("/:id", spOrderHandler.UpdateOrder)
 				spOrderGroup.GET("/info", spOrderHandler.GetOrder)
-				spOrderGroup.GET("/code/:code", spOrderHandler.GetOrderByCode)
 				spOrderGroup.POST("/updateState", spOrderHandler.UpdateOrderState)
 				spOrderGroup.GET("/infoByCode", spRefundHandler.GetOrderInfoByOrderCode)
 				spOrderGroup.POST("/delivery", spOrderHandler.UpdateDeliveryInfo)
@@ -218,7 +215,6 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			{
 				spRefundGroup.POST("/list", spRefundHandler.ListSpOrderRefund)
 				spRefundGroup.GET("/info", spRefundHandler.GetRefundByOrder)
-				spRefundGroup.GET("/:refund_no", spRefundHandler.GetRefundByRefundNo)
 			}
 
 			deptGroup := adminAuth.Group("/core/dept")

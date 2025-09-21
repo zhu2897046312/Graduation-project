@@ -5,7 +5,6 @@ import (
 	"server/service"
 	"server/models/common"
 	"server/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -72,20 +71,4 @@ func (h *SpProdAttributesValueHandler) List(c *gin.Context) {
 		"list": values,
 		"total":  len,
 	})
-}
-
-// 删除属性的所有值
-func (h *SpProdAttributesValueHandler) DeleteValuesByAttribute(c *gin.Context) {
-	attrID, err := strconv.ParseUint(c.Param("attr_id"), 10, 32)
-	if err != nil || attrID == 0 {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.DeleteValuesByAttributeID(common.MyID(attrID)); err != nil {
-		Error(c, 29006, err.Error())
-		return
-	}
-
-	Success(c, nil)
 }

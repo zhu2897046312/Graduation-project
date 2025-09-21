@@ -179,19 +179,3 @@ func (h *CorePermissionHandler) DeletePermission(c *gin.Context) {
 	}	
 	Success(c, nil)
 }
-
-func (h *CorePermissionHandler) TopList(c *gin.Context) {
-	onlyTop := c.Query("onlyTop") == "true" // 获取是否只返回顶级分类
-
-	// 获取所有分类
-	permissions, err := h.service.GetAll()
-	if err != nil {
-		Error(c, 22007, "获取分类失败")
-		return
-	}
-
-	// 构建与Java类似的扁平列表
-	result := h.buildFlatList(permissions, onlyTop)
-
-	Success(c, result)
-}

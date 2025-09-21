@@ -52,26 +52,6 @@ type SaveDocumentRequest struct {
 	Title          string      `json:"title"`
 }
 
-func (h *CmsDocumentHandler) GetDocumentByCode(c *gin.Context) {
-	code := c.Query("code")
-
-	documents, err := h.service.GetDocumentByCode(code)
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-	myID := common.MyID(uint64(documents.ID))
-	archive , err_1 := h.archiveService.GetArchiveByDocumentID(myID)
-	if err_1 != nil {
-		ServerError(c, err_1)
-		return
-	}
-
-	Success(c, gin.H{
-		"document": documents,
-		"cont": archive,
-	})
-}
 
 func (h *CmsDocumentHandler) ListDocuments(c *gin.Context) {
 	var req ListDocumentRequest
@@ -81,19 +61,6 @@ func (h *CmsDocumentHandler) ListDocuments(c *gin.Context) {
 	}
 
 	documents, total, err := h.service.ListDocuments(req.Page, req.PageSize, req.Title)
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-
-	Success(c, gin.H{
-		"list":  documents,
-		"total": total,
-	})
-}
-
-func (h *CmsDocumentHandler) GetAll(c *gin.Context) {
-	documents, total, err := h.service.ListDocuments(0,0,"")
 	if err != nil {
 		ServerError(c, err)
 		return

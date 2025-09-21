@@ -169,34 +169,3 @@ func (h *CmsRecommendHandler) GetRecommendByID(c *gin.Context) {
 	}
 	Success(c, recommend)
 }	
-
-
-func (h *CmsRecommendHandler) ListRecommendsIndex(c *gin.Context) {
-	type IndexReq struct{
-		Code string `json:"code"`
-	}
-	var req IndexReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		InvalidParams(c)
-		return
-	}
-	recommend , err := h.service.GetRecommendByCode(req.Code)
-	if err != nil {
-		ServerError(c, err)
-		return
-	}
-	
-
-	recommendsIndex, total, err_1 := h.recommendIndexService.ListRecommendsIndex(cms.RecommendIndexQueryParams{
-		RecommendID: recommend.ID,
-	})
-	if err_1 != nil {
-		ServerError(c, err_1)
-		return
-	}
-
-	Success(c, gin.H{
-		"list":  recommendsIndex,
-		"total": total,
-	})
-}

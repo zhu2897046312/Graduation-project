@@ -131,40 +131,8 @@ func (h *SpCategoryHandler) GetCategory(c *gin.Context) {
 	Success(c, category)
 }
 
-func (h *SpCategoryHandler) GetCategoryByCode(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
-		InvalidParams(c)
-		return
-	}
-
-	category, err := h.service.GetCategoryByCode(code)
-	if err != nil {
-		Error(c, 22003, "分类不存在")
-		return
-	}
-
-	Success(c, category)
-}
-
-func (h *SpCategoryHandler) GetCategoryParents(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
-		InvalidParams(c)
-		return
-	}
-
-	category, err := h.service.GetParents(code)
-	if err != nil {
-		Error(c, 22003, "分类不存在")
-		return
-	}
-
-	Success(c, category)
-}
-
 // 获取分类树
-func (h *SpCategoryHandler) GetCategoryTree(c *gin.Context) {
+func (h *SpCategoryHandler) Tree(c *gin.Context) {
 	pid, err := strconv.ParseUint(c.Query("pid"), 10, 32)
 	if err != nil {
 		pid = 0 // 默认从顶级分类开始

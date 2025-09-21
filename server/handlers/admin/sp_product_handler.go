@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	// "github.com/jinzhu/copier"
 )
 
 type ListProductsRequest struct {
@@ -178,10 +179,6 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 		putawayTime = time.Now()
 	}
 
-	// price, _ := strconv.ParseFloat(req.Price, 64)
-	// originalPrice, _ := strconv.ParseFloat(req.OriginalPrice, 64)
-	// costPrice, _ := strconv.ParseFloat(req.CostPrice, 64)
-
 	rawJSON, _ := json.Marshal(req.PictureGallery)
 	PictureGallery := json.RawMessage(rawJSON)
 	Price := float64(utils.ConvertToUint(req.Price))
@@ -216,7 +213,12 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 		PutawayTime:    &putawayTime,
 		Hot:            uint8(req.Hot),
 	}
-
+	// 使用 copier 复制字段
+	// err := copier.Copy(&product, &req)
+	// if err != nil {
+	// 	Error(c, 3101, err.Error())
+	// 	return
+	// }
 	pro, err := h.service.CreateProduct(&product)
 	// 创建商品基本信息
 	if err != nil {
@@ -725,169 +727,4 @@ func (h *SpProductHandler) SoftDeleteProduct(c *gin.Context) {
 	}
 
 	Success(c, nil)
-}
-
-// GetClientProduct 获取前端商品详情
-func (h *SpProductHandler) GetClientProduct(c *gin.Context) {
-	id := c.Query("id")
-	uintId := utils.ConvertToUint(id)
-	if uintId == 0 {
-		InvalidParams_1(c, uintId)
-		return
-	}
-
-	product, err := h.service.GetProductByID(common.MyID(uintId))
-	if err != nil {
-		Error(c, 3103, "商品不存在")
-		return
-	}
-
-	// 获取商品内容
-	content, err := h.contentService.GetContentByProductID(common.MyID(uintId))
-	if err != nil {
-		content = &sp.SpProductContent{
-			ProductID: common.MyID(uintId),
-		}
-	}
-
-	// 获取商品属性列表
-	properties, err := h.propertyService.GetPropertiesByProductID(common.MyID(uintId))
-	if err != nil {
-		properties = []sp.SpProductProperty{}
-	}
-
-	// 获取SKU列表
-	skus, err := h.skuService.GetSkusByProductID(common.MyID(uintId))
-	if err != nil {
-		skus = []sp.SpSku{}
-	}
-
-	// 转换SKU配置为前端需要的格式
-	frontSkuConfig, err := h.getSkuConfig(common.MyID(uintId))
-	if err != nil {
-		frontSkuConfig = []SpProductProdFrontVo{}
-	}
-
-	// 获取标签
-	tagIds, err := h.tagIndexService.GetTagIndicesByProductID(common.MyID(uintId))
-	var tags []shop.ShopTag
-	if err == nil && len(tagIds) > 0 {
-		for _, tagId := range tagIds {
-			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
-			if err == nil {
-				tags = append(tags, *tag)
-			}
-		}
-	}
-
-	// 处理图片集
-	var pictureGallery []string
-	if product.PictureGallery != nil {
-		json.Unmarshal(product.PictureGallery, &pictureGallery)
-	}
-
-	// 构建前端需要的响应结构 - ProductInfo
-	response := gin.H{
-		"id":              product.ID,
-		"category_id":     product.CategoryID,
-		"title":           product.Title,
-		"state":           product.State,
-		"price":           product.Price,
-		"original_price":  product.OriginalPrice,
-		"stock":           product.Stock,
-		"picture":         product.Picture,
-		"picture_gallery": pictureGallery,
-		"description":     product.Description,
-		"sold_num":        product.SoldNum,
-		"open_sku":        product.OpenSku,
-		"sort_num":        product.SortNum,
-		"putaway_time":    product.PutawayTime,
-		"content":         content.Content,
-		"seo_title":       content.SeoTitle,
-		"seo_keyword":     content.SeoKeyword,
-		"seo_description": content.SeoDescription,
-		"property_list":   properties,
-		"sku_list":        skus,
-		"sku_config":      frontSkuConfig,
-		"tags":            tags,
-	}
-
-	Success(c, response)
-}
-
-type SpProductProdFrontVo struct {
-	ID      common.MyID                 `json:"id"`
-	Title   string                      `json:"title"` //属性名称
-	SortNum uint16                      `json:"sort_num"`
-	Value   []SpProductProdValueFrontVo `json:"value"` // 属性值
-}
-type SpProductProdValueFrontVo struct {
-	ID      common.MyID `json:"id"`
-	Title   string      `json:"title"` //值名称
-	SortNum uint16      `json:"sort_num"`
-}
-
-func (h *SpProductHandler) getSkuConfig(productID common.MyID) ([]SpProductProdFrontVo, error) {
-	// 获取 SKU 索引列表
-	skuIndices, err := h.skuIndexService.GetIndicesByProductID(productID)
-	if err != nil {
-		return nil, err
-	}
-	if len(skuIndices) == 0 {
-		return []SpProductProdFrontVo{}, nil
-	}
-
-	// 收集属性 ID 和属性值 ID
-	var attributeIDs []common.MyID
-	var attributeValueIDs []common.MyID
-	for _, index := range skuIndices {
-		attributeIDs = append(attributeIDs, index.ProdAttributesID)
-		attributeValueIDs = append(attributeValueIDs, index.ProdAttributesValueID)
-	}
-
-	// 获取属性列表
-	var attributes []sp.SpProdAttributes
-	for _, id := range attributeIDs {
-		attr, err := h.ProdAttributes.GetAttributeByID(id)
-		if err != nil {
-			return nil, err
-		}
-		attributes = append(attributes, *attr)
-	}
-
-	// 获取属性值列表
-	var attributeValues []sp.SpProdAttributesValue
-	for _, id := range attributeValueIDs {
-		val, err := h.ProdAttributesValues.GetValueByID(id)
-		if err != nil {
-			return nil, err
-		}
-		attributeValues = append(attributeValues, *val)
-	}
-
-	// 构建返回结果
-	var result []SpProductProdFrontVo
-	for _, attr := range attributes {
-		vo := SpProductProdFrontVo{
-			ID:      attr.ID,
-			Title:   attr.Title,
-			SortNum: attr.SortNum,
-		}
-
-		// 过滤并匹配属性值
-		var values []SpProductProdValueFrontVo
-		for _, val := range attributeValues {
-			if val.ProdAttributesID == attr.ID {
-				values = append(values, SpProductProdValueFrontVo{
-					ID:      val.ID,
-					Title:   val.Title,
-					SortNum: val.SortNum,
-				})
-			}
-		}
-		vo.Value = values
-		result = append(result, vo)
-	}
-
-	return result, nil
 }

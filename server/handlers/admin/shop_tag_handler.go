@@ -215,35 +215,3 @@ func (h *ShopTagHandler) DeleteTag(c *gin.Context) {
 
 	Success(c, nil)
 }		
-
-func (h *ShopTagHandler) GetTagByCode(c *gin.Context) {
-	code := c.Query("code")
-	if code == ""{
-		InvalidParams(c)
-	}
-
-	tag, err := h.service.GetTagByCode(code)
-	if err != nil {
-		Error(c, 21009, "获取标签失败")
-		return
-	}
-	tagMate , err_ := h.tagMateService.GetTagMateByID(common.MyID(tag.ID))
-	if err_ != nil {
-		Error(c, 21003, "标签不存在")
-		return
-	}
-	resonse := gin.H{
-		"id": tag.ID,
-		"seo_title": tagMate.SeoTitle,	
-		"seo_description": tagMate.SeoDescription,
-		"seo_keyword": tagMate.SeoKeyword,
-		"match_word": tagMate.Content,
-		"code": tag.Code,	
-		"read_num": tag.ReadNum,
-		"sort_num": tag.SortNum,
-		"state": tag.State,
-		"thumb": tag.Thumb,
-		"title": tag.Title,
-	}
-	Success(c, resonse)
-}

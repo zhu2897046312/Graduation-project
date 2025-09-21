@@ -2,11 +2,9 @@ package admin
 
 import (
 	"fmt"
-	"server/models/common"
 	"server/models/core"
 	"server/service"
 	"server/utils"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +25,23 @@ type MarketRequest struct {
 	Exchange interface{} `json:"exchange"`
 	Freight  interface{} `json:"freight"`
 	Original interface{} `json:"original"`
+}
+
+type SiteInfoResponse struct {
+	Title          string `json:"title"`
+	Logo           string `json:"logo"`
+	SeoTitle       string `json:"seo_title"`
+	SeoKeyword     string `json:"seo_keyword"`
+	SeoDescription string `json:"seo_description"`
+}
+
+type MarketInfoResponse struct {
+	Exchange       string `json:"exchange"`
+	Freight        string `json:"freight"`
+	Original       string `json:"original"`
+	SEOTitle       string `json:"seo_title"`
+	SEODescription string `json:"seo_description"`
+	SEOKeyword     string `json:"seo_keyword"`
 }
 
 func NewCoreConfigHandler(service *service.CoreConfigService) *CoreConfigHandler {
@@ -118,90 +133,6 @@ func (h *CoreConfigHandler) SaveSiteInfo(c *gin.Context) {
 		}
 	}
 	Success(c, "配置保存成功")
-}
-
-// 创建配置
-func (h *CoreConfigHandler) CreateConfig(c *gin.Context) {
-	var config core.CoreConfig
-	if err := c.ShouldBindJSON(&config); err != nil {
-		InvalidParams(c)
-		return
-	}
-
-	if err := h.service.CreateConfig(&config); err != nil {
-		Error(c, 6001, err.Error())
-		return
-	}
-
-	Success(c, config)
-}
-
-// 更新配置
-func (h *CoreConfigHandler) UpdateConfig(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		InvalidParams(c)
-		return
-	}
-
-	var config core.CoreConfig
-	if err := c.ShouldBindJSON(&config); err != nil {
-		InvalidParams(c)
-		return
-	}
-	config.ID = common.MyID(id)
-
-	if err := h.service.UpdateConfig(&config); err != nil {
-		Error(c, 6002, err.Error())
-		return
-	}
-
-	Success(c, config)
-}
-
-// 获取配置详情
-func (h *CoreConfigHandler) GetConfigByKey(c *gin.Context) {
-	key := c.Query("key")
-	if key == "" {
-		InvalidParams(c)
-		return
-	}
-
-	config, err := h.service.GetConfigByKey(key)
-	if err != nil {
-		Error(c, 6003, "配置不存在")
-		return
-	}
-
-	Success(c, config)
-}
-
-// 获取所有配置
-func (h *CoreConfigHandler) GetAllConfigs(c *gin.Context) {
-	configs, err := h.service.GetAllConfigs()
-	if err != nil {
-		Error(c, 6004, "获取配置失败")
-		return
-	}
-
-	Success(c, configs)
-}
-
-type SiteInfoResponse struct {
-	Title          string `json:"title"`
-	Logo           string `json:"logo"`
-	SeoTitle       string `json:"seo_title"`
-	SeoKeyword     string `json:"seo_keyword"`
-	SeoDescription string `json:"seo_description"`
-}
-
-type MarketInfoResponse struct {
-	Exchange       string `json:"exchange"`
-	Freight        string `json:"freight"`
-	Original       string `json:"original"`
-	SEOTitle       string `json:"seo_title"`
-	SEODescription string `json:"seo_description"`
-	SEOKeyword     string `json:"seo_keyword"`
 }
 
 // GetAllConfigs 获取所有配置项
