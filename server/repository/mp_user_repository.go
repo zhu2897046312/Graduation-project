@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"server/models/mp"
 	"server/models/common"
+	"time"
 )
 
 type MpUserRepository struct {
@@ -66,4 +67,47 @@ func (r *MpUserRepository) UpdateToken(id common.MyID, token string) error {
 	return r.db.Model(&mp.MpUser{}).
 		Where("id = ?", id).
 		Update("token", token).Error
+}
+
+func (r *MpUserRepository) ListWithPagination(params mp.MpUserListParam) ([]mp.MpUser, int64, error) {
+	var products []mp.MpUser
+	var total int64
+	// 构建查询
+	query := r.db.Model(&mp.MpUser{}).Where("deleted_time IS NULL")
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if params.PageSize <= 0 {
+		err := query.Find(&products).Error
+		return products, total, err
+	} else {
+
+		// 设置默认值
+		if params.Page < 1 {
+			params.Page = 1
+		}
+		if params.PageSize < 1 || params.PageSize > 100 {
+			params.PageSize = 10
+		}
+		offset := (params.Page - 1) * params.PageSize
+		// 获取分页数据
+		err := query.Offset(offset).
+			Limit(params.PageSize).
+			Find(&products).Error
+
+		return products, total, err
+	}
+
+}
+
+// 软删除商品（GORM 自动处理）
+func (r *MpUserRepository) DeleteByID(id common.MyID) error {
+	result := r.db.Model(&mp.MpUser{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now())
+
+	return result.Error
 }

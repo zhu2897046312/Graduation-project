@@ -19,6 +19,11 @@ type MpUser struct {
 	Token       string      `gorm:"size:100" json:"token"`
 }
 
+type MpUserListParam struct {
+	Page     int
+	PageSize int
+}
+
 func (MpUser) TableName() string {
 	return "mp_user"
 }

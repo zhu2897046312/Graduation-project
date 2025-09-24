@@ -127,15 +127,6 @@ func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) (
 	var products []sp.SpOrder
 	var total int64
 
-	// 设置默认值
-	if params.Page < 1 {
-		params.Page = 1
-	}
-	if params.PageSize < 1 || params.PageSize > 100 {
-		params.PageSize = 10
-	}
-	offset := (params.Page - 1) * params.PageSize
-
 	// 构建查询
 	query := r.db.Model(&sp.SpOrder{}).Where("deleted_time IS NULL")
 
@@ -165,12 +156,26 @@ func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) (
 		return nil, 0, err
 	}
 
-	// 获取分页数据
-	err := query.Offset(offset).
+	// 如果 PageSize 为 0 或负数，返回全部数据
+	if params.PageSize <= 0 {
+		err := query.Find(&products).Error
+		return products, total, err
+	}else{
+		// 设置默认值
+		if params.Page < 1 {
+			params.Page = 1
+		}
+		if params.PageSize < 1 || params.PageSize > 100 {
+			params.PageSize = 10
+		}
+		offset := (params.Page - 1) * params.PageSize
+
+		// 获取分页数据
+		err := query.Offset(offset).
 		Limit(params.PageSize).
 		Find(&products).Error
-
-	return products, total, err
+		return products, total, err
+	}
 }
 
 func (r *SpOrderRepository) Delete(id common.MyID) error {

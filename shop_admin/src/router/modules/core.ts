@@ -42,6 +42,16 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('/@/views/core/role/index.vue'),
       },
       {
+        path: 'mp/user',
+        name: 'MpUser',
+        meta: {
+          icon: 'usergroup-add-outlined',
+          title: '用户管理',
+          permission: ['CoreRole'],
+        },
+        component: () => import('/@/views/mp/index.vue'),
+      },
+      {
         path: 'permission',
         name: 'CorePermission',
         meta: {

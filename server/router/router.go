@@ -95,6 +95,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 		// 权限路由组
 		permissionHandler := admin.NewCorePermissionHandler(factory.GetCorePermissionService())
 
+		mpUseHandler := admin.NewMpUserHandler(factory.GetMpUserService())
+
 		// 用户路由组
 
 		// 公开路由（不需要认证）
@@ -243,6 +245,12 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				permissionGroup.GET("/list", permissionHandler.List)
 				permissionGroup.GET("/info", permissionHandler.GetPermission)
 				permissionGroup.GET("/topList", permissionHandler.List)
+			}
+
+			mpUserGroup := adminAuth.Group("/mp/user")
+			{
+				mpUserGroup.POST("/list", mpUseHandler.List)
+				mpUserGroup.GET("/delete", mpUseHandler.DeleteMpUser)
 			}
 		}
 

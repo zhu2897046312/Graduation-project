@@ -114,3 +114,20 @@ func (s *MpUserService) UpdateUserToken(id common.MyID, token string) error {
 	}
 	return s.repoFactory.GetMpUserRepository().UpdateToken(id, token)
 }
+
+func (s *MpUserService) ListMpUser(params mp.MpUserListParam) ([]mp.MpUser, int64, error) {
+	return s.repoFactory.GetMpUserRepository().ListWithPagination(params)
+}
+
+func (s *MpUserService) DeleteMpUser(id common.MyID) error {
+	if id <= 0 {
+		return errors.New("无效的用户ID")
+	}
+	
+	_, err := s.repoFactory.GetMpUserRepository().FindByID(id)
+	if err != nil{
+		return errors.New("用户不存在")
+	}
+
+	return s.repoFactory.GetMpUserRepository().DeleteByID(id)
+}

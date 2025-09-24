@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	// "github.com/jinzhu/copier"
+	"github.com/jinzhu/copier"
 )
 
 type ListProductsRequest struct {
@@ -37,7 +37,7 @@ type CreateProductRequest struct {
 	Content        string         `json:"content"`
 	CostPrice      interface{}    `json:"cost_price"`
 	Description    string         `json:"description"`
-	Hot            int64          `json:"hot"`
+	Hot            uint8          `json:"hot"`
 	OpenSku        int64          `json:"open_sku"`
 	OriginalPrice  interface{}    `json:"original_price"`
 	Picture        string         `json:"picture"`
@@ -75,8 +75,8 @@ type UpdateProductRequest struct {
 	SEOKeyword     string         `json:"seo_keyword"`
 	SEOTitle       string         `json:"seo_title"`
 	SkuList        []SkuList      `json:"sku_list"`
-	SoldNum        int64          `json:"sold_num"`
-	SortNum        int64          `json:"sort_num"`
+	SoldNum        uint16          `json:"sold_num"`
+	SortNum        uint16          `json:"sort_num"`
 	State          int64          `json:"state"`
 	Stock          int64          `json:"stock"`
 	Tags           []common.MyID  `json:"tags"`
@@ -194,31 +194,18 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 			}
 		}
 	}
-	// 创建商品基本信息
-	product := sp.SpProduct{
-		CategoryID:     common.MyID(req.CategoryID),
-		Title:          req.Title,
-		State:          uint8(req.State),
-		Price:          Price,
-		OriginalPrice:  OriginalPrice,
-		CostPrice:      CostPrice,
-		Stock:          uint(req.Stock),
-		OpenSku:        uint8(req.OpenSku),
-		Picture:        req.Picture,
-		PictureGallery: PictureGallery,
-		Description:    req.Description,
-		SoldNum:        uint16(req.SoldNum),
-		Version:        0,
-		SortNum:        uint16(req.SortNum),
-		PutawayTime:    &putawayTime,
-		Hot:            uint8(req.Hot),
+	var product sp.SpProduct
+	err := copier.Copy(&product, &req)
+	if err != nil {
+		Error(c, 3101, err.Error())
+		return
 	}
-	// 使用 copier 复制字段
-	// err := copier.Copy(&product, &req)
-	// if err != nil {
-	// 	Error(c, 3101, err.Error())
-	// 	return
-	// }
+	product.PictureGallery = PictureGallery
+	product.Price = Price
+	product.OriginalPrice = OriginalPrice
+	product.CostPrice = CostPrice
+	product.PutawayTime = &putawayTime
+	fmt.Println("product create data: ",product)
 	pro, err := h.service.CreateProduct(&product)
 	// 创建商品基本信息
 	if err != nil {
@@ -226,12 +213,11 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	content := sp.SpProductContent{
-		ProductID:      pro.ID,
-		Content:        req.Content,
-		SeoTitle:       req.SEOTitle,
-		SeoKeyword:     req.SEOKeyword,
-		SeoDescription: req.SEODescription,
+	var content sp.SpProductContent
+	err = copier.Copy(&content, &req)
+	if err != nil {
+		Error(c, 3101, err.Error())
+		return
 	}
 
 	if err := h.contentService.CreateContent(&content); err != nil {

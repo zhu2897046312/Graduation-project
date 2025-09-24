@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"gorm.io/gorm"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
+
+	"gorm.io/gorm"
 )
 
 type SpProductRepository struct {
@@ -19,14 +20,13 @@ func NewSpProductRepository(db *gorm.DB) *SpProductRepository {
 // 创建商品
 // 创建商品并返回完整的商品信息
 func (r *SpProductRepository) Create(product *sp.SpProduct) (*sp.SpProduct, error) {
-    // 执行创建操作
-    if err := r.db.Create(product).Error; err != nil {
-        return nil, err
-    }
-    // 返回创建后的完整对象
-    return product, nil
+	// 执行创建操作
+	if err := r.db.Create(product).Error; err != nil {
+		return nil, err
+	}
+	// 返回创建后的完整对象
+	return product, nil
 }
-
 
 // 更新商品
 func (r *SpProductRepository) Update(product *sp.SpProduct) error {
@@ -65,21 +65,12 @@ func (r *SpProductRepository) ListWithPagination(params sp.ProductQueryParams) (
 	var products []sp.SpProduct
 	var total int64
 
-	// 设置默认值
-	if params.Page < 1 {
-		params.Page = 1
-	}
-	if params.PageSize < 1 || params.PageSize > 100 {
-		params.PageSize = 10
-	}
 	if params.SortBy == "" {
 		params.SortBy = "sort_num"
 	}
 	if params.SortOrder == "" {
 		params.SortOrder = "ASC"
 	}
-
-	offset := (params.Page - 1) * params.PageSize
 
 	// 构建查询
 	query := r.db.Model(&sp.SpProduct{}).Where("deleted_time IS NULL")
@@ -110,12 +101,27 @@ func (r *SpProductRepository) ListWithPagination(params sp.ProductQueryParams) (
 		return nil, 0, err
 	}
 
-	// 获取分页数据
-	err := query.Offset(offset).
-		Limit(params.PageSize).
-		Find(&products).Error
+	if params.PageSize <= 0 {
+		err := query.Find(&products).Error
+		return products, total, err
+	} else {
 
-	return products, total, err
+		// 设置默认值
+		if params.Page < 1 {
+			params.Page = 1
+		}
+		if params.PageSize < 1 || params.PageSize > 100 {
+			params.PageSize = 10
+		}
+		offset := (params.Page - 1) * params.PageSize
+		// 获取分页数据
+		err := query.Offset(offset).
+			Limit(params.PageSize).
+			Find(&products).Error
+
+		return products, total, err
+	}
+
 }
 
 // 更新商品库存
@@ -141,5 +147,5 @@ func (r *SpProductRepository) IncrementSoldNum(id common.MyID, num uint16) error
 
 // 软删除商品（GORM 自动处理）
 func (r *SpProductRepository) SoftDelete(id common.MyID) error {
-    return r.db.Delete(&sp.SpProduct{}, id).Error
+	return r.db.Delete(&sp.SpProduct{}, id).Error
 }

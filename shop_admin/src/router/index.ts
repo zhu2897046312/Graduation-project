@@ -14,8 +14,18 @@ const routes: Array<RouteRecordRaw> = [
         path: '/',
         name: 'Base',
         component: () => import('../components/Kernel/Layout/Base.vue'),
-        // redirect:'/dashboard',
+        redirect:'/dashboard',
         children: [
+            {
+                path: '/dashboard',
+                name: 'Dashboard',
+                meta: {
+                    icon: 'dashboard-outlined',
+                    title: '仪表板',
+                    permission: ['CoreAdmin'],
+                },
+                component: () => import('/@/views/dashboard/index.vue'),
+            },
             ...shop,
             ...core,
         ],
