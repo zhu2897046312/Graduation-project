@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"server/config"
+	"server/handlers/constant"
+	"server/models/common"
 	"server/models/mypaypal"
 	"server/models/sp"
 	"server/service"
@@ -103,7 +105,7 @@ func (h *ClientPaymentHandler) CreatePayment(c *gin.Context) {
 		}
 		utils.Success(c, resp)
 	case 2: // 信用卡支付
-	utils.Error(c, 17005, "暂不支持该支付方式")
+		utils.Error(c, 17005, "暂不支持该支付方式")
 	default:
 		utils.Error(c, 17006, "不支持的支付类型")
 	}
@@ -174,41 +176,43 @@ func (h *ClientPaymentHandler) createPayPalPayment(order *sp.SpOrder, req Paymen
 	}, nil
 }
 
-
 // CapturePayment 捕获支付（确认支付）
 func (h *ClientPaymentHandler) CapturePayment(c *gin.Context) {
-    paymentID := c.Query("token")   // PayPal 会带 token=订单ID
-    redirectURL := c.Query("redirect")
+	paymentID := c.Query("token") // PayPal 会带 token=订单ID
+	redirectURL := c.Query("redirect")
 
-    if paymentID == "" {
-        utils.Error(c, 17007, "支付ID不能为空")
-        return
-    }
+	if paymentID == "" {
+		utils.Error(c, 17007, "支付ID不能为空")
+		return
+	}
+	// 更新本地订单状态
+	order, _ := h.paypalOrderLogs.GetLogByPaypalOrderID(paymentID)
 
-    captureResult, err := h.paypalClient.CaptureOrder(context.Background(), paymentID, paypal.CaptureOrderRequest{})
-    if err != nil || captureResult.Status != "COMPLETED" {
-        if redirectURL != "" {
-            c.Redirect(302, redirectURL+"?status=failed")
-            return
-        }
-        utils.Error(c, 17009, "捕获支付失败: "+err.Error())
-        return
-    }
+	captureResult, err := h.paypalClient.CaptureOrder(context.Background(), paymentID, paypal.CaptureOrderRequest{})
+	if err != nil || captureResult.Status != "COMPLETED" {
+		if redirectURL != "" {
+			c.Redirect(302, redirectURL+"?status=failed")
+			return
+		}
+		if order != nil {
+			h.orderService.DeleteOrderByVisitorQueryCode(order.LocalOrderID)
+		}
+		utils.Error(c, 17009, "捕获支付失败: "+err.Error())
+		return
+	}
 
-    // 更新本地订单状态
-    order, _ := h.paypalOrderLogs.GetLogByPaypalOrderID(paymentID)
-    if order != nil {
-        h.orderService.UpdateOrderState(order.LocalOrderID, 1, "PayPal支付成功")
-    }
+	
+	if order != nil {
+		h.orderService.UpdateOrderState(order.LocalOrderID, common.MyState(constant.ON_DELIVERY), "PayPal支付成功")
+	} 
 
-    if redirectURL != "" {
-        c.Redirect(302, redirectURL+"?status=success")
-        return
-    }
+	if redirectURL != "" {
+		c.Redirect(302, redirectURL+"?status=success")
+		return
+	}
 
-    utils.Success(c, gin.H{"status": "success"})
+	utils.Success(c, gin.H{"status": "success"})
 }
-
 
 // PaymentWebhook PayPal支付webhook处理
 type PaypalWebhookPayload struct {
@@ -228,7 +232,7 @@ func (h *ClientPaymentHandler) PaymentWebhook(c *gin.Context) {
 		var capture paypal.Capture
 		if err := json.Unmarshal(payload.Resource, &capture); err == nil {
 			if order, err := h.paypalOrderLogs.GetLogByPaypalOrderID(capture.ID); err == nil {
-				h.orderService.UpdateOrderState(order.LocalOrderID, 1, "PayPal支付成功")
+				h.orderService.UpdateOrderState(order.LocalOrderID, common.MyState(constant.ON_DELIVERY), "PayPal支付成功")
 			}
 		}
 
@@ -236,7 +240,7 @@ func (h *ClientPaymentHandler) PaymentWebhook(c *gin.Context) {
 		var capture paypal.Capture
 		if err := json.Unmarshal(payload.Resource, &capture); err == nil {
 			if order, err := h.paypalOrderLogs.GetLogByPaypalOrderID(capture.ID); err == nil {
-				h.orderService.UpdateOrderState(order.LocalOrderID, 4, "支付失败")
+				h.orderService.UpdateOrderState(order.LocalOrderID, common.MyState(constant.INVALID), "支付失败")
 			}
 		}
 	}

@@ -38,7 +38,7 @@ func (h *SpProdAttributesValueHandler) CreateAttributeValue(c *gin.Context) {
 	}
 	value := sp.SpProdAttributesValue{
 		Title: req.Title,
-		SortNum: uint16(utils.ConvertToUint(req.SortNum)),
+		SortNum: common.MySortNum(utils.ConvertToUint(req.SortNum)),
 	}
 	if err := h.service.CreateAttributeValue(&value); err != nil {
 		Error(c, 29001, err.Error())

@@ -18,10 +18,10 @@ redis:
   db: 0 
 
 email:
-  host: "127.0.0.1"
+  host: "smtp.qq.com"  # 修改为QQ邮箱SMTP服务器
   port: 587
   username: "2897046312@qq.com"
-  password: "—"
+  password: "你的QQ邮箱授权码"  # 这里填QQ邮箱的授权码，不是登录密码
   from: "2897046312@qq.com"
 
 # 添加支付配置

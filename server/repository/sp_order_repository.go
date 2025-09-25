@@ -67,7 +67,7 @@ func (r *SpOrderRepository) FindByState(state uint8) ([]sp.SpOrder, error) {
 }
 
 // 更新订单状态
-func (r *SpOrderRepository) UpdateState(code string, state uint8, remark string) error {
+func (r *SpOrderRepository) UpdateState(code string, state common.MyState, remark string) error {
 	updates := map[string]interface{}{
 		"state":  state,
 		"remark": remark,
@@ -181,6 +181,14 @@ func (r *SpOrderRepository) ListWithPagination(params sp.ListOrdersQueryParam) (
 func (r *SpOrderRepository) Delete(id common.MyID) error {
 	return r.db.Model(&sp.SpOrder{}).
 		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"deleted_time": time.Now(),
+		}).Error
+}
+
+func (r *SpOrderRepository) DeleteOrderByVisitorQueryCode(code string) error {
+	return r.db.Model(&sp.SpOrder{}).
+		Where("visitor_query_code = ?", code).
 		Updates(map[string]interface{}{
 			"deleted_time": time.Now(),
 		}).Error

@@ -3,8 +3,8 @@ package client
 import (
 	"errors"
 	"server/middleware"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
 	"server/service"
 	"server/utils"
 	"time"
@@ -22,10 +22,10 @@ type ClientSpUserCartHandler struct {
 func NewClientSpUserCartHandler(
 	service *service.SpUserCartService,
 	productService *service.SpProductService,
-	skuService     *service.SpSkuService,
-	) *ClientSpUserCartHandler {
+	skuService *service.SpSkuService,
+) *ClientSpUserCartHandler {
 	return &ClientSpUserCartHandler{
-		service: service,
+		service:        service,
 		productService: productService,
 		skuService:     skuService,
 	}
@@ -54,10 +54,10 @@ func (h *ClientSpUserCartHandler) List(c *gin.Context) {
 
 func (h *ClientSpUserCartHandler) CarAction(c *gin.Context) {
 	type SpUserCartActRequest struct {
-		ProductID common.MyID `json:"product_id"` // 商品ID
-		SkuID     common.MyID `json:"sku_id"`                        // SKU ID
-		Quantity  uint `json:"quantity"`  // 数量
-		Add       bool `json:"add"`                          // 操作类型：true=添加，false=减少
+		ProductID common.MyID     `json:"product_id"` // 商品ID
+		SkuID     common.MyID     `json:"sku_id"`     // SKU ID
+		Quantity  common.MyNumber `json:"quantity"`   // 数量
+		Add       bool            `json:"add"`        // 操作类型：true=添加，false=减少
 	}
 
 	var req SpUserCartActRequest
@@ -72,8 +72,8 @@ func (h *ClientSpUserCartHandler) CarAction(c *gin.Context) {
 		utils.Error(c, 3407, "用户未登录且缺少设备指纹")
 		return
 	}
-	
-	if userID !=0 {
+
+	if userID != 0 {
 		h.service.MergeGuestCart(common.MyID(userID), fingerprint)
 	}
 
@@ -103,11 +103,11 @@ func (h *ClientSpUserCartHandler) CarAction(c *gin.Context) {
 
 			h.service.AddToCart(newCart)
 			utils.Success(c, newCart)
-		}else{
+		} else {
 			currentCarts.Quantity += req.Quantity
 			// 重新计算金额
 			if err := h.syncCartProductInfo(currentCarts); err != nil {
-				return 
+				return
 			}
 			if err_2 := h.service.UpdateCartItem(currentCarts); err_2 != nil {
 				utils.Error(c, 3410, err_2.Error())
@@ -127,13 +127,13 @@ func (h *ClientSpUserCartHandler) CarAction(c *gin.Context) {
 			currentCarts.Quantity -= req.Quantity
 			// 重新计算金额
 			if err := h.syncCartProductInfo(currentCarts); err != nil {
-				return 
+				return
 			}
 			if err_3 := h.service.UpdateCartItem(currentCarts); err_3 != nil {
 				utils.Error(c, 3412, err_3.Error())
 				return
 			}
-			utils.Success(c, currentCarts) 
+			utils.Success(c, currentCarts)
 		}
 	}
 }

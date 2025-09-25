@@ -65,7 +65,7 @@ func (h *ClientShopTagHandler) ListTags(c *gin.Context) {
 	}
 
 	tags, total, err := h.service.ListTags(shop.TagQueryParams{
-		State:      req.State,
+		State:      common.MyState(req.State),
 		Title:      req.Title,
 		Page:       req.Page,
 		PageSize:   req.PageSize,

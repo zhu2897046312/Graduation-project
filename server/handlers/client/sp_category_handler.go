@@ -114,10 +114,10 @@ func (h *ClientSpCategoryHandler) GetCategoryTree(c *gin.Context) {
 		pid = 0 // 默认从顶级分类开始
 	}
 
-	var state *uint8
+	var state *common.MyState
 	if stateStr := c.Query("state"); stateStr != "" {
 		if stateVal, err := strconv.ParseUint(stateStr, 10, 8); err == nil {
-			stateUint8 := uint8(stateVal)
+			stateUint8 := common.MyState(stateVal)
 			state = &stateUint8
 		}
 	}
@@ -136,7 +136,7 @@ func (h *ClientSpCategoryHandler) GetCategoryTree(c *gin.Context) {
 }
 
 // 递归构建树形结构
-func (h *ClientSpCategoryHandler) buildTree(categories []*sp.SpCategory, pid common.MyID, state *uint8) []CategoryTreeResult {
+func (h *ClientSpCategoryHandler) buildTree(categories []*sp.SpCategory, pid common.MyID, state *common.MyState) []CategoryTreeResult {
 	var tree []CategoryTreeResult
 
 	for _, category := range categories {

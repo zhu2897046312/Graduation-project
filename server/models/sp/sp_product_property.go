@@ -6,13 +6,13 @@ import (
 )
 
 type SpProductProperty struct {
-	ID          common.MyID `gorm:"primaryKey;autoIncrement" json:"id"`
-	ProductID   common.MyID `gorm:"not null" json:"product_id"`
-	Title       string      `gorm:"size:200;not null" json:"title"`
-	Value       string      `gorm:"size:200;not null" json:"value"`
-	SortNum     uint16      `gorm:"not null;default:0" json:"sort_num"`
-	CreatedTime time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
-	UpdatedTime time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
+	ID          common.MyID      `gorm:"primaryKey;autoIncrement" json:"id"`
+	ProductID   common.MyID      `gorm:"not null" json:"product_id"`
+	Title       string           `gorm:"size:200;not null" json:"title"`
+	Value       string           `gorm:"size:200;not null" json:"value"`
+	SortNum     common.MySortNum `gorm:"not null;default:0" json:"sort_num"`
+	CreatedTime time.Time        `gorm:"default:CURRENT_TIMESTAMP" json:"created_time"`
+	UpdatedTime time.Time        `gorm:"default:CURRENT_TIMESTAMP" json:"updated_time"`
 }
 
 func (SpProductProperty) TableName() string {

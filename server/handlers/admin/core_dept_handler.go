@@ -2,9 +2,9 @@ package admin
 
 import (
 	"encoding/json"
+	"server/models/common"
 	"server/models/core"
 	"server/service"
-	"server/models/common"
 	"server/utils"
 	"strconv"
 
@@ -24,34 +24,34 @@ type CoreDeptTreeResult struct {
 }
 
 type DeptCreateRequest struct {
-	DeptName       string   `json:"dept_name"`
-	ConnectName    string   `json:"connect_name"`
-	ConnectMobile  string   `json:"connect_mobile"`
-	ConnectAddress string   `json:"connect_address"`
-	LeaderName     string   `json:"leader_name"`
-	Thumb          string   `json:"thumb"`
-	Content        string   `json:"content"`
-	OrganizeInfo   []string `json:"organize"`
-	Level          int8     `json:"level"`
-	SortNum        int8     `json:"sort_num"`
-	Remark         string   `json:"remark"`
-	Pid            int64    `json:"pid"`
+	DeptName       string           `json:"dept_name"`
+	ConnectName    string           `json:"connect_name"`
+	ConnectMobile  string           `json:"connect_mobile"`
+	ConnectAddress string           `json:"connect_address"`
+	LeaderName     string           `json:"leader_name"`
+	Thumb          string           `json:"thumb"`
+	Content        string           `json:"content"`
+	OrganizeInfo   []string         `json:"organize"`
+	Level          common.MyState   `json:"level"`
+	SortNum        common.MySortNum `json:"sort_num"`
+	Remark         string           `json:"remark"`
+	Pid            int64            `json:"pid"`
 }
 
 type DeptUpdateRequest struct {
-	ID             int64    `json:"id"`
-	DeptName       string   `json:"dept_name"`
-	ConnectName    string   `json:"connect_name"`
-	ConnectMobile  string   `json:"connect_mobile"`
-	ConnectAddress string   `json:"connect_address"`
-	LeaderName     string   `json:"leader_name"`
-	Thumb          string   `json:"thumb"`
-	Content        string   `json:"content"`
-	OrganizeInfo   []string `json:"organize"`
-	Level          int8     `json:"level"`
-	SortNum        int8     `json:"sort_num"`
-	Remark         string   `json:"remark"`
-	Pid            int64    `json:"pid"`
+	ID             int64            `json:"id"`
+	DeptName       string           `json:"dept_name"`
+	ConnectName    string           `json:"connect_name"`
+	ConnectMobile  string           `json:"connect_mobile"`
+	ConnectAddress string           `json:"connect_address"`
+	LeaderName     string           `json:"leader_name"`
+	Thumb          string           `json:"thumb"`
+	Content        string           `json:"content"`
+	OrganizeInfo   []string         `json:"organize"`
+	Level          common.MyState   `json:"level"`
+	SortNum        common.MySortNum `json:"sort_num"`
+	Remark         string           `json:"remark"`
+	Pid            int64            `json:"pid"`
 }
 
 func NewCoreDeptHandler(service *service.CoreDeptService) *CoreDeptHandler {
@@ -66,26 +66,26 @@ func (h *CoreDeptHandler) CreateDept(c *gin.Context) {
 		return
 	}
 
-	if req.Pid > 0{
-		subDepts,err:=h.service.GetSubDepts(common.MyID(req.Pid))
+	if req.Pid > 0 {
+		subDepts, err := h.service.GetSubDepts(common.MyID(req.Pid))
 		if err == nil && len(subDepts) <= 0 {
 			Error(c, 7000, "父级部门不存在")
 			return
 		}
 	}
 
-	organize,_ := json.Marshal(req.OrganizeInfo)
+	organize, _ := json.Marshal(req.OrganizeInfo)
 	organizeJson := json.RawMessage(organize)
 	dept := core.CoreDept{
-		Pid: common.MyID(req.Pid),
-		DeptName: req.DeptName,
-		ConnectName: req.ConnectName,
-		ConnectMobile: req.ConnectMobile,
+		Pid:            common.MyID(req.Pid),
+		DeptName:       req.DeptName,
+		ConnectName:    req.ConnectName,
+		ConnectMobile:  req.ConnectMobile,
 		ConnectAddress: req.ConnectAddress,
-		Organize: organizeJson,
-		Level: int16(req.Level),
-		SortNum: int(req.SortNum),
-		Remark: req.Remark,
+		Organize:       organizeJson,
+		Level:          req.Level,
+		SortNum:        req.SortNum,
+		Remark:         req.Remark,
 	}
 	if err := h.service.CreateDept(&dept); err != nil {
 		Error(c, 7001, err.Error())
@@ -103,27 +103,27 @@ func (h *CoreDeptHandler) UpdateDept(c *gin.Context) {
 		return
 	}
 
-	if req.Pid > 0{
-		subDepts,err:=h.service.GetSubDepts(common.MyID(req.Pid))
+	if req.Pid > 0 {
+		subDepts, err := h.service.GetSubDepts(common.MyID(req.Pid))
 		if err == nil && len(subDepts) <= 0 {
 			Error(c, 7000, "父级部门不存在")
 			return
 		}
 	}
 
-	organize,_ := json.Marshal(req.OrganizeInfo)
+	organize, _ := json.Marshal(req.OrganizeInfo)
 	organizeJson := json.RawMessage(organize)
 	dept := core.CoreDept{
-		ID : common.MyID(req.ID),
-		Pid: common.MyID(req.Pid),
-		DeptName: req.DeptName,
-		ConnectName: req.ConnectName,
-		ConnectMobile: req.ConnectMobile,
+		ID:             common.MyID(req.ID),
+		Pid:            common.MyID(req.Pid),
+		DeptName:       req.DeptName,
+		ConnectName:    req.ConnectName,
+		ConnectMobile:  req.ConnectMobile,
 		ConnectAddress: req.ConnectAddress,
-		Organize: organizeJson,
-		Level: int16(req.Level),
-		SortNum: int(req.SortNum),
-		Remark: req.Remark,
+		Organize:       organizeJson,
+		Level:          req.Level,
+		SortNum:        req.SortNum,
+		Remark:         req.Remark,
 	}
 	if err := h.service.UpdateDept(&dept); err != nil {
 		Error(c, 7001, err.Error())

@@ -17,31 +17,31 @@ type ListRecommendsRequest struct {
 }
 
 type CmsRecommendHandler struct {
-	service *service.CmsRecommendService
+	service               *service.CmsRecommendService
 	recommendIndexService *service.CmsRecommendIndexService
 }
 type CmsRecommendCreateRequest struct {
-	Title       string `json:"title"`       // 推荐位名称
-	Code        string `json:"code"`        // 编码
-	Thumb       string `json:"thumb"`       // 缩略图
-	Description string `json:"description"` // 描述
-	State       int    `json:"state"`       // 状态:1=已发布;2=未发布
-	MoreLink    string `json:"moreLink"`    // 更多链接
+	Title       string         `json:"title"`       // 推荐位名称
+	Code        string         `json:"code"`        // 编码
+	Thumb       string         `json:"thumb"`       // 缩略图
+	Description string         `json:"description"` // 描述
+	State       common.MyState `json:"state"`       // 状态:1=已发布;2=未发布
+	MoreLink    string         `json:"moreLink"`    // 更多链接
 }
 
 type CmsRecommendUpdateRequest struct {
-	ID          interface{} `json:"id"`
-	Title       string      `json:"title"`       // 推荐位名称
-	Code        string      `json:"code"`        // 编码
-	Thumb       string      `json:"thumb"`       // 缩略图
-	Description string      `json:"description"` // 描述
-	State       int         `json:"state"`       // 状态:1=已发布;2=未发布
-	MoreLink    string      `json:"moreLink"`    // 更多链接
+	ID          interface{}    `json:"id"`
+	Title       string         `json:"title"`       // 推荐位名称
+	Code        string         `json:"code"`        // 编码
+	Thumb       string         `json:"thumb"`       // 缩略图
+	Description string         `json:"description"` // 描述
+	State       common.MyState `json:"state"`       // 状态:1=已发布;2=未发布
+	MoreLink    string         `json:"moreLink"`    // 更多链接
 }
 
-func NewCmsRecommendHandler(service *service.CmsRecommendService,recommendIndexService *service.CmsRecommendIndexService) *CmsRecommendHandler {
+func NewCmsRecommendHandler(service *service.CmsRecommendService, recommendIndexService *service.CmsRecommendIndexService) *CmsRecommendHandler {
 	return &CmsRecommendHandler{
-		service: service,
+		service:               service,
 		recommendIndexService: recommendIndexService,
 	}
 }
@@ -58,7 +58,7 @@ func (h *CmsRecommendHandler) CreateRecommend(c *gin.Context) {
 		Code:        req.Code,
 		Thumb:       req.Thumb,
 		Description: req.Description,
-		State:       int8(req.State),
+		State:       req.State,
 		MoreLink:    req.MoreLink,
 		CreatedTime: time.Now(),
 		UpdatedTime: time.Now(),
@@ -86,7 +86,7 @@ func (h *CmsRecommendHandler) UpdateRecommend(c *gin.Context) {
 		Code:        req.Code,
 		Thumb:       req.Thumb,
 		Description: req.Description,
-		State:       int8(req.State),
+		State:       req.State,
 		MoreLink:    req.MoreLink,
 		UpdatedTime: time.Now(),
 	}
@@ -132,22 +132,22 @@ func (h *CmsRecommendHandler) DeleteRecommendByID(c *gin.Context) {
 		return
 	}
 	// 2. 检查是否有关联的推荐索引
-    indices, err := h.recommendIndexService.GetIndicesByRecommendID(common.MyID(idUint))
-    if err != nil && err != gorm.ErrRecordNotFound {
-        ServerError(c, err)
-        return
-    }
-    
-    // 如果有关联数据，不允许删除
-    if err == nil && len(indices) > 0 {
-        Error(c, 8004, "请先删除关联的推荐内容")
-        return
-    }
-	
+	indices, err := h.recommendIndexService.GetIndicesByRecommendID(common.MyID(idUint))
+	if err != nil && err != gorm.ErrRecordNotFound {
+		ServerError(c, err)
+		return
+	}
+
+	// 如果有关联数据，不允许删除
+	if err == nil && len(indices) > 0 {
+		Error(c, 8004, "请先删除关联的推荐内容")
+		return
+	}
+
 	if err := h.service.DeleteRecommendByID(common.MyID(idUint)); err != nil {
 		Error(c, 8003, err.Error())
 		return
-	}	
+	}
 	Success(c, nil)
 }
 
@@ -168,4 +168,4 @@ func (h *CmsRecommendHandler) GetRecommendByID(c *gin.Context) {
 		return
 	}
 	Success(c, recommend)
-}	
+}

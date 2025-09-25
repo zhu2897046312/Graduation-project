@@ -21,7 +21,7 @@ type SpOrderListVo struct {
 	Email            string           `json:"email"`
 	TotalAmount      float64          `json:"total_amount"`
 	PayAmount        float64          `json:"pay_amount"`
-	State            uint8            `json:"state"`
+	State            common.MyState   `json:"state"`
 	PaymentTime      *time.Time       `json:"payment_time"`
 	DeliveryTime     *time.Time       `json:"delivery_time"`
 	ReceiveTime      *time.Time       `json:"receive_time"`
@@ -40,12 +40,12 @@ type OrderListResponse struct {
 }
 
 type ListOrdersRequest struct {
-	NikeName string `json:"nickname"`
-	Email    string `json:"email"`
-	Code     string `json:"code"`
-	State    uint8  `json:"state"`
-	Page     int    `json:"page_no"`
-	PageSize int    `json:"page_size"`
+	NikeName string         `json:"nickname"`
+	Email    string         `json:"email"`
+	Code     string         `json:"code"`
+	State    common.MyState `json:"state"`
+	Page     int            `json:"page_no"`
+	PageSize int            `json:"page_size"`
 }
 
 type ProductItemRequest struct {
@@ -97,7 +97,7 @@ type SpOrderFrontQueryVo struct {
 	TotalAmount      float64              `json:"total_amount" description:"订单总金额"`
 	PayAmount        float64              `json:"pay_amount" description:"实际支付总金额"`
 	PayType          uint8                `json:"pay_type" description:"支付方式:1=货到付款"`
-	State            uint8                `json:"state" description:"订单状态:1=待付款;2=待发货;3=已发货;4=已完成;5=已关闭;6=无效订单"`
+	State            common.MyState       `json:"state" description:"订单状态:1=待付款;2=待发货;3=已发货;4=已完成;5=已关闭;6=无效订单"`
 	PaymentTime      time.Time            `json:"payment_time" description:"支付时间"`
 	DeliveryTime     time.Time            `json:"delivery_time" description:"发货时间"`
 	ReceiveTime      time.Time            `json:"receive_time" description:"确认收货时间"`
@@ -196,7 +196,7 @@ func (h *ClientSpOrderHandler) CreateOrder(c *gin.Context) {
 		Email:            req.Email,
 		TotalAmount:      totalAmountWithFreight,
 		PayAmount:        payAmountWithFreight,
-		PayType:          uint16(utils.ConvertToUint(req.PayType)),
+		PayType:          common.MyType(utils.ConvertToUint(req.PayType)),
 		State:            2, // 待支付
 		Freight:          freight,
 		VisitorQueryCode: visitorQueryCode,
@@ -335,21 +335,21 @@ func (h *ClientSpOrderHandler) ListOrders(c *gin.Context) {
 	var orderList []SpOrderListVo
 	for _, order := range orders {
 		orderVo := SpOrderListVo{
-			ID:              order.ID,
-			Code:            order.Code,
-			Nickname:        order.Nickname,
-			Email:           order.Email,
-			TotalAmount:     order.TotalAmount,
-			PayAmount:       order.PayAmount,
-			State:           order.State,
-			PaymentTime:     order.PaymentTime,
-			DeliveryTime:    order.DeliveryTime,
-			ReceiveTime:     order.ReceiveTime,
-			DeliveryCompany: order.DeliveryCompany,
-			DeliverySn:      order.DeliverySn,
-			Remark:          order.Remark,
-			Freight:         order.Freight,
-			CreatedTime:     order.CreatedTime,
+			ID:               order.ID,
+			Code:             order.Code,
+			Nickname:         order.Nickname,
+			Email:            order.Email,
+			TotalAmount:      order.TotalAmount,
+			PayAmount:        order.PayAmount,
+			State:            order.State,
+			PaymentTime:      order.PaymentTime,
+			DeliveryTime:     order.DeliveryTime,
+			ReceiveTime:      order.ReceiveTime,
+			DeliveryCompany:  order.DeliveryCompany,
+			DeliverySn:       order.DeliverySn,
+			Remark:           order.Remark,
+			Freight:          order.Freight,
+			CreatedTime:      order.CreatedTime,
 			VisitorQueryCode: order.VisitorQueryCode,
 		}
 		items, err := h.orderItemService.GetItemsByOrderID(order.ID)

@@ -13,95 +13,94 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 )
 
 type ListProductsRequest struct {
-	CategoryID interface{} `json:"category_id"` // 使用interface{}接收任何类型
-	State      int         `json:"state"`
-	Title      string      `json:"title"`
-	Page       int         `json:"page_no"`
-	PageSize   int         `json:"page_size"`
+	CategoryID interface{}    `json:"category_id"` // 使用interface{}接收任何类型
+	State      common.MyState `json:"state"`
+	Title      string         `json:"title"`
+	Page       int            `json:"page_no"`
+	PageSize   int            `json:"page_size"`
 }
 type CreateProductPropertyRequest struct {
-	Title    string `json:"title"`
-	Value    string `json:"value"`
-	Sort_Num int    `json:"sort_num"`
-	Key      string `json:"_key"`
+	Title    string           `json:"title"`
+	Value    string           `json:"value"`
+	Sort_Num common.MySortNum `json:"sort_num"`
+	Key      string           `json:"_key"`
 }
 
 // CreateProductRequest 创建商品的请求结构体
 // Request
 type CreateProductRequest struct {
-	CategoryID     int64          `json:"category_id"`
-	Content        string         `json:"content"`
-	CostPrice      interface{}    `json:"cost_price"`
-	Description    string         `json:"description"`
-	Hot            uint8          `json:"hot"`
-	OpenSku        int64          `json:"open_sku"`
-	OriginalPrice  interface{}    `json:"original_price"`
-	Picture        string         `json:"picture"`
-	PictureGallery []string       `json:"picture_gallery"`
-	Price          interface{}    `json:"price"`
-	PropertyList   []PropertyList `json:"property_list"`
-	PutawayTime    string         `json:"putaway_time"`
-	SEODescription string         `json:"seo_description"`
-	SEOKeyword     string         `json:"seo_keyword"`
-	SEOTitle       string         `json:"seo_title"`
-	SkuList        []SkuList      `json:"sku_list"`
-	SoldNum        int64          `json:"sold_num"`
-	SortNum        int64          `json:"sort_num"`
-	State          int64          `json:"state"`
-	Stock          int64          `json:"stock"`
-	Tags           []common.MyID  `json:"tags"`
-	Title          string         `json:"title"`
+	CategoryID     common.MyID      `json:"category_id"`
+	Content        string           `json:"content"`
+	CostPrice      interface{}      `json:"cost_price"`
+	Description    string           `json:"description"`
+	Hot            uint8            `json:"hot"`
+	OpenSku        common.MyState   `json:"open_sku"`
+	OriginalPrice  interface{}      `json:"original_price"`
+	Picture        string           `json:"picture"`
+	PictureGallery []string         `json:"picture_gallery"`
+	Price          interface{}      `json:"price"`
+	PropertyList   []PropertyList   `json:"property_list"`
+	PutawayTime    string           `json:"putaway_time"`
+	SEODescription string           `json:"seo_description"`
+	SEOKeyword     string           `json:"seo_keyword"`
+	SEOTitle       string           `json:"seo_title"`
+	SkuList        []SkuList        `json:"sku_list"`
+	SoldNum        common.MySoldNum `json:"sold_num"`
+	SortNum        common.MySortNum `json:"sort_num"`
+	State          common.MyState   `json:"state"`
+	Stock          common.MyNumber  `json:"stock"`
+	Tags           []common.MyID    `json:"tags"`
+	Title          string           `json:"title"`
 }
 
 type UpdateProductRequest struct {
-	ProductID      interface{}    `json:"id"`
-	CategoryID     int64          `json:"category_id"`
-	Content        string         `json:"content"`
-	CostPrice      interface{}    `json:"cost_price"`
-	Description    string         `json:"description"`
-	Hot            int64          `json:"hot"`
-	OpenSku        int64          `json:"open_sku"`
-	OriginalPrice  interface{}    `json:"original_price"`
-	Picture        string         `json:"picture"`
-	PictureGallery []string       `json:"picture_gallery"`
-	Price          interface{}    `json:"price"`
-	PropertyList   []PropertyList `json:"property_list"`
-	PutawayTime    string         `json:"putaway_time"`
-	SEODescription string         `json:"seo_description"`
-	SEOKeyword     string         `json:"seo_keyword"`
-	SEOTitle       string         `json:"seo_title"`
-	SkuList        []SkuList      `json:"sku_list"`
-	SoldNum        uint16          `json:"sold_num"`
-	SortNum        uint16          `json:"sort_num"`
-	State          int64          `json:"state"`
-	Stock          int64          `json:"stock"`
-	Tags           []common.MyID  `json:"tags"`
-	Title          string         `json:"title"`
+	ProductID      interface{}      `json:"id"`
+	CategoryID     int64            `json:"category_id"`
+	Content        string           `json:"content"`
+	CostPrice      interface{}      `json:"cost_price"`
+	Description    string           `json:"description"`
+	Hot            int64            `json:"hot"`
+	OpenSku        common.MyState   `json:"open_sku"`
+	OriginalPrice  interface{}      `json:"original_price"`
+	Picture        string           `json:"picture"`
+	PictureGallery []string         `json:"picture_gallery"`
+	Price          interface{}      `json:"price"`
+	PropertyList   []PropertyList   `json:"property_list"`
+	PutawayTime    string           `json:"putaway_time"`
+	SEODescription string           `json:"seo_description"`
+	SEOKeyword     string           `json:"seo_keyword"`
+	SEOTitle       string           `json:"seo_title"`
+	SkuList        []SkuList        `json:"sku_list"`
+	SoldNum        common.MySoldNum `json:"sold_num"`
+	SortNum        common.MySortNum `json:"sort_num"`
+	State          common.MyState   `json:"state"`
+	Stock          common.MyNumber  `json:"stock"`
+	Tags           []common.MyID    `json:"tags"`
+	Title          string           `json:"title"`
 }
 
 type PropertyList struct {
-	Key     string `json:"_key"`
-	Name    string `json:"name"`
-	SortNum int64  `json:"sort_num"`
-	Title   string `json:"title"`
-	Value   string `json:"value"`
+	Key     string           `json:"_key"`
+	Name    string           `json:"name"`
+	SortNum common.MySortNum `json:"sort_num"`
+	Title   string           `json:"title"`
+	Value   string           `json:"value"`
 }
 
 type SkuList struct {
-	Pord          []Pord `json:"_pord"`
-	CostPrice     int64  `json:"cost_price"`
-	DefaultShow   int64  `json:"default_show"`
-	ID            int64  `json:"id"`
-	OriginalPrice int64  `json:"original_price"`
-	Price         int64  `json:"price"`
-	SkuCode       string `json:"sku_code"`
-	State         int64  `json:"state"`
-	Stock         int64  `json:"stock"`
-	Title         string `json:"title"`
+	Pord          []Pord          `json:"_pord"`
+	CostPrice     int64           `json:"cost_price"`
+	DefaultShow   common.MyState  `json:"default_show"`
+	ID            common.MyID     `json:"id"`
+	OriginalPrice int64           `json:"original_price"`
+	Price         int64           `json:"price"`
+	SkuCode       string          `json:"sku_code"`
+	State         common.MyState  `json:"state"`
+	Stock         common.MyNumber `json:"stock"`
+	Title         string          `json:"title"`
 }
 
 type Pord struct {
@@ -194,18 +193,31 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 			}
 		}
 	}
-	var product sp.SpProduct
-	err := copier.Copy(&product, &req)
-	if err != nil {
-		Error(c, 3101, err.Error())
-		return
+	// 创建商品基本信息
+	product := sp.SpProduct{
+		CategoryID:     common.MyID(req.CategoryID),
+		Title:          req.Title,
+		State:          req.State,
+		Price:          Price,
+		OriginalPrice:  OriginalPrice,
+		CostPrice:      CostPrice,
+		Stock:          req.Stock,
+		OpenSku:        req.OpenSku,
+		Picture:        req.Picture,
+		PictureGallery: PictureGallery,
+		Description:    req.Description,
+		SoldNum:        req.SoldNum,
+		Version:        0,
+		SortNum:        req.SortNum,
+		PutawayTime:    &putawayTime,
+		Hot:            uint8(req.Hot),
 	}
-	product.PictureGallery = PictureGallery
-	product.Price = Price
-	product.OriginalPrice = OriginalPrice
-	product.CostPrice = CostPrice
-	product.PutawayTime = &putawayTime
-	fmt.Println("product create data: ",product)
+	// 使用 copier 复制字段
+	// err := copier.Copy(&product, &req)
+	// if err != nil {
+	// 	Error(c, 3101, err.Error())
+	// 	return
+	// }
 	pro, err := h.service.CreateProduct(&product)
 	// 创建商品基本信息
 	if err != nil {
@@ -213,11 +225,12 @@ func (h *SpProductHandler) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	var content sp.SpProductContent
-	err = copier.Copy(&content, &req)
-	if err != nil {
-		Error(c, 3101, err.Error())
-		return
+	content := sp.SpProductContent{
+		ProductID:      pro.ID,
+		Content:        req.Content,
+		SeoTitle:       req.SEOTitle,
+		SeoKeyword:     req.SEOKeyword,
+		SeoDescription: req.SEODescription,
 	}
 
 	if err := h.contentService.CreateContent(&content); err != nil {
@@ -273,7 +286,7 @@ func (h *SpProductHandler) saveProperties(productID common.MyID, properties []Pr
 			ProductID: productID,
 			Title:     properties[i].Title,
 			Value:     properties[i].Value,
-			SortNum:   uint16(properties[i].SortNum),
+			SortNum:   properties[i].SortNum,
 		}
 		if err := h.propertyService.CreateProperty(&property); err != nil {
 			return err
@@ -295,9 +308,9 @@ func (h *SpProductHandler) saveSkus(productID common.MyID, skus []SkuList) error
 			Price:         float64(utils.ConvertToUint(skus[i].Price)),
 			OriginalPrice: float64(utils.ConvertToUint(skus[i].OriginalPrice)),
 			CostPrice:     float64(utils.ConvertToUint(skus[i].CostPrice)),
-			Stock:         uint(skus[i].Stock),
-			DefaultShow:   uint8(skus[i].DefaultShow),
-			State:         uint8(skus[i].State),
+			Stock:         skus[i].Stock,
+			DefaultShow:   skus[i].DefaultShow,
+			State:         skus[i].State,
 			Version:       0,
 		}
 		if err := h.skuService.CreateSku(&sku); err != nil {
@@ -492,18 +505,18 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 		ID:             common.MyID(productID),
 		CategoryID:     common.MyID(req.CategoryID),
 		Title:          req.Title,
-		State:          uint8(req.State),
+		State:          req.State,
 		Price:          Price,
 		OriginalPrice:  OriginalPrice,
 		CostPrice:      CostPrice,
-		Stock:          uint(req.Stock),
-		OpenSku:        uint8(req.OpenSku),
+		Stock:          req.Stock,
+		OpenSku:        req.OpenSku,
 		Picture:        req.Picture,
 		PictureGallery: PictureGallery,
 		Description:    req.Description,
-		SoldNum:        uint16(req.SoldNum),
+		SoldNum:        req.SoldNum,
 		Version:        0,
-		SortNum:        uint16(req.SortNum),
+		SortNum:        req.SortNum,
 		PutawayTime:    &putawayTime,
 		Hot:            uint8(req.Hot),
 	}

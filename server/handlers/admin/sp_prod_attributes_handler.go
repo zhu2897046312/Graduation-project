@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
 	"server/service"
 	"server/utils"
 
@@ -16,23 +16,23 @@ type SpProdAttributesPageRequest struct {
 }
 
 type SpProdAttributesPageResponse struct {
-	Data       []sp.SpProdAttributes `json:"list"`
-	Total      int64                 `json:"total"`
+	Data  []sp.SpProdAttributes `json:"list"`
+	Total int64                 `json:"total"`
 }
 
 type SpProdAttributesHandler struct {
-	service *service.SpProdAttributesService
+	service                       *service.SpProdAttributesService
 	spProdAttributesValuesService *service.SpProdAttributesValueService
 }
 
 type SpProdAttributesCreateRequest struct {
-	Title string `json:"title"`
-	SortNum uint16 `json:"sort_num"`
+	Title   string           `json:"title"`
+	SortNum common.MySortNum `json:"sort_num"`
 }
 
-func NewSpProdAttributesHandler(service *service.SpProdAttributesService,spProdAttributesValuesService *service.SpProdAttributesValueService) *SpProdAttributesHandler {
+func NewSpProdAttributesHandler(service *service.SpProdAttributesService, spProdAttributesValuesService *service.SpProdAttributesValueService) *SpProdAttributesHandler {
 	return &SpProdAttributesHandler{
-		service: service,
+		service:                       service,
 		spProdAttributesValuesService: spProdAttributesValuesService,
 	}
 }
@@ -44,9 +44,9 @@ func (h *SpProdAttributesHandler) CreateAttribute(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	
+
 	attr := sp.SpProdAttributes{
-		Title: req.Title,
+		Title:   req.Title,
 		SortNum: req.SortNum,
 	}
 
@@ -66,13 +66,31 @@ func (h *SpProdAttributesHandler) UpdateAttribute(c *gin.Context) {
 		return
 	}
 	attr := sp.SpProdAttributes{
-		ID: req.ID,
-		Title: req.Title,
+		ID:      req.ID,
+		Title:   req.Title,
 		SortNum: req.SortNum,
 	}
 
 	if err := h.service.UpdateAttribute(&attr); err != nil {
 		Error(c, 28002, err.Error())
+		return
+	}
+
+	Success(c, attr)
+}
+
+// 获取属性详情
+func (h *SpProdAttributesHandler) GetAttribute(c *gin.Context) {
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
+		return
+	}
+	// fmt.Println(uintId)
+	attr, err := h.service.GetAttributeByID(common.MyID(uintId))
+	if err != nil {
+		Error(c, 28003, "属性不存在")
 		return
 	}
 
@@ -119,8 +137,8 @@ func (h *SpProdAttributesHandler) List(c *gin.Context) {
 	}
 
 	response := SpProdAttributesPageResponse{
-		Data:       attrs,
-		Total:      total,
+		Data:  attrs,
+		Total: total,
 	}
 
 	Success(c, response)
@@ -135,7 +153,7 @@ func (h *SpProdAttributesHandler) DeleteAttribute(c *gin.Context) {
 		return
 	}
 	prodAttributesID := common.MyID(utils.ConvertToUint(id))
-	_,len,_ :=h.spProdAttributesValuesService.GetAllByProdAttributesID(sp.SpProdAttributesQueryParams{
+	_, len, _ := h.spProdAttributesValuesService.GetAllByProdAttributesID(sp.SpProdAttributesQueryParams{
 		ProdAttributesID: prodAttributesID,
 	})
 	if len > 0 {

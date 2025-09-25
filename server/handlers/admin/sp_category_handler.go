@@ -24,33 +24,33 @@ type CategoryTreeResult struct {
 }
 
 type SpProductCreateReq struct {
-	PID            uint   `json:"pid"`             // 父级ID（可选）
-	Title          string `json:"title"`           // 商品名称（必填，长度1-200）
-	Code           string `json:"code"`            // 商品编码（可选，长度≤50）
-	State          uint8  `json:"state"`           // 状态（0下架/1上架，默认为1）
-	Icon           string `json:"icon"`            // 图标URL（可选，需为URL格式）
-	Picture        string `json:"picture"`         // 主图URL（可选，需为URL格式）
-	Description    string `json:"description"`     // 描述（可选，长度≤500）
-	SEOTitle       string `json:"seo_title"`       // SEO标题（可选，长度≤100）
-	SEOKeyword     string `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
-	SEODescription string `json:"seo_description"` // SEO描述（可选，长度≤300）
-	SortNum        uint16 `json:"sort_num"`        // 排序值（可选） validate:"omitempty"
+	PID            common.MyID      `json:"pid"`             // 父级ID（可选）
+	Title          string           `json:"title"`           // 商品名称（必填，长度1-200）
+	Code           string           `json:"code"`            // 商品编码（可选，长度≤50）
+	State          common.MyState   `json:"state"`           // 状态（0下架/1上架，默认为1）
+	Icon           string           `json:"icon"`            // 图标URL（可选，需为URL格式）
+	Picture        string           `json:"picture"`         // 主图URL（可选，需为URL格式）
+	Description    string           `json:"description"`     // 描述（可选，长度≤500）
+	SEOTitle       string           `json:"seo_title"`       // SEO标题（可选，长度≤100）
+	SEOKeyword     string           `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
+	SEODescription string           `json:"seo_description"` // SEO描述（可选，长度≤300）
+	SortNum        common.MySortNum `json:"sort_num"`        // 排序值（可选） validate:"omitempty"
 }
 
 // SpProductUpdateReq 更新商品的请求参数
 type SpProductUpdateReq struct {
-	ID             uint   `json:"id"`              // 商品ID（必填）
-	PID            uint   `json:"pid"`             // 父级ID（可选）
-	Title          string `json:"title"`           // 商品名称（必填，长度1-200）
-	Code           string `json:"code"`            // 商品编码（可选，长度≤50）
-	State          uint8  `json:"state"`           // 状态（0下架/1上架，默认为1）
-	Icon           string `json:"icon"`            // 图标URL（可选，需为URL格式）
-	Picture        string `json:"picture"`         // 主图URL（可选，需为URL格式）
-	Description    string `json:"description"`     // 描述（可选，长度≤500）
-	SEOTitle       string `json:"seo_title"`       // SEO标题（可选，长度≤100）
-	SEOKeyword     string `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
-	SEODescription string `json:"seo_description"` // SEO描述（可选，长度≤300）
-	SortNum        uint16 `json:"sort_num"`        // 排序值（可选）
+	ID             common.MyID      `json:"id"`              // 商品ID（必填）
+	PID            common.MyID      `json:"pid"`             // 父级ID（可选）
+	Title          string           `json:"title"`           // 商品名称（必填，长度1-200）
+	Code           string           `json:"code"`            // 商品编码（可选，长度≤50）
+	State          common.MyState   `json:"state"`           // 状态（0下架/1上架，默认为1）
+	Icon           string           `json:"icon"`            // 图标URL（可选，需为URL格式）
+	Picture        string           `json:"picture"`         // 主图URL（可选，需为URL格式）
+	Description    string           `json:"description"`     // 描述（可选，长度≤500）
+	SEOTitle       string           `json:"seo_title"`       // SEO标题（可选，长度≤100）
+	SEOKeyword     string           `json:"seo_keyword"`     // SEO关键词（可选，长度≤200）
+	SEODescription string           `json:"seo_description"` // SEO描述（可选，长度≤300）
+	SortNum        common.MySortNum `json:"sort_num"`        // 排序值（可选）
 }
 
 func NewSpCategoryHandler(service *service.SpCategoryService) *SpCategoryHandler {
@@ -65,7 +65,7 @@ func (h *SpCategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 	category := sp.SpCategory{
-		Pid:            common.MyID(req.PID),
+		Pid:            req.PID,
 		Title:          req.Title,
 		Code:           req.Code,
 		State:          req.State,
@@ -93,8 +93,8 @@ func (h *SpCategoryHandler) UpdateCategory(c *gin.Context) {
 		return
 	}
 	category := sp.SpCategory{
-		ID:             common.MyID(req.ID),
-		Pid:            common.MyID(req.PID),
+		ID:             req.ID,
+		Pid:            req.PID,
 		Title:          req.Title,
 		Code:           req.Code,
 		State:          req.State,
@@ -138,10 +138,10 @@ func (h *SpCategoryHandler) Tree(c *gin.Context) {
 		pid = 0 // 默认从顶级分类开始
 	}
 
-	var state *uint8
+	var state *common.MyState
 	if stateStr := c.Query("state"); stateStr != "" {
 		if stateVal, err := strconv.ParseUint(stateStr, 10, 8); err == nil {
-			stateUint8 := uint8(stateVal)
+			stateUint8 := common.MyState(stateVal)
 			state = &stateUint8
 		}
 	}
@@ -160,7 +160,7 @@ func (h *SpCategoryHandler) Tree(c *gin.Context) {
 }
 
 // 递归构建树形结构
-func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid common.MyID, state *uint8) []CategoryTreeResult {
+func (h *SpCategoryHandler) buildTree(categories []*sp.SpCategory, pid common.MyID, state *common.MyState) []CategoryTreeResult {
 	var tree []CategoryTreeResult
 
 	for _, category := range categories {

@@ -148,7 +148,7 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 			{
 				spAttrGroup.POST("/list", spAttrHandler.List)
 				spAttrGroup.POST("/create", spAttrHandler.CreateAttribute)
-				spAttrGroup.GET("/info", spAttrHandler.GetAllAttributes)
+				spAttrGroup.GET("/info", spAttrHandler.GetAttribute)
 				spAttrGroup.POST("/modify", spAttrHandler.UpdateAttribute)
 				spAttrGroup.GET("/del", spAttrHandler.DeleteAttribute)
 			}
@@ -376,8 +376,8 @@ func SetupRouter(r *gin.Engine, factory *service.ServiceFactory, rdb *redis.Clie
 				{
 					paymentGroup.POST("/paypal/create-order", clientPayHandler.CreatePayment)
 					paymentGroup.GET("/capture-order", clientPayHandler.CapturePayment)
-					paymentGroup.POST("/webhook", clientPayHandler.PaymentWebhook)
-					paymentGroup.GET("/status/:id", clientPayHandler.GetPaymentStatus)
+					// paymentGroup.POST("/webhook", clientPayHandler.PaymentWebhook)
+					// paymentGroup.GET("/status/:id", clientPayHandler.GetPaymentStatus)
 				}
 
 				SpUerAddressGroup := clientAuth.Group("/shop/userAddress")

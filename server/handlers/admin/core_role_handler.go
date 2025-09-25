@@ -2,9 +2,9 @@ package admin
 
 import (
 	"encoding/json"
+	"server/models/common"
 	"server/models/core"
 	"server/service"
-	"server/models/common"
 	"server/utils"
 
 	"github.com/gin-gonic/gin"
@@ -14,18 +14,18 @@ type CoreRoleHandler struct {
 	service *service.CoreRoleService
 }
 type RoleCreateRequest struct {
-	Name        string  `json:"role_name"`
-	Status      int8    `json:"role_status"`
-	Permissions []int32 `json:"permission"`
-	Remark      string  `json:"remark"`
+	Name        string         `json:"role_name"`
+	Status      common.MyState `json:"role_status"`
+	Permissions []int32        `json:"permission"`
+	Remark      string         `json:"remark"`
 }
 
 type RoleUpdateRequest struct {
-	ID          interface{}   `json:"id"`
-	Name        string  `json:"role_name"`
-	Status      int8    `json:"role_status"`
-	Permissions []int32 `json:"permission"`
-	Remark      string  `json:"remark"`
+	ID          interface{}    `json:"id"`
+	Name        string         `json:"role_name"`
+	Status      common.MyState `json:"role_status"`
+	Permissions []int32        `json:"permission"`
+	Remark      string         `json:"remark"`
 }
 
 func NewCoreRoleHandler(service *service.CoreRoleService) *CoreRoleHandler {
@@ -66,7 +66,7 @@ func (h *CoreRoleHandler) UpdateRole(c *gin.Context) {
 	rolePermissions, _ := json.Marshal(req.Permissions)
 	rolePermissionsJson := json.RawMessage(rolePermissions)
 	role := core.CoreRole{
-		ID :         common.MyID(roleID),
+		ID:         common.MyID(roleID),
 		RoleName:   req.Name,
 		RoleStatus: req.Status,
 		Permission: rolePermissionsJson,
@@ -139,15 +139,15 @@ func (h *CoreRoleHandler) List(c *gin.Context) {
 }
 
 func (h *CoreRoleHandler) DeleteRole(c *gin.Context) {
-	id :=  c.Query("id")
+	id := c.Query("id")
 	if id == "" {
-		InvalidParams(c)	
+		InvalidParams(c)
 		return
 	}
 	uID := utils.ConvertToUint(id)
 	if err := h.service.DeleteRole(common.MyID(uID)); err != nil {
 		Error(c, 10009, err.Error())
 		return
-	}	
+	}
 	Success(c, nil)
 }

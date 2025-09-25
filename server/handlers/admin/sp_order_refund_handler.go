@@ -1,9 +1,9 @@
 package admin
 
 import (
+	"server/models/common"
 	"server/models/sp"
 	"server/service"
-	"server/models/common"
 	"server/utils"
 
 	"github.com/gin-gonic/gin"
@@ -19,14 +19,14 @@ type ListSpOrderRefundRequest struct {
 
 type SpOrderRefundListVo struct {
 	ID           common.MyID    `json:"id" schema:"主键"`
-	RefundNo     string  `json:"refund_no" schema:"退款单号"`
-	Status       uint8   `json:"status" schema:"退款状态"`
-	RefundAmount float64 `json:"refund_amount" schema:"退款金额"`
-	RefundTime   string  `json:"refund_time" schema:"退款时间"`
-	OrderCode    string  `json:"order_code" schema:"订单编号"`
-	Reason       string  `json:"reason" schema:"退款原因"`
-	Name         string  `json:"name" schema:"用户昵称"`
-	Email        string  `json:"email" schema:"用户邮箱"`
+	RefundNo     string         `json:"refund_no" schema:"退款单号"`
+	Status       common.MyState `json:"status" schema:"退款状态"`
+	RefundAmount float64        `json:"refund_amount" schema:"退款金额"`
+	RefundTime   string         `json:"refund_time" schema:"退款时间"`
+	OrderCode    string         `json:"order_code" schema:"订单编号"`
+	Reason       string         `json:"reason" schema:"退款原因"`
+	Name         string         `json:"name" schema:"用户昵称"`
+	Email        string         `json:"email" schema:"用户邮箱"`
 }
 type SpOrderRefundHandler struct {
 	service      *service.SpOrderRefundService
@@ -75,7 +75,7 @@ func (h *SpOrderRefundHandler) GetOrderInfoByOrderCode(c *gin.Context) {
 		InvalidParams(c)
 		return
 	}
-	order ,err := h.orderService.GetOrderByCode(orderCode)
+	order, err := h.orderService.GetOrderByCode(orderCode)
 	if err != nil {
 		Error(c, 26003, "订单不存在")
 		return
