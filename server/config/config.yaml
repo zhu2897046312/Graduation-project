@@ -21,7 +21,7 @@ email:
   host: "smtp.qq.com"  # 修改为QQ邮箱SMTP服务器
   port: 587
   username: "2897046312@qq.com"
-  password: "你的QQ邮箱授权码"  # 这里填QQ邮箱的授权码，不是登录密码
+  password: "zltcyknurmabdgdh"  # 这里填QQ邮箱的授权码，不是登录密码
   from: "2897046312@qq.com"
 
 # 添加支付配置
@@ -42,3 +42,7 @@ payment:
     paypal_client_id: "Aa-gSJ9un3HBdjCxdkxlEiDo4UAvypyTHmGsFBSo1x2G34zL4B1QHfvLqPmEXlUitXZYbFj8APJ0Furj"
     paypal_secret: "EIX90rm7Ll_l61HHY51ncgvqRWKJ80Qp1Ex4BNIHUFAK0d7HE9PUpjxdrH_lQWNJfLcQ0aeiRTnZ3dkC"
     paypal_api_base: "https://api.sandbox.paypal.com"
+
+
+frontend:
+  url: "http://localhost:3000/order-detail/"

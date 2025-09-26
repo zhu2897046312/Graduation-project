@@ -137,7 +137,7 @@ func (h *ClientPaymentHandler) createPayPalPayment(order *sp.SpOrder, req Paymen
 		nil,
 		&paypal.ApplicationContext{
 			ReturnURL:          returnURL,
-			CancelURL:          "http://localhost:3000/order-detail/" + order.VisitorQueryCode,
+			CancelURL:          config.GlobalConfig.Frontend.URL + order.VisitorQueryCode,
 			BrandName:          "Your Store Name",
 			UserAction:         "PAY_NOW",
 			ShippingPreference: paypal.ShippingPreferenceNoShipping,
@@ -205,7 +205,16 @@ func (h *ClientPaymentHandler) CapturePayment(c *gin.Context) {
 	if order != nil {
 		h.orderService.UpdateOrderState(order.LocalOrderID, common.MyState(constant.ON_DELIVERY), "PayPal支付成功")
 	} 
-
+	orderInfo , err := h.orderService.GetByVisitorQueryCode(order.LocalOrderID)
+	if err != nil {
+		utils.Error(c, 17009, "捕获支付失败: "+err.Error())
+		return
+	}
+	if err := utils.SendEmail(orderInfo.Email, "订单已支付", "订单已支付，请等待商家发货" + config.GlobalConfig.Frontend.URL + orderInfo.VisitorQueryCode); err != nil {
+		fmt.Println("邮箱发送shi",err)
+		utils.Error(c, 17009, "邮箱发送失败: "+err.Error())
+		return
+	}
 	if redirectURL != "" {
 		c.Redirect(302, redirectURL+"?status=success")
 		return
