@@ -2,11 +2,9 @@ package client
 
 import (
 	"fmt"
-	"server/models/common"
 	"server/models/core"
 	"server/service"
 	"server/utils"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -31,132 +29,6 @@ type MarketRequest struct {
 
 func NewClientCoreConfigHandler(service *service.CoreConfigService) *ClientCoreConfigHandler {
 	return &ClientCoreConfigHandler{service: service}
-}
-
-// 保存站点信息
-// 保存站点信息 - 根据配置键创建或更新配置
-func (h *ClientCoreConfigHandler) SaveSiteInfo(c *gin.Context) {
-	var req Request
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.InvalidParams(c)
-		return
-	}
-
-	if req.Logo != "" {
-		result, _ := h.service.GetConfigByKey("logo")
-		config := core.CoreConfig{
-			ConfigKey:   "logo",
-			ConfigValue: req.Logo,
-			UpdatedTime: time.Now(),
-		}
-		if result.ConfigValue == "" {
-			config.CreatedTime = time.Now()
-			h.service.CreateConfig(&config)
-		} else {
-			h.service.UpdateConfig(&config)
-		}
-	}
-
-	if req.SEOKeyword != "" {
-		result, _ := h.service.GetConfigByKey("seo_keyword")
-		config := core.CoreConfig{
-			ConfigKey:   "seo_keyword",
-			ConfigValue: req.SEOKeyword,
-			UpdatedTime: time.Now(),
-		}
-		if result.ConfigValue == "" {
-			config.CreatedTime = time.Now()
-			err := h.service.CreateConfig(&config)
-			fmt.Println(err)
-		} else {
-			h.service.UpdateConfig(&config)
-		}
-	}
-
-	if req.SEODescription != "" {
-		result, _ := h.service.GetConfigByKey("seo_description")
-		config := core.CoreConfig{
-			ConfigKey:   "seo_description",
-			ConfigValue: req.SEODescription,
-			UpdatedTime: time.Now(),
-		}
-		if result.ConfigValue == "" {
-			config.CreatedTime = time.Now()
-			h.service.CreateConfig(&config)
-		} else {
-			h.service.UpdateConfig(&config)
-		}
-	}
-
-	if req.SEOTitle != "" {
-		result, _ := h.service.GetConfigByKey("seo_title")
-		config := core.CoreConfig{
-			ConfigKey:   "seo_title",
-			ConfigValue: req.SEOTitle,
-			UpdatedTime: time.Now(),
-		}
-		if result.ConfigValue == "" {
-			config.CreatedTime = time.Now()
-			h.service.CreateConfig(&config)
-		} else {
-			h.service.UpdateConfig(&config)
-		}
-	}
-
-	if req.Title != "" {
-		result, _ := h.service.GetConfigByKey("title")
-		config := core.CoreConfig{
-			ConfigKey:   "title",
-			ConfigValue: req.Title,
-			UpdatedTime: time.Now(),
-		}
-		if result.ConfigValue == "" {
-			config.CreatedTime = time.Now()
-			h.service.CreateConfig(&config)
-		} else {
-			h.service.UpdateConfig(&config)
-		}
-	}
-	utils.Success(c, "配置保存成功")
-}
-
-// 创建配置
-func (h *ClientCoreConfigHandler) CreateConfig(c *gin.Context) {
-	var config core.CoreConfig
-	if err := c.ShouldBindJSON(&config); err != nil {
-		utils.InvalidParams(c)
-		return
-	}
-
-	if err := h.service.CreateConfig(&config); err != nil {
-		utils.Error(c, 6001, err.Error())
-		return
-	}
-
-	utils.Success(c, config)
-}
-
-// 更新配置
-func (h *ClientCoreConfigHandler) UpdateConfig(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
-		utils.InvalidParams(c)
-		return
-	}
-
-	var config core.CoreConfig
-	if err := c.ShouldBindJSON(&config); err != nil {
-		utils.InvalidParams(c)
-		return
-	}
-	config.ID = common.MyID(id)
-
-	if err := h.service.UpdateConfig(&config); err != nil {
-		utils.Error(c, 6002, err.Error())
-		return
-	}
-
-	utils.Success(c, config)
 }
 
 // 获取配置详情

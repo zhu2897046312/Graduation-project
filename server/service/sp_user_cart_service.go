@@ -23,9 +23,9 @@ func (s *SpUserCartService) AddToCart(cart *sp.SpUserCart) error {
 	if cart.ProductID == 0 {
 		return errors.New("商品ID不能为空")
 	}
-	if cart.SkuID == 0 {
-		return errors.New("SKU ID不能为空")
-	}
+	// if cart.SkuID == 0 {
+	// 	return errors.New("SKU ID不能为空")
+	// }
 	if cart.Price <= 0 {
 		return errors.New("价格必须大于0")
 	}

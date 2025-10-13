@@ -47,10 +47,25 @@ func (r *SpUserCartRepository) FindByUserID(userID common.MyID) ([]sp.SpUserCart
 }
 
 // 根据用户ID和产品ID获取购物车项
-func (r *SpUserCartRepository) FindByUserAndProduct(userId common.MyID, fingerprint string, productID common.MyID,skuID common.MyID) (*sp.SpUserCart, error) {
+func (r *SpUserCartRepository) FindByUserAndProduct(userId common.MyID, fingerprint string, productID common.MyID, skuID common.MyID) (*sp.SpUserCart, error) {
 	var cartItem sp.SpUserCart
-	err := r.db.Where("user_id = ? AND product_id = ? AND sku_id = ? AND fingerprint = ?", userId, productID, skuID, fingerprint).
-		First(&cartItem).Error
+	db := r.db.Model(&sp.SpUserCart{})
+	
+	// 动态添加查询条件
+	if userId != 0 {
+		db = db.Where("user_id = ?", userId)
+	}
+	if fingerprint != "" {
+		db = db.Where("fingerprint = ?", fingerprint)
+	}
+	if productID != 0 {
+		db = db.Where("product_id = ?", productID)
+	}
+	if skuID != 0 {
+		db = db.Where("sku_id = ?", skuID)
+	}
+	
+	err := db.First(&cartItem).Error
 	return &cartItem, err
 }
 

@@ -33,14 +33,14 @@ func NewClientSpUserCartHandler(
 
 func (h *ClientSpUserCartHandler) List(c *gin.Context) {
 	fingerprint := middleware.GetDeviceFingerprintFromContext(c)
-	// userID := middleware.GetUserIDFromContext(c)
+	userID := middleware.GetUserIDFromContext(c)
 
 	if fingerprint == "" {
 		utils.InvalidParams(c)
 		return
 	}
 
-	cartItems, total, err := h.service.List(0, fingerprint, 0, 0)
+	cartItems, total, err := h.service.List(common.MyID(userID), fingerprint, 0, 0)
 	if err != nil {
 		utils.Error(c, 3406, err.Error())
 		return
