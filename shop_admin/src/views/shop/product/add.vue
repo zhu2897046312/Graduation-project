@@ -3,7 +3,7 @@ import { Card, Form, Input, TreeSelect, Radio, DatePicker, InputNumber, message,
 import type { Rule } from 'ant-design-vue/es/form'
 import UploadImage from '/@/components/Kernel/YexUpload/UploadCropperImage.vue';
 import UploadCropperGalleryImage from '/@/components/Kernel/YexUpload/UploadCropperGalleryImage.vue';
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick , watch} from 'vue';
 import dayjs from 'dayjs'
 import { useRouter } from 'vue-router';
 import PageLayout from '/@/components/Kernel/Layout/PageLayout.vue';
@@ -58,6 +58,23 @@ const sku_config = ref<Map<number, number[]>>(new Map());
 // 标签
 const tags = ref<any[]>([]);
 
+// 监听SKU列表变化，自动更新主价格
+watch(
+  () => data.value.sku_list,
+  (newSkuList) => {
+    if (data.value.open_sku === 1 && newSkuList && newSkuList.length > 0) {
+      // 当开启SKU时，使用默认SKU的价格作为主价格，或者第一个SKU的价格
+      const defaultSku = newSkuList.find((it: any) => it.default_show === 1) || newSkuList[0];
+      if (defaultSku) {
+        data.value.price = defaultSku.price;
+        data.value.original_price = defaultSku.original_price;
+        data.value.cost_price = defaultSku.cost_price;
+        data.value.stock = newSkuList.reduce((total: number, sku: any) => total + (sku.stock || 0), 0);
+      }
+    }
+  },
+  { deep: true }
+)
 
 const handleSubmit = async () => {
   try {
@@ -93,6 +110,8 @@ const handleSubmit = async () => {
     if (post_data.description.length == 0) {
       post_data.description = post_data.content.replace(/<[^>]+>/g, '').replace('\n', '').substring(0, 80);
     }
+    console.log("shop admin product adte: ",post_data)
+
     await api.shop.product.create(post_data)
     message.success('录入商品成功');
     router.back()

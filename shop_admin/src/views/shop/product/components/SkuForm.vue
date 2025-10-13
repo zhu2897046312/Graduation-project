@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Table, Button, InputNumber, Popconfirm, message, Input, Form, Select, Checkbox, Switch } from 'ant-design-vue';
 import api from '/@/api';
 import Add from '/@/views/shop/prod_attributes/components/Add.vue'
@@ -98,6 +98,16 @@ const list = computed<any[]>({
     formItemContext && formItemContext.onFieldChange()
   }
 })
+
+// 监听SKU列表变化，确保父组件能及时获取最新数据
+watch(
+  () => list.value,
+  (newVal) => {
+    emit('update:value', newVal)
+    emit('change', newVal)
+  },
+  { deep: true }
+)
 
 const product_prod_list = ref<number[]>([])
 
