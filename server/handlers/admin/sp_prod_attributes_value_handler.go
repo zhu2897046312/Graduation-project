@@ -18,6 +18,7 @@ type ListProdAttributesRequest struct {
 
 type SpProdAttributesValueCreateRequest struct {
 	Title string `json:"title"`
+	ProdAttributesID interface{} `json:"prod_attributes_id"`
 	SortNum interface{} `json:"sort_num"`
 }
 
@@ -38,6 +39,7 @@ func (h *SpProdAttributesValueHandler) CreateAttributeValue(c *gin.Context) {
 	}
 	value := sp.SpProdAttributesValue{
 		Title: req.Title,
+		ProdAttributesID: common.MyID(utils.ConvertToUint(req.ProdAttributesID)),
 		SortNum: common.MySortNum(utils.ConvertToUint(req.SortNum)),
 	}
 	if err := h.service.CreateAttributeValue(&value); err != nil {
