@@ -16,7 +16,7 @@ export default defineConfig({
     // 是否开启 https
     proxy: {
       "/oss": {
-        target: "http://172.25.13.23:9077",
+        target: "http://localhost:8080",
         changeOrigin: true,
       }
     }

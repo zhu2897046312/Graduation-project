@@ -343,12 +343,25 @@ func (h *ClientSpProductHandler) getSkuConfig(productID common.MyID) ([]SpProduc
 		return []SpProductProdFrontVo{}, nil
 	}
 
-	// 收集属性 ID 和属性值 ID
-	var attributeIDs []common.MyID
-	var attributeValueIDs []common.MyID
+	// 使用 map 去重收集属性 ID 和属性值 ID
+	attributeIDMap := make(map[common.MyID]bool)
+	attributeValueIDMap := make(map[common.MyID]bool)
+
 	for _, index := range skuIndices {
-		attributeIDs = append(attributeIDs, index.ProdAttributesID)
-		attributeValueIDs = append(attributeValueIDs, index.ProdAttributesValueID)
+		attributeIDMap[index.ProdAttributesID] = true
+		attributeValueIDMap[index.ProdAttributesValueID] = true
+	}
+
+	// 将去重后的属性 ID 转换为切片
+	var attributeIDs []common.MyID
+	for id := range attributeIDMap {
+		attributeIDs = append(attributeIDs, id)
+	}
+
+	// 将去重后的属性值 ID 转换为切片
+	var attributeValueIDs []common.MyID
+	for id := range attributeValueIDMap {
+		attributeValueIDs = append(attributeValueIDs, id)
 	}
 
 	// 获取属性列表

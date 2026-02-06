@@ -14,7 +14,7 @@ interface YexResponse {
 }
 
 const service = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/manage`,
+  baseURL: `http://localhost:8080/api/manage`,
   timeout: 30000,
 });
 

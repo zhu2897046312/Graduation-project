@@ -9,7 +9,6 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
-	github.com/jinzhu/copier v0.4.0
 	github.com/plutov/paypal/v4 v4.15.0
 	github.com/spf13/viper v1.20.1
 	golang.org/x/net v0.33.0

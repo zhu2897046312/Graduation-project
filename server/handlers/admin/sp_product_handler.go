@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	"log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -609,6 +609,7 @@ func (h *SpProductHandler) GetProduct(c *gin.Context) {
 
 	// 获取SKU配置列表
 	skuConfigList, err := h.skuIndexService.GetIndicesByProductID(common.MyID(uintId))
+	log.Print("skuConfigList", skuConfigList)
 	if err != nil {
 		skuConfigList = []sp.SpSkuIndex{}
 	}
