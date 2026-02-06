@@ -1,94 +1,10 @@
-# ==========================
-# 通用 Node.js 忽略规则
-# ==========================
-# 依赖目录（所有项目的 node_modules 都忽略）
-**/node_modules/
+# Docker
+.dockerignore
 
-# 包管理锁文件（避免不同环境的锁文件冲突）
-**/package-lock.json
-**/yarn.lock
-**/pnpm-lock.yaml
-**/npm-debug.log*
-**/yarn-debug.log*
-**/yarn-error.log*
-
-# 构建输出目录（前端打包后的产物、后端编译后的文件）
-**/dist/
-**/build/
-**/out/
-**/dist-ssr/
-**/.nuxt/          # Nuxt 构建缓存
-**/.output/        # Nuxt 3 输出目录
-**/coverage/       # 测试覆盖率报告
-
-# ==========================
-# 前端项目特有忽略（shop_admin/shop_pc）
-# ==========================
-# Vite 相关
-**/.vite/
-**/vite.config.ts.timestamp-*
-
-# Vue 相关
-**/node_modules/.vite/
-**/.env.local
-**/.env.development.local
-**/.env.test.local
-**/.env.production.local  # 环境变量文件（含敏感信息，如 API 密钥）
-
-# IDE 缓存文件
-**/.idea/
-**/.vscode/
-**/*.suo
-**/*.ntvs*
-**/*.njsproj
-**/*.sln
-**/*.sw?  # 临时文件（如 .swp .swo）
-
-# 日志文件
-**/logs/
-**/*.log
-
-# ==========================
-# 后端项目特有忽略（server/）
-# ==========================
-# 后端环境配置（含数据库密码、密钥等敏感信息）
-**/config/*.json
-**/config/*.js
-**/.env
-**/.env.*
-
-# 后端日志和临时文件
-**/tmp/
-**/temp/
-**/uploads/        # 用户上传的文件（如图片、附件，不应提交到 Git）
-**/database/       # 本地数据库文件（如 SQLite）
-
-# 编译后的 TypeScript 文件（如果后端用 TS 写的）
-**/*.js
-**/*.d.ts
-!**/node_modules/**/*.js  # 排除 node_modules 内的 js 文件（避免误删依赖）
-
-# ==========================
-# 工具/IDE 特有忽略
-# ==========================
-# Git 本身的缓存
-.git/
-.gitignore~
-
-# 操作系统特有文件
-**/.DS_Store       # Mac
-**/Thumbs.db       # Windows
-**/desktop.ini     # Windows
-**/$RECYCLE.BIN/   # Windows 回收站
-
-# VS Code 工作区配置（如果需要共享工作区配置，可删除这行）
-**/.vscode/settings.json
-**/.vscode/tasks.json
-**/.vscode/launch.json
-
-# ==========================
-# 自定义忽略（根据你的需求添加）
-# ==========================
-# 例如：如果你有本地测试用的图片/视频，可添加路径
-# test-images/
-# test-videos/
+# 如果还没有 .gitignore，添加这些
+*.log
+node_modules/
+dist/
+.output/
+.nuxt/
+.vite/

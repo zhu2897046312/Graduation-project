@@ -1,0 +1,106 @@
+services:
+  # MySQL 数据库服务
+  mysql:
+    image: mysql:latest
+    container_name: graduation-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: zg_shop
+      MYSQL_USER: shop_user
+      MYSQL_PASSWORD: shop_password
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./server/sql:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - graduation-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存服务
+  redis:
+    image: redis:latest
+    container_name: graduation-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - graduation-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # 后端 Go 服务
+  backend:
+    build:
+      context: ./server
+      dockerfile: ../Dockerfile.backend
+    container_name: graduation-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server/cmd/uploads:/app/cmd/uploads
+      - ./server/cmd/oss:/app/cmd/oss
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - graduation-network
+
+  # 前端管理后台 (shop_admin)
+  admin-frontend:
+    build:
+      context: ./shop_admin
+      dockerfile: ../Dockerfile.admin
+    container_name: graduation-admin-frontend
+    restart: always
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - graduation-network
+
+  # 前端 PC 商城 (shop_pc)
+  pc-frontend:
+    build:
+      context: ./shop_pc
+      dockerfile: ../Dockerfile.pc
+    container_name: graduation-pc-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_PUBLIC_API_URL=http://localhost:8080/api/client
+      - NUXT_API_URL=http://backend:8080/api/client
+    depends_on:
+      - backend
+    networks:
+      - graduation-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  graduation-network:
+    driver: bridge
