@@ -3,6 +3,7 @@ package admin
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"server/models/common"
 	"server/models/shop"
 	"server/models/sp"
@@ -11,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"log"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -381,15 +382,24 @@ func (h *SpProductHandler) syncProductSkuConfig(productID common.MyID) error {
 
 // saveTags 保存标签关联
 func (h *SpProductHandler) saveTags(productID common.MyID, tagIDs []common.MyID) error {
-	// 这里实现标签关联的保存逻辑
-	// 需要调用 tagIndexService 来创建标签索引
-	for _, tagID := range tagIDs {
-		tagIndex := shop.ShopTagIndex{
-			ProductID: common.MyID(productID),
-			TagID:     tagID,
-		}
-		if err := h.tagIndexService.CreateTagIndex(&tagIndex); err != nil {
-			return err
+	// 先删除该商品的所有旧标签关联
+	if err := h.tagIndexService.DeleteAllTagsByProductID(productID); err != nil {
+		return err
+	}
+
+	// 如果有新标签，则创建新的标签关联
+	if len(tagIDs) > 0 {
+		for _, tagID := range tagIDs {
+			if tagID == 0 {
+				continue // 跳过无效的标签ID
+			}
+			tagIndex := shop.ShopTagIndex{
+				ProductID: common.MyID(productID),
+				TagID:     tagID,
+			}
+			if err := h.tagIndexService.CreateTagIndex(&tagIndex); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -562,12 +572,10 @@ func (h *SpProductHandler) UpdateProduct(c *gin.Context) {
 		}
 	}
 
-	// 保存标签
-	if len(req.Tags) > 0 {
-		if err := h.saveTags(common.MyID(productID), req.Tags); err != nil {
-			Error(c, 3101, "保存标签失败: "+err.Error())
-			return
-		}
+	// 保存标签（无论是否为空，都需要处理以删除旧标签）
+	if err := h.saveTags(common.MyID(productID), req.Tags); err != nil {
+		Error(c, 3101, "保存标签失败: "+err.Error())
+		return
 	}
 	Success(c, nil)
 }
@@ -620,7 +628,7 @@ func (h *SpProductHandler) GetProduct(c *gin.Context) {
 	if err == nil && len(tagIds) > 0 {
 		// 使用循环逐个获取标签
 		for _, tagId := range tagIds {
-			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
+			tag, err := h.tagService.GetTagByID(common.MyID(tagId.TagID))
 			if err == nil {
 				tags = append(tags, *tag)
 			}
