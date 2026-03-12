@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"gorm.io/gorm"
 	"server/models/core"
 	"server/models/common"
@@ -18,16 +19,25 @@ func NewCoreAdminRepository(db *gorm.DB) *CoreAdminRepository {
 
 // 创建管理员
 func (r *CoreAdminRepository) Create(admin *core.CoreAdmin) error {
+	if r.db == nil {
+		return errors.New("数据库未初始化")
+	}
 	return r.db.Create(admin).Error
 }
 
 // 更新管理员
 func (r *CoreAdminRepository) Update(admin *core.CoreAdmin) error {
+	if r.db == nil {
+		return errors.New("数据库未初始化")
+	}
 	return r.db.Updates(admin).Error
 }
 
 // 根据账号获取管理员
 func (r *CoreAdminRepository) FindByAccount(account string) (*core.CoreAdmin, error) {
+	if r.db == nil {
+		return nil, errors.New("数据库未初始化")
+	}
 	var admin core.CoreAdmin
 	err := r.db.Where("account = ?", account).First(&admin).Error
 	return &admin, err

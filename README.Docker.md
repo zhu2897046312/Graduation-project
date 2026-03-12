@@ -59,6 +59,9 @@ docker-compose restart backend
 ```bash
 docker-compose build
 docker-compose up -d
+
+docker compose -p graduation-project build --no-cache backend
+docker compose -p graduation-project up -d --no-build backend
 ```
 
 ## 配置说明

@@ -14,8 +14,17 @@ func main(){
 	if err := config.Init(); err != nil {
 		log.Fatalf("配置初始化失败: %v", err)
 	}
-	config.InitMySQLDB()
-	config.InitRedis()
+	_, err := config.InitMySQLDB()
+	if err != nil {
+		log.Fatalf("数据库初始化失败: %v", err)
+	}
+	// 根据 model 自动迁移表结构，避免表与 model 不一致（如缺少 deleted_time 等列）
+	// if err := config.Migrate(config.DB); err != nil {
+	// 	log.Fatalf("数据库迁移失败: %v", err)
+	// }
+	if err := config.InitRedis(); err != nil {
+		log.Fatalf("Redis 初始化失败: %v", err)
+	}
 	
 	// 创建仓储工厂
     repoFactory := repository.NewRepositoryFactory(config.DB)

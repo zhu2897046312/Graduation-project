@@ -95,6 +95,26 @@ services:
     networks:
       - graduation-network
 
+  # 前端商城 Nuxt UI 版 (zhuyi-store)
+  zhuyi-store:
+    build:
+      context: ./zhuyi-store
+      dockerfile: ../Dockerfile.zhuyi-store
+    container_name: graduation-zhuyi-store
+    restart: always
+    ports:
+      - "3002:3000"
+    environment:
+      # 浏览器请求后端（本机访问用 localhost；其他机器访问改为宿主机 IP）
+      - NUXT_PUBLIC_API_URL=http://localhost:8080/api/client
+      # 服务端 SSR 请求后端（容器内用 Docker 服务名 backend）
+      - NUXT_API_URL=http://backend:8080/api/client
+      - NITRO_PRESET=node-server
+    depends_on:
+      - backend
+    networks:
+      - graduation-network
+
 volumes:
   mysql_data:
     driver: local

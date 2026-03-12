@@ -171,6 +171,7 @@ func InitMySQLDB() (*gorm.DB, error) {
 	// 创建数据库连接
 	db, err := gorm.Open(mysql.Open(GlobalConfig.Database.DSN()), gormConfig)
 	if err != nil {
+		log.Printf("MySQL 连接失败: %v", err)
 		return nil, fmt.Errorf("failed to connect database: %v", err)
 	}
 
