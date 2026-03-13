@@ -8,3 +8,10 @@ dist/
 .output/
 .nuxt/
 .vite/
+*.docx
+*.doc
+*.pdf
+picture/
+doc/picture/
+server/cmd/oss/
+server/cmd/uploads/
