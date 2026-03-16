@@ -151,3 +151,34 @@ func (s *SpCategoryService) GetParents(code string) ([]sp.SpCategory, error) {
 
 	return out, nil
 }
+
+// collectDescendantIDs 收集当前分类及其所有子孙分类的 ID（用于删除时一并处理）
+func collectDescendantIDs(categories []*sp.SpCategory, rootID common.MyID) []common.MyID {
+	out := []common.MyID{rootID}
+	for _, c := range categories {
+		if c.Pid == rootID {
+			out = append(out, collectDescendantIDs(categories, c.ID)...)
+		}
+	}
+	return out
+}
+
+// SoftDeleteCategory 软删除分类：先软删除该分类及其子孙分类下的所有商品，再软删除该分类及所有子孙分类
+func (s *SpCategoryService) SoftDeleteCategory(id common.MyID) error {
+	if id == 0 {
+		return errors.New("无效的分类ID")
+	}
+	_, err := s.repoFactory.GetSpCategoryRepository().FindByID(id)
+	if err != nil {
+		return errors.New("分类不存在")
+	}
+	categories, err := s.repoFactory.GetSpCategoryRepository().FindAll()
+	if err != nil {
+		return err
+	}
+	ids := collectDescendantIDs(categories, id)
+	if err := s.repoFactory.GetSpProductRepository().SoftDeleteByCategoryIDs(ids); err != nil {
+		return err
+	}
+	return s.repoFactory.GetSpCategoryRepository().SoftDeleteByIDs(ids)
+}

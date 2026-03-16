@@ -6,7 +6,7 @@ import (
 
 type RepositoryFactory struct {
 	db                  *gorm.DB
-	cms_category        *CmsCategoryRepository
+	// cms_category        *CmsCategoryRepository
 	// cms_comment         *CmsCommentRepository
 	cms_document        *CmsDocumentRepository
 	// cms_place           *CmsAssociatedPlaceRepository
@@ -62,12 +62,12 @@ func (f *RepositoryFactory) GetDB() *gorm.DB {
 	return f.db
 }
 
-func (f *RepositoryFactory) GetCmsCategoryRepository() *CmsCategoryRepository {
-	if f.cms_category == nil {
-		f.cms_category = NewCmsCategoryRepository(f.db)
-	}
-	return f.cms_category
-}
+// func (f *RepositoryFactory) GetCmsCategoryRepository() *CmsCategoryRepository {
+// 	if f.cms_category == nil {
+// 		f.cms_category = NewCmsCategoryRepository(f.db)
+// 	}
+// 	return f.cms_category
+// }
 
 // func (f *RepositoryFactory) GetCmsCommentRepository() *CmsCommentRepository {
 // 	if f.cms_comment == nil {

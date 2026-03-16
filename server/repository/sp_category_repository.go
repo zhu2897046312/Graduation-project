@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"time"
+
 	"gorm.io/gorm"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
 )
 
 type SpCategoryRepository struct {
@@ -36,7 +38,10 @@ func (r *SpCategoryRepository) FindByID(id common.MyID) (*sp.SpCategory, error) 
 // 获取所有分类
 func (r *SpCategoryRepository) FindAll() ([]*sp.SpCategory, error) {
 	var categories []*sp.SpCategory
-	err := r.db.Order("sort_num ASC").Find(&categories).Error
+	err := r.db.
+		Where("deleted_time IS NULL").
+		Order("sort_num ASC").
+		Find(&categories).Error
 	return categories, err
 }
 
@@ -67,4 +72,21 @@ func (r *SpCategoryRepository) FindByCode(code string) (*sp.SpCategory, error) {
 	var category sp.SpCategory
 	err := r.db.Where("code = ?", code).First(&category).Error
 	return &category, err
+}
+
+// SoftDelete 软删除分类（设置 deleted_time）
+func (r *SpCategoryRepository) SoftDelete(id common.MyID) error {
+	return r.db.Model(&sp.SpCategory{}).
+		Where("id = ?", id).
+		Update("deleted_time", time.Now()).Error
+}
+
+// SoftDeleteByIDs 批量软删除分类
+func (r *SpCategoryRepository) SoftDeleteByIDs(ids []common.MyID) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	return r.db.Model(&sp.SpCategory{}).
+		Where("id IN ?", ids).
+		Update("deleted_time", time.Now()).Error
 }

@@ -149,3 +149,11 @@ func (r *SpProductRepository) IncrementSoldNum(id common.MyID, num uint16) error
 func (r *SpProductRepository) SoftDelete(id common.MyID) error {
 	return r.db.Delete(&sp.SpProduct{}, id).Error
 }
+
+// SoftDeleteByCategoryIDs 按分类 ID 批量软删除商品
+func (r *SpProductRepository) SoftDeleteByCategoryIDs(ids []common.MyID) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	return r.db.Where("category_id IN ?", ids).Delete(&sp.SpProduct{}).Error
+}

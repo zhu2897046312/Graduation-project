@@ -131,6 +131,21 @@ func (h *SpCategoryHandler) GetCategory(c *gin.Context) {
 	Success(c, category)
 }
 
+// DeleteCategory 软删除分类，并软删除该分类及其子分类下的所有商品
+func (h *SpCategoryHandler) DeleteCategory(c *gin.Context) {
+	id := c.Query("id")
+	uintId := utils.ConvertToUint(id)
+	if uintId == 0 {
+		InvalidParams_1(c, uintId)
+		return
+	}
+	if err := h.service.SoftDeleteCategory(common.MyID(uintId)); err != nil {
+		Error(c, 22004, err.Error())
+		return
+	}
+	Success(c, nil)
+}
+
 // 获取分类树
 func (h *SpCategoryHandler) Tree(c *gin.Context) {
 	pid, err := strconv.ParseUint(c.Query("pid"), 10, 32)

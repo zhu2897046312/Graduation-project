@@ -1,11 +1,12 @@
 services:
   # MySQL 数据库服务
   mysql:
-    image: mysql:latest
+    image: mysql:8.0.32
     container_name: graduation-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_ROOT_HOST: "%"
       MYSQL_DATABASE: zg_shop
       MYSQL_USER: shop_user
       MYSQL_PASSWORD: shop_password

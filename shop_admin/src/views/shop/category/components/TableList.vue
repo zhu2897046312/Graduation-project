@@ -14,7 +14,7 @@
        <Button type="link" @click="emit('on-edit', record.id)">编辑</Button>
        <Button type="link" @click="emit('on-add', record.id)">添加子类目</Button>
        <!-- <Button type="link" @click="emit('on-cont', record.id)">编辑内容</Button> -->
-       <!-- <Popconfirm title="是否确定删除?" @confirm="() => { handleDel(record.id) }"><Button type="link" danger>删除</Button></Popconfirm> -->
+       <Popconfirm title="是否确定删除?" @confirm="() => { handleDel(record.id) }"><Button type="link" danger>删除</Button></Popconfirm>
      </Button.Group>
      <p v-if="column.key == 'label'" :style="{ textIndent: `${record.level * 2}em` }">
        {{ record.label }}
@@ -26,7 +26,8 @@
 
 <script lang="ts" setup>
  import { h, ref } from 'vue';
- import {  Button, Image } from 'ant-design-vue';
+ import {  Button, Image, Popconfirm } from 'ant-design-vue';
+ import { loadingTask } from '/@/utils/helper';
  import ApiBasicTable from '/@/components/Kernel/BasicTable/ApiBasicTable.vue';
  import { treeToLine } from '/@/utils/tree_util'
  import EnumLabel from '/@/components/Kernel/EnumLabel/index.vue'
@@ -65,14 +66,14 @@
    { dataIndex: 'sort_num', title: '排序', width: 120 },
  ];
 
-//  const handleDel = (e: number) => {
-//    console.debug(e);
-//    loadingTask(async () => {
-//      message.info('暂未开放删除接口');
-//    }, {
-//      msg: '删除中...'
-//    })
-//  }
+const handleDel = (e: number) => {
+  loadingTask(async () => {
+    await api.shop.category.del(e)
+    tableRef.value && tableRef.value.useReload()
+  }, {
+    msg: '删除中...'
+  })
+}
 
  defineExpose({
    useReload: () => { tableRef.value && tableRef.value.useReload() },
