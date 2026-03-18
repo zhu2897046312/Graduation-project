@@ -279,7 +279,7 @@ func (h *ClientSpProductHandler) GetClientProduct(c *gin.Context) {
 	var tags []shop.ShopTag
 	if err == nil && len(tagIds) > 0 {
 		for _, tagId := range tagIds {
-			tag, err := h.tagService.GetTagByID(common.MyID(tagId.ID))
+			tag, err := h.tagService.GetTagByID(common.MyID(tagId.TagID))
 			if err == nil {
 				tags = append(tags, *tag)
 			}

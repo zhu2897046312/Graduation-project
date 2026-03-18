@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"server/models/sp"
 	"server/models/common"
+	"server/models/sp"
 	"time"
 )
 
@@ -20,19 +20,19 @@ func (s *SpCategoryService) CreateCategory(category *sp.SpCategory) error {
 	if category.Title == "" {
 		return errors.New("分类名称不能为空")
 	}
-	
+
 	if category.State != 0 && category.State != 1 {
 		return errors.New("无效的状态值")
 	}
-	
+
 	// 设置默认值
 	if category.SortNum == 0 {
 		category.SortNum = 99
 	}
-	
+
 	category.CreatedTime = time.Now()
 	category.UpdatedTime = time.Now()
-	
+
 	return s.repoFactory.GetSpCategoryRepository().Create(category)
 }
 
@@ -41,20 +41,16 @@ func (s *SpCategoryService) UpdateCategory(category *sp.SpCategory) error {
 	if category.Title == "" {
 		return errors.New("分类名称不能为空")
 	}
-	
-	if category.State != 0 && category.State != 1 {
-		return errors.New("无效的状态值")
-	}
-	
+
 	// 保留原始创建时间
 	existing, err := s.repoFactory.GetSpCategoryRepository().FindByID(category.ID)
 	if err != nil {
 		return errors.New("分类不存在")
 	}
-	
+
 	category.CreatedTime = existing.CreatedTime
 	category.UpdatedTime = time.Now()
-	
+
 	return s.repoFactory.GetSpCategoryRepository().Update(category)
 }
 
@@ -139,7 +135,7 @@ func (s *SpCategoryService) GetParents(code string) ([]sp.SpCategory, error) {
 
 		// 添加父级分类到结果数组
 		out = append(out, *parentCategory)
-		
+
 		// 继续向上查找
 		pid = parentCategory.Pid
 	}

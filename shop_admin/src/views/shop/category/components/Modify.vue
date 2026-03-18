@@ -70,7 +70,21 @@ import { pinyin } from 'pinyin-pro';
 import api from '/@/api/index'
 
 
-const defaultFromValues = {
+interface CategoryFormState {
+  pid: number
+  title: string
+  code: string
+  state: number
+  icon: string
+  picture: string
+  description: string
+  seo_title: string
+  seo_keyword: string
+  seo_description: string
+  sort_num: number
+}
+
+const defaultFromValues: CategoryFormState = {
   pid: 0,
   title: '',
   code: '',
@@ -88,7 +102,7 @@ const defaultFromValues = {
 const web_url = ref(import.meta.env.VITE_WEB_URL)
 
 const modalRef = ref<any>(null);
-const formState = ref<any>(null);
+const formState = ref<CategoryFormState | null>(null);
 const formRef = ref<any>(null);
 const tree = ref<any[]>([]);
 const emit = defineEmits(['on-change']);
@@ -113,12 +127,13 @@ const handleOpen = (e: any) => {
     treeData.push(..._treeData)
     tree.value = treeData
 
-    formState.value = {...defaultFromValues}
-    if (e.pid) {
-      formState.value.pid = e.pid
+    const res = await api.shop.category.info(e.id) as any
+    formState.value = {
+      ...defaultFromValues,
+      ...res,
+      state: Number(res?.state ?? 1),
+      ...(e.pid != null && { pid: e.pid }),
     }
-
-    formState.value = await api.shop.category.info( e.id)
     modalRef.value && modalRef.value.useOpen();
   })
 }
@@ -129,9 +144,10 @@ const handleClose = () => {
 
 const handleSubmit = async () => {
   const values: any = await formRef.value?.validateFields();
-  console.debug(values)
+  console.log(values)
   loadingTask(async () => {
     await api.shop.category.modify(formState.value)
+    console.log(formState.value)
     message.success('操作成功');
     modalRef.value && modalRef.value.useClose();
     emit('on-change');
@@ -139,6 +155,7 @@ const handleSubmit = async () => {
 }
 
 const handleChangeTitle = () => {
+  if (!formState.value) return
   formState.value.title = pinyin(formState.value.title, { toneType: 'none', separator: '' })
   formState.value.code = pinyin(formState.value.title, { toneType: 'none', separator: '' }).replace(/\s/g, '-').toLowerCase()
 }
