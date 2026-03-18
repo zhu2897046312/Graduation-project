@@ -1,4 +1,5 @@
 import { useCookie } from 'nuxt/app'
+import type { NavigatorWithDeviceMemory } from '../types/type'
 
 // 简单的 UUID v4 生成函数（避免依赖）
 function uuidv4(): string {
@@ -53,7 +54,7 @@ export const collectBrowserFingerprint = async (): Promise<BrowserFingerprintDat
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
       timezoneOffset: new Date().getTimezoneOffset(),
       hardwareConcurrency: navigator.hardwareConcurrency || 0,
-      deviceMemory: (navigator as any).deviceMemory || null,
+      deviceMemory: (navigator as NavigatorWithDeviceMemory).deviceMemory ?? null,
       cookieEnabled: navigator.cookieEnabled,
       doNotTrack: navigator.doNotTrack || null
     }
@@ -69,6 +70,7 @@ export const collectBrowserFingerprint = async (): Promise<BrowserFingerprintDat
         fingerprint.canvas = canvas.toDataURL()
       }
     } catch (e) {
+      console.error('Failed to generate canvas fingerprint:', e)
       // Canvas 指纹生成失败，忽略
     }
 
@@ -85,6 +87,7 @@ export const collectBrowserFingerprint = async (): Promise<BrowserFingerprintDat
         }
       }
     } catch (e) {
+      console.error('Failed to generate webgl fingerprint:', e)
       // WebGL 指纹生成失败，忽略
     }
 
@@ -129,7 +132,7 @@ export const generateFingerprintHash = (fingerprint: BrowserFingerprintData | nu
     hash = ((hash << 5) - hash) + char
     hash = hash & hash
   }
-  
+
   const hashStr = Math.abs(hash).toString(36)
   return import.meta.server ? hashStr.padStart(12, '0') : hashStr.padStart(8, '0')
 }
@@ -137,7 +140,7 @@ export const generateFingerprintHash = (fingerprint: BrowserFingerprintData | nu
 /**
  * 获取或生成设备指纹ID（浏览器指纹 + UUID）
  * 用于游客购买时的身份识别
- * 
+ *
  * @returns Promise<string> 设备指纹ID
  */
 export const getDeviceId = async (): Promise<string> => {
@@ -166,19 +169,19 @@ export const getDeviceId = async (): Promise<string> => {
   try {
     // 收集浏览器指纹
     const fingerprint = await collectBrowserFingerprint()
-    
+
     // 生成指纹哈希
     const fingerprintHash = generateFingerprintHash(fingerprint)
-    
+
     // 结合UUID生成最终设备ID（指纹哈希 + UUID，确保唯一性）
     const uniqueId = `${fingerprintHash}-${uuidv4()}`
-    
+
     // 保存到Cookie
     if (deviceId.value !== uniqueId) {
       deviceId.value = uniqueId
     }
     _browserFingerprint = uniqueId
-    
+
     return uniqueId
   } catch (error) {
     console.error('Failed to generate device ID:', error)
@@ -192,7 +195,7 @@ export const getDeviceId = async (): Promise<string> => {
 /**
  * 同步版本（用于需要立即返回的场景）
  * 如果还没有设备ID，会生成一个临时ID，异步会更新为完整指纹
- * 
+ *
  * @returns string 设备指纹ID
  */
 export const getDeviceIdSync = (): string => {
@@ -223,9 +226,9 @@ export const getDeviceIdSync = (): string => {
       deviceId.value = tempId
     }
     _browserFingerprint = deviceId.value || tempId
-    
+
     // 异步生成完整指纹并更新
-    collectBrowserFingerprint().then(fingerprint => {
+    collectBrowserFingerprint().then((fingerprint) => {
       const fingerprintHash = generateFingerprintHash(fingerprint)
       const uniqueId = `${fingerprintHash}-${uuidv4()}`
       if (deviceId.value !== uniqueId) {
@@ -235,7 +238,7 @@ export const getDeviceIdSync = (): string => {
     }).catch(() => {
       // 失败时保持临时ID
     })
-    
+
     return _browserFingerprint
   }
 
@@ -247,7 +250,7 @@ export const getProductImage = (thumb: string) => {
   if (!thumb || thumb === '') {
     return '/placeholder-product.jpg'
   }
-  
+
   try {
     // 尝试解析 JSON 字符串数组（如果图片是 JSON 格式）
     const images = JSON.parse(thumb)
@@ -255,15 +258,16 @@ export const getProductImage = (thumb: string) => {
       return images[0]
     }
   } catch (error) {
+    console.error('Failed to get product image:', error)
     // 如果不是 JSON 格式，直接使用原字符串
   }
-  
+
   // 如果是普通字符串，直接返回
   // 如果图片路径是相对路径，确保以 / 开头
   if (thumb.startsWith('/') || thumb.startsWith('http://') || thumb.startsWith('https://')) {
     return thumb
   }
-  
+
   // 如果不是以 / 开头，添加 /
   return '/' + thumb
 }

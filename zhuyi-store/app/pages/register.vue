@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import api from '../api'
-import { useCookie } from 'nuxt/app'
 
 // 禁用默认布局，使用独立页面
 definePageMeta({
@@ -47,7 +46,7 @@ const errors = reactive({
 const validateField = (field: 'email' | 'username' | 'password') => {
   const rules = field === 'email' ? emailRules : field === 'username' ? usernameRules : passwordRules
   const value = form[field]
-  
+
   for (const rule of rules) {
     const error = rule(value)
     if (error !== true) {
@@ -55,7 +54,7 @@ const validateField = (field: 'email' | 'username' | 'password') => {
       return false
     }
   }
-  
+
   errors[field] = ''
   return true
 }
@@ -66,26 +65,26 @@ const handleRegister = async () => {
   const isEmailValid = validateField('email')
   const isUsernameValid = validateField('username')
   const isPasswordValid = validateField('password')
-  
+
   if (!isEmailValid || !isUsernameValid || !isPasswordValid) {
     return
   }
-  
+
   loading.value = true
-  
+
   try {
     await api.shop.user.register({
       email: form.email,
       username: form.username,
       password: form.password
     })
-    
+
     toast.add({
       title: '注册成功',
       description: '账户创建成功，请登录',
       color: 'success'
     })
-    
+
     // 注册成功后跳转到登录页面
     await router.push('/login')
   } catch (error: unknown) {
@@ -121,7 +120,10 @@ useHead({
     <div class="max-w-md w-full space-y-4">
       <!-- Logo 和标题区域 -->
       <div class="text-center">
-        <NuxtLink to="/" class="inline-block mb-4">
+        <NuxtLink
+          to="/"
+          class="inline-block mb-4"
+        >
           <AppLogo class="w-auto h-8 mx-auto" />
         </NuxtLink>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -142,7 +144,10 @@ useHead({
           </div>
         </template>
 
-        <form @submit.prevent="handleRegister" class="space-y-4">
+        <form
+          class="space-y-4"
+          @submit.prevent="handleRegister"
+        >
           <!-- 邮箱输入 -->
           <UFormField
             label="邮箱地址"
@@ -155,11 +160,11 @@ useHead({
               placeholder="your.email@example.com"
               size="lg"
               :disabled="loading"
-              @blur="validateField('email')"
-              @keydown="handleKeydown"
               icon="i-lucide-mail"
               autocomplete="email"
               class="w-full"
+              @blur="validateField('email')"
+              @keydown="handleKeydown"
             />
           </UFormField>
 
@@ -175,11 +180,11 @@ useHead({
               placeholder="请输入用户名"
               size="lg"
               :disabled="loading"
-              @blur="validateField('username')"
-              @keydown="handleKeydown"
               icon="i-lucide-user"
               autocomplete="username"
               class="w-full"
+              @blur="validateField('username')"
+              @keydown="handleKeydown"
             />
           </UFormField>
 
@@ -195,11 +200,11 @@ useHead({
               placeholder="请输入密码"
               size="lg"
               :disabled="loading"
-              @blur="validateField('password')"
-              @keydown="handleKeydown"
               icon="i-lucide-lock"
               autocomplete="new-password"
               class="w-full"
+              @blur="validateField('password')"
+              @keydown="handleKeydown"
             >
               <template #trailing>
                 <UButton
@@ -247,7 +252,10 @@ useHead({
             class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
           >
             立即登录
-            <UIcon name="i-lucide-arrow-right" class="ml-1 w-4 h-4" />
+            <UIcon
+              name="i-lucide-arrow-right"
+              class="ml-1 w-4 h-4"
+            />
           </NuxtLink>
         </div>
       </UCard>
@@ -255,11 +263,17 @@ useHead({
       <!-- 底部提示 -->
       <p class="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
         注册即表示您同意我们的
-        <NuxtLink to="/terms" class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+        <NuxtLink
+          to="/terms"
+          class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
           服务条款
         </NuxtLink>
         和
-        <NuxtLink to="/privacy" class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+        <NuxtLink
+          to="/privacy"
+          class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
           隐私政策
         </NuxtLink>
       </p>

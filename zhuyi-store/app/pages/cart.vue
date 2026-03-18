@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import api from '../api'
-import type { CartItem } from '../api/type'
 import { getProductImage } from '../utils/auth'
 import { useCartShared } from '../composables/useCartShared'
 
@@ -13,7 +12,7 @@ const router = useRouter()
 const toast = useToast()
 
 // 使用共享的购物车 composable
-const { cartNum, useCartList, refreshAllCartData } = useCartShared()
+const { useCartList, refreshAllCartData } = useCartShared()
 
 // SEO
 useHead({
@@ -25,7 +24,7 @@ useHead({
 })
 
 // 获取购物车列表
-const { data: cart_list, refresh, pending } = await useCartList('cart-list')
+const { data: cart_list, pending } = await useCartList('cart-list')
 
 // 锁定状态，防止重复操作
 const lock = ref(false)
@@ -50,17 +49,17 @@ const discount_amount = computed(() => {
 // 处理数量变化
 const handleChangeCartItem = async (index: number, newQuantity: number) => {
   if (!cart_list.value || lock.value) return
-  
+
   const cartItem = cart_list.value[index]
   if (!cartItem) return
-  
+
   const oldQuantity = cartItem.quantity
   const quantityDiff = newQuantity - oldQuantity
-  
+
   if (quantityDiff === 0) return
-  
+
   lock.value = true
-  
+
   try {
     await api.shop.cart.act({
       product_id: cartItem.product_id,
@@ -68,10 +67,10 @@ const handleChangeCartItem = async (index: number, newQuantity: number) => {
       quantity: Math.abs(quantityDiff),
       add: quantityDiff > 0
     })
-    
+
     // 刷新所有购物车数据（包括数量和所有页面的列表）
     await refreshAllCartData()
-    
+
     toast.add({
       title: 'Cart Updated',
       description: 'Item quantity has been updated',
@@ -92,12 +91,12 @@ const handleChangeCartItem = async (index: number, newQuantity: number) => {
 // 删除购物车商品
 const handleRemoveCartItem = async (index: number) => {
   if (!cart_list.value || lock.value) return
-  
+
   const cartItem = cart_list.value[index]
   if (!cartItem) return
-  
+
   lock.value = true
-  
+
   try {
     await api.shop.cart.act({
       product_id: cartItem.product_id,
@@ -105,10 +104,10 @@ const handleRemoveCartItem = async (index: number) => {
       quantity: cartItem.quantity,
       add: false
     })
-    
+
     // 刷新所有购物车数据（包括数量和所有页面的列表）
     await refreshAllCartData()
-    
+
     toast.add({
       title: 'Item Removed',
       description: 'Item has been removed from cart',
@@ -172,12 +171,21 @@ const confirmDelete = async (index: number) => {
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="pending" class="flex justify-center items-center py-20">
-      <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-600" />
+    <div
+      v-if="pending"
+      class="flex justify-center items-center py-20"
+    >
+      <UIcon
+        name="i-lucide-loader-2"
+        class="w-8 h-8 animate-spin text-primary-600"
+      />
     </div>
 
     <!-- 购物车内容 -->
-    <div v-else-if="!pending && cart_list && Array.isArray(cart_list) && cart_list.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div
+      v-else-if="!pending && cart_list && Array.isArray(cart_list) && cart_list.length > 0"
+      class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+    >
       <!-- 购物车商品列表 -->
       <div class="lg:col-span-2 space-y-4">
         <UCard>
@@ -186,7 +194,10 @@ const confirmDelete = async (index: number) => {
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                 购物车商品 ({{ cart_list.length }})
               </h2>
-              <UBadge color="primary" variant="subtle">
+              <UBadge
+                color="primary"
+                variant="subtle"
+              >
                 {{ cart_list.length }} 件商品
               </UBadge>
             </div>
@@ -200,17 +211,20 @@ const confirmDelete = async (index: number) => {
             >
               <!-- 商品图片 -->
               <div class="cart-item-thumb flex-shrink-0">
-                <NuxtLink :to="`/product/${item.product_id}`" class="block">
+                <NuxtLink
+                  :to="`/product/${item.product_id}`"
+                  class="block"
+                >
                   <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                     <img
                       :src="getProductThumb(item.thumb)"
                       :alt="item.title"
                       class="w-full h-full object-cover"
-                      @error="(e: Event) => { 
+                      @error="(e: Event) => {
                         const target = e.target as HTMLImageElement
-                        if (target) target.src = '/placeholder-product.jpg' 
+                        if (target) target.src = '/placeholder-product.jpg'
                       }"
-                    />
+                    >
                   </div>
                 </NuxtLink>
               </div>
@@ -229,11 +243,15 @@ const confirmDelete = async (index: number) => {
                   v-if="item.sku_title && item.sku_title.length > 0"
                   class="cart-item-desc text-sm text-gray-500 dark:text-gray-400 mb-3"
                 >
-                  <UBadge color="neutral" variant="subtle" size="xs">
+                  <UBadge
+                    color="neutral"
+                    variant="subtle"
+                    size="xs"
+                  >
                     {{ item.sku_title }}
                   </UBadge>
                 </div>
-                
+
                 <!-- 价格和操作区域 -->
                 <div class="flex items-center justify-between">
                   <!-- 价格 -->
@@ -281,7 +299,10 @@ const confirmDelete = async (index: number) => {
                           <template #header>
                             <div class="flex items-center justify-between">
                               <div class="flex items-center gap-3">
-                                <UIcon name="i-lucide-alert-triangle" class="w-6 h-6 text-error-600 dark:text-error-400" />
+                                <UIcon
+                                  name="i-lucide-alert-triangle"
+                                  class="w-6 h-6 text-error-600 dark:text-error-400"
+                                />
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                   确认删除
                                 </h3>
@@ -309,8 +330,8 @@ const confirmDelete = async (index: number) => {
                               </UButton>
                               <UButton
                                 color="error"
-                                @click="confirmDelete(index)"
                                 :disabled="lock"
+                                @click="confirmDelete(index)"
                               >
                                 删除
                               </UButton>
@@ -407,11 +428,8 @@ const confirmDelete = async (index: number) => {
         </UButton>
       </template>
     </UEmpty>
-
-
   </div>
 </template>
-
 
 <style scoped>
 .cart-page {
@@ -445,11 +463,11 @@ const confirmDelete = async (index: number) => {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .cart-item-thumb {
     align-self: flex-start;
   }
-  
+
   .cart-item-info {
     width: 100%;
   }

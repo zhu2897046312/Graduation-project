@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import api from '../../api'
-import type { OrderInfoResponse } from '../../api/type'
-import { OrderStatus, OrderStatusLabel } from '../../api/type'
+import type { OrderInfoResponse } from '../../types/type'
+import { OrderStatus, OrderStatusLabel } from '../../types/type'
 import { getProductImage } from '../../utils/auth'
 
 // 使用默认布局
@@ -11,7 +11,6 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const accessToken = useCookie('accessToken')
 
 // 获取订单状态颜色
@@ -84,6 +83,7 @@ const formatDate = (dateString: string | null) => {
       day: 'numeric'
     })
   } catch (error) {
+    console.error('Failed to format date:', error)
     return dateString
   }
 }
@@ -128,24 +128,38 @@ const formatDate = (dateString: string | null) => {
     </UAlert>
 
     <!-- 加载状态 -->
-    <div v-if="pending" class="flex justify-center items-center py-20">
+    <div
+      v-if="pending"
+      class="flex justify-center items-center py-20"
+    >
       <UCard class="p-8">
         <div class="flex flex-col items-center gap-4">
-          <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-600" />
-          <p class="text-sm text-gray-600 dark:text-gray-400">Loading order details...</p>
+          <UIcon
+            name="i-lucide-loader-2"
+            class="w-8 h-8 animate-spin text-primary-600"
+          />
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Loading order details...
+          </p>
         </div>
       </UCard>
     </div>
 
     <!-- 订单详情 -->
-    <div v-else-if="res" class="space-y-6">
+    <div
+      v-else-if="res"
+      class="space-y-6"
+    >
       <!-- 订单概览卡片 -->
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30">
-                <UIcon name="i-lucide-receipt" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                <UIcon
+                  name="i-lucide-receipt"
+                  class="w-5 h-5 text-primary-600 dark:text-primary-400"
+                />
               </div>
               <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -176,8 +190,11 @@ const formatDate = (dateString: string | null) => {
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             Order Items
           </h2>
-          
-          <div v-if="res.items && res.items.length > 0" class="space-y-3">
+
+          <div
+            v-if="res.items && res.items.length > 0"
+            class="space-y-3"
+          >
             <UCard
               v-for="item in res.items"
               :key="item.id"
@@ -191,11 +208,11 @@ const formatDate = (dateString: string | null) => {
                       :src="getProductImage(item.thumb)"
                       :alt="item.title"
                       class="w-full h-full object-cover"
-                      @error="(e: Event) => { 
+                      @error="(e: Event) => {
                         const target = e.target as HTMLImageElement
-                        if (target) target.src = '/placeholder-product.jpg' 
+                        if (target) target.src = '/placeholder-product.jpg'
                       }"
-                    />
+                    >
                   </div>
                 </div>
 
@@ -211,7 +228,10 @@ const formatDate = (dateString: string | null) => {
                     {{ item.sku_title }}
                   </p>
                   <div class="flex items-center gap-4">
-                    <UBadge color="neutral" variant="subtle">
+                    <UBadge
+                      color="neutral"
+                      variant="subtle"
+                    >
                       Qty: {{ item.quantity || 0 }}
                     </UBadge>
                     <span class="text-lg font-semibold text-primary-600 dark:text-primary-400">
@@ -241,7 +261,10 @@ const formatDate = (dateString: string | null) => {
                 {{ formatPrice((res.order.pay_amount || 0) - (res.order.freight || 0)) }}
               </span>
             </div>
-            <div v-if="res.order.freight > 0" class="flex justify-between items-center text-sm">
+            <div
+              v-if="res.order.freight > 0"
+              class="flex justify-between items-center text-sm"
+            >
               <span class="text-gray-600 dark:text-gray-400">Freight</span>
               <span class="text-gray-900 dark:text-white font-medium">
                 {{ formatPrice(res.order.freight) }}
@@ -261,31 +284,43 @@ const formatDate = (dateString: string | null) => {
       <UCard>
         <template #header>
           <div class="flex items-center gap-2">
-            <UIcon name="i-lucide-map-pin" class="w-5 h-5 text-primary-600" />
+            <UIcon
+              name="i-lucide-map-pin"
+              class="w-5 h-5 text-primary-600"
+            />
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               Shipping Address
             </h2>
           </div>
         </template>
 
-        <div v-if="res.address" class="space-y-4">
+        <div
+          v-if="res.address"
+          class="space-y-4"
+        >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- 地址信息 -->
             <div class="space-y-3">
               <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Recipient</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Recipient
+                </p>
                 <p class="text-base font-semibold text-gray-900 dark:text-white">
                   {{ res.address.first_name || '' }} {{ res.address.last_name || '' }}
                 </p>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Street Address</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Street Address
+                </p>
                 <p class="text-base text-gray-900 dark:text-white">
                   {{ res.address.detail_address || 'No address details' }}
                 </p>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">City & Region</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  City & Region
+                </p>
                 <p class="text-base text-gray-900 dark:text-white">
                   <template v-if="res.address.city || res.address.region || res.address.postal_code">
                     {{ res.address.city }}{{ res.address.city && res.address.region ? ',' : '' }}
@@ -297,7 +332,9 @@ const formatDate = (dateString: string | null) => {
                 </p>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Province & Country</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Province & Country
+                </p>
                 <p class="text-base text-gray-900 dark:text-white">
                   <template v-if="res.address.province || res.address.country">
                     {{ res.address.province }}{{ res.address.province && res.address.country ? ',' : '' }}
@@ -313,16 +350,24 @@ const formatDate = (dateString: string | null) => {
             <!-- 联系信息 -->
             <div class="space-y-3">
               <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Contact Information</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Contact Information
+                </p>
               </div>
               <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-phone" class="w-4 h-4 text-gray-400" />
+                <UIcon
+                  name="i-lucide-phone"
+                  class="w-4 h-4 text-gray-400"
+                />
                 <p class="text-base text-gray-900 dark:text-white">
                   {{ res.address.phone || 'Not provided' }}
                 </p>
               </div>
               <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-mail" class="w-4 h-4 text-gray-400" />
+                <UIcon
+                  name="i-lucide-mail"
+                  class="w-4 h-4 text-gray-400"
+                />
                 <p class="text-base text-gray-900 dark:text-white">
                   {{ res.address.email || 'Not provided' }}
                 </p>

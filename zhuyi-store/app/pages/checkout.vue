@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import api from '../api'
-import type { CartItem, OrderCreateParams } from '../api/type'
+import type { OrderCreateParams, CheckoutAddressForm, ValidationRule } from '../types/type'
 import { getProductImage } from '../utils/auth'
 import { useCartShared } from '../composables/useCartShared'
+
+// 加载地址数据 - 直接导入本地 JSON 文件
+import addressJsonData from '../../data/address.json'
 
 // 使用默认布局
 definePageMeta({
@@ -27,13 +30,13 @@ const payTypeOptions = [
 ]
 
 // 表单数据
-const address = reactive({
+const address = reactive<CheckoutAddressForm>({
   first_name: '',
   last_name: '',
   email: '',
-  country: undefined as string | undefined,
+  country: undefined,
   phone: '',
-  province: undefined as string | undefined,
+  province: undefined,
   city: '',
   region: '',
   detail_address: '',
@@ -59,14 +62,14 @@ const emailRules = [
   (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Please enter a valid email address'
 ]
 
-const requiredRules = (fieldName: string) => [
-  (v: any) => !!v || `${fieldName} is required`
+const requiredRules = (fieldName: string): ValidationRule[] => [
+  (v: string) => !!v || `${fieldName} is required`
 ]
 
 // 验证单个字段
 const validateField = (field: keyof typeof errors) => {
-  let rules: ((v: any) => boolean | string)[] = []
-  
+  let rules: ValidationRule[] = []
+
   switch (field) {
     case 'email':
       rules = emailRules
@@ -82,8 +85,8 @@ const validateField = (field: keyof typeof errors) => {
       rules = requiredRules(field.replace('_', ' '))
       break
   }
-  
-  const value = (address as any)[field]
+
+  const value = address[field] ?? ''
   for (const rule of rules) {
     const error = rule(value)
     if (error !== true) {
@@ -91,15 +94,15 @@ const validateField = (field: keyof typeof errors) => {
       return false
     }
   }
-  
+
   errors[field] = ''
   return true
 }
 
 // 检查字段是否验证通过（用于显示成功状态）
 const isFieldValid = (field: keyof typeof errors) => {
-  const value = (address as any)[field]
-  return value && value.toString().trim() !== '' && !errors[field]
+  const value = address[field] ?? ''
+  return value.toString().trim() !== '' && !errors[field]
 }
 
 // 检查字段是否有错误（用于显示错误状态）
@@ -110,17 +113,17 @@ const isFieldError = (field: keyof typeof errors) => {
 // 验证所有字段
 const validateAll = () => {
   const fields: (keyof typeof errors)[] = [
-    'email', 'first_name', 'last_name', 'phone', 'country', 
+    'email', 'first_name', 'last_name', 'phone', 'country',
     'province', 'city', 'detail_address', 'postal_code'
   ]
-  
+
   let isValid = true
-  fields.forEach(field => {
+  fields.forEach((field) => {
     if (!validateField(field)) {
       isValid = false
     }
   })
-  
+
   return isValid
 }
 
@@ -132,10 +135,6 @@ interface AddressData {
     provinces: string[]
   }>
 }
-
-// 加载地址数据 - 直接导入本地 JSON 文件
-// @ts-ignore
-import addressJsonData from '../../data/address.json'
 
 // 确保数据正确加载
 const addressJson = ref<AddressData>(addressJsonData as AddressData)
@@ -169,15 +168,15 @@ const countryOptions = computed(() => {
     console.warn('⚠️ addressJson.value is null')
     return []
   }
-  
+
   const countries = addressJson.value.countries || []
   console.log('🔄 countryOptions computed, countries:', countries.length)
-  
+
   if (countries.length === 0) {
     console.warn('⚠️ No countries in addressJson')
     return []
   }
-  
+
   const options = countries.map((c) => {
     const option = {
       label: c.full_name,
@@ -185,23 +184,23 @@ const countryOptions = computed(() => {
     }
     return option
   })
-  
+
   console.log('✅ countryOptions created:', options.length, 'options')
   console.log('📋 First option:', options[0])
   console.log('📋 All options:', options)
-  
+
   return options
 })
 
 // 省份选项
 const provinceOptions = computed(() => {
   if (!address.country || !addressJson.value) return []
-  
+
   const countries = addressJson.value.countries || []
   const selectedCountry = countries.find(
-    (c) => c.name === address.country
+    c => c.name === address.country
   )
-  
+
   return selectedCountry?.provinces?.map((p: string) => ({
     label: p,
     value: p
@@ -255,7 +254,7 @@ const handleCheckout = async () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
     return
   }
-  
+
   if (!products.value || products.value.length === 0) {
     toast.add({
       title: 'Cart Empty',
@@ -264,9 +263,9 @@ const handleCheckout = async () => {
     })
     return
   }
-  
+
   loading.value = true
-  
+
   try {
     if (!address.province) {
       throw new Error('Province is required')
@@ -274,9 +273,9 @@ const handleCheckout = async () => {
     if (!address.country) {
       throw new Error('Country is required')
     }
-    
+
     const payload: OrderCreateParams = {
-      product_items: products.value.map((item) => ({
+      product_items: products.value.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity,
         sku_id: item.sku_id
@@ -292,18 +291,18 @@ const handleCheckout = async () => {
       postal_code: address.postal_code,
       detail_address: address.detail_address
     }
-    
+
     const orderId = await api.shop.order.create(payload)
     console.log('checkout result', orderId)
-    
+
     const data = {
       order_id: orderId,
       pay_type: selectedPayType.value
     }
-    
+
     const paymentRes = await api.shop.order.getPaymentUrl(data)
     console.log('payment response', paymentRes)
-    
+
     if (paymentRes?.approveUrl) {
       window.location.href = paymentRes.approveUrl
     } else {
@@ -333,7 +332,10 @@ watch(() => address.country, () => {
     <div class="mb-8">
       <div class="flex items-center gap-3 mb-3">
         <div class="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30">
-          <UIcon name="i-lucide-shopping-bag" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+          <UIcon
+            name="i-lucide-shopping-bag"
+            class="w-6 h-6 text-primary-600 dark:text-primary-400"
+          />
         </div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
           Checkout
@@ -345,40 +347,62 @@ watch(() => address.country, () => {
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="productsPending || freightPending" class="flex justify-center items-center py-20">
+    <div
+      v-if="productsPending || freightPending"
+      class="flex justify-center items-center py-20"
+    >
       <UCard class="p-8">
         <div class="flex flex-col items-center gap-4">
-          <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-600" />
-          <p class="text-sm text-gray-600 dark:text-gray-400">Loading checkout information...</p>
+          <UIcon
+            name="i-lucide-loader-2"
+            class="w-8 h-8 animate-spin text-primary-600"
+          />
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Loading checkout information...
+          </p>
         </div>
       </UCard>
     </div>
 
     <!-- 主要内容 -->
-    <div v-else-if="status === 'success' && products && products.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div
+      v-else-if="status === 'success' && products && products.length > 0"
+      class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+    >
       <!-- 左侧：表单区域 -->
       <div class="lg:col-span-2 space-y-6">
         <!-- 配送信息 -->
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-truck" class="w-5 h-5 text-primary-600" />
+              <UIcon
+                name="i-lucide-truck"
+                class="w-5 h-5 text-primary-600"
+              />
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                 Shipping Information
               </h2>
             </div>
           </template>
 
-          <UForm :state="address" @submit="handleCheckout" class="space-y-6">
+          <UForm
+            :state="address"
+            class="space-y-6"
+            @submit="handleCheckout"
+          >
             <!-- 姓名分组 -->
             <div class="space-y-5">
               <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                 Name
               </h3>
-              
+
               <!-- 姓名 -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <UFormField label="First Name" :error="errors.first_name" required>
+                <UFormField
+                  label="First Name"
+                  :error="errors.first_name"
+                  required
+                >
                   <UInput
                     v-model="address.first_name"
                     placeholder="Enter first name"
@@ -386,13 +410,23 @@ watch(() => address.country, () => {
                     :color="isFieldError('first_name') ? 'error' : isFieldValid('first_name') ? 'success' : undefined"
                     @blur="validateField('first_name')"
                   >
-                    <template v-if="isFieldValid('first_name')" #trailing>
-                      <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                    <template
+                      v-if="isFieldValid('first_name')"
+                      #trailing
+                    >
+                      <UIcon
+                        name="i-lucide-check-circle-2"
+                        class="w-5 h-5 text-green-500"
+                      />
                     </template>
                   </UInput>
                 </UFormField>
 
-                <UFormField label="Last Name" :error="errors.last_name" required>
+                <UFormField
+                  label="Last Name"
+                  :error="errors.last_name"
+                  required
+                >
                   <UInput
                     v-model="address.last_name"
                     placeholder="Enter last name"
@@ -400,8 +434,14 @@ watch(() => address.country, () => {
                     :color="isFieldError('last_name') ? 'error' : isFieldValid('last_name') ? 'success' : undefined"
                     @blur="validateField('last_name')"
                   >
-                    <template v-if="isFieldValid('last_name')" #trailing>
-                      <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                    <template
+                      v-if="isFieldValid('last_name')"
+                      #trailing
+                    >
+                      <UIcon
+                        name="i-lucide-check-circle-2"
+                        class="w-5 h-5 text-green-500"
+                      />
                     </template>
                   </UInput>
                 </UFormField>
@@ -413,10 +453,14 @@ watch(() => address.country, () => {
               <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                 Contact Information
               </h3>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <!-- Email -->
-                <UFormField label="Email Address" :error="errors.email" required>
+                <UFormField
+                  label="Email Address"
+                  :error="errors.email"
+                  required
+                >
                   <UInput
                     v-model="address.email"
                     type="email"
@@ -426,8 +470,14 @@ watch(() => address.country, () => {
                     :color="isFieldError('email') ? 'error' : isFieldValid('email') ? 'success' : undefined"
                     @blur="validateField('email')"
                   >
-                    <template v-if="isFieldValid('email')" #trailing>
-                      <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                    <template
+                      v-if="isFieldValid('email')"
+                      #trailing
+                    >
+                      <UIcon
+                        name="i-lucide-check-circle-2"
+                        class="w-5 h-5 text-green-500"
+                      />
                     </template>
                   </UInput>
                   <template #description>
@@ -436,7 +486,11 @@ watch(() => address.country, () => {
                 </UFormField>
 
                 <!-- 电话 -->
-                <UFormField label="Phone Number" :error="errors.phone" required>
+                <UFormField
+                  label="Phone Number"
+                  :error="errors.phone"
+                  required
+                >
                   <UInput
                     v-model="address.phone"
                     type="tel"
@@ -446,13 +500,18 @@ watch(() => address.country, () => {
                     :color="isFieldError('phone') ? 'error' : isFieldValid('phone') ? 'success' : undefined"
                     @blur="validateField('phone')"
                   >
-                    <template v-if="isFieldValid('phone')" #trailing>
-                      <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                    <template
+                      v-if="isFieldValid('phone')"
+                      #trailing
+                    >
+                      <UIcon
+                        name="i-lucide-check-circle-2"
+                        class="w-5 h-5 text-green-500"
+                      />
                     </template>
                   </UInput>
                 </UFormField>
               </div>
-              
             </div>
 
             <!-- 地址信息分组 -->
@@ -463,7 +522,11 @@ watch(() => address.country, () => {
 
               <!-- 国家和省份 -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <UFormField label="Country" :error="errors.country" required>
+                <UFormField
+                  label="Country"
+                  :error="errors.country"
+                  required
+                >
                   <div class="relative">
                     <USelect
                       v-model="address.country"
@@ -481,7 +544,11 @@ watch(() => address.country, () => {
                   </div>
                 </UFormField>
 
-                <UFormField label="Region / Province" :error="errors.province" required>
+                <UFormField
+                  label="Region / Province"
+                  :error="errors.province"
+                  required
+                >
                   <div class="relative">
                     <USelect
                       v-model="address.province"
@@ -503,7 +570,11 @@ watch(() => address.country, () => {
 
               <!-- 城市和邮编 -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <UFormField label="City" :error="errors.city" required>
+                <UFormField
+                  label="City"
+                  :error="errors.city"
+                  required
+                >
                   <UInput
                     v-model="address.city"
                     placeholder="Enter city"
@@ -511,13 +582,23 @@ watch(() => address.country, () => {
                     :color="isFieldError('city') ? 'error' : isFieldValid('city') ? 'success' : undefined"
                     @blur="validateField('city')"
                   >
-                    <template v-if="isFieldValid('city')" #trailing>
-                      <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                    <template
+                      v-if="isFieldValid('city')"
+                      #trailing
+                    >
+                      <UIcon
+                        name="i-lucide-check-circle-2"
+                        class="w-5 h-5 text-green-500"
+                      />
                     </template>
                   </UInput>
                 </UFormField>
 
-                <UFormField label="ZIP / Postal Code" :error="errors.postal_code" required>
+                <UFormField
+                  label="ZIP / Postal Code"
+                  :error="errors.postal_code"
+                  required
+                >
                   <UInput
                     v-model="address.postal_code"
                     placeholder="Enter postal code"
@@ -525,15 +606,25 @@ watch(() => address.country, () => {
                     :color="isFieldError('postal_code') ? 'error' : isFieldValid('postal_code') ? 'success' : undefined"
                     @blur="validateField('postal_code')"
                   >
-                    <template v-if="isFieldValid('postal_code')" #trailing>
-                      <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                    <template
+                      v-if="isFieldValid('postal_code')"
+                      #trailing
+                    >
+                      <UIcon
+                        name="i-lucide-check-circle-2"
+                        class="w-5 h-5 text-green-500"
+                      />
                     </template>
                   </UInput>
                 </UFormField>
               </div>
 
               <!-- 详细地址 -->
-              <UFormField label="Street Address" :error="errors.detail_address" required>
+              <UFormField
+                label="Street Address"
+                :error="errors.detail_address"
+                required
+              >
                 <UInput
                   v-model="address.detail_address"
                   placeholder="Enter street address"
@@ -542,8 +633,14 @@ watch(() => address.country, () => {
                   :color="isFieldError('detail_address') ? 'error' : isFieldValid('detail_address') ? 'success' : undefined"
                   @blur="validateField('detail_address')"
                 >
-                  <template v-if="isFieldValid('detail_address')" #trailing>
-                    <UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500" />
+                  <template
+                    v-if="isFieldValid('detail_address')"
+                    #trailing
+                  >
+                    <UIcon
+                      name="i-lucide-check-circle-2"
+                      class="w-5 h-5 text-green-500"
+                    />
                   </template>
                 </UInput>
               </UFormField>
@@ -555,7 +652,10 @@ watch(() => address.country, () => {
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-credit-card" class="w-5 h-5 text-primary-600" />
+              <UIcon
+                name="i-lucide-credit-card"
+                class="w-5 h-5 text-primary-600"
+              />
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                 Payment Method
               </h2>
@@ -596,7 +696,10 @@ watch(() => address.country, () => {
                   </span>
                 </div>
                 <div v-if="option.value === 1">
-                  <UIcon name="i-simple-icons-paypal" class="w-10 h-10 text-[#0070ba]" />
+                  <UIcon
+                    name="i-simple-icons-paypal"
+                    class="w-10 h-10 text-[#0070ba]"
+                  />
                 </div>
               </div>
             </UCard>
@@ -625,7 +728,10 @@ watch(() => address.country, () => {
         <UCard class="sticky top-24 shadow-lg">
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-receipt" class="w-5 h-5 text-primary-600" />
+              <UIcon
+                name="i-lucide-receipt"
+                class="w-5 h-5 text-primary-600"
+              />
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                 Order Summary
               </h2>
@@ -647,11 +753,11 @@ watch(() => address.country, () => {
                       :src="getProductThumb(item.thumb)"
                       :alt="item.title"
                       class="w-full h-full object-cover"
-                      @error="(e: Event) => { 
+                      @error="(e: Event) => {
                         const target = e.target as HTMLImageElement
-                        if (target) target.src = '/placeholder-product.jpg' 
+                        if (target) target.src = '/placeholder-product.jpg'
                       }"
-                    />
+                    >
                   </div>
                   <UBadge
                     color="error"

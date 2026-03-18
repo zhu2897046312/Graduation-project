@@ -1,10 +1,10 @@
 <script setup lang="ts">
 const props = defineProps<{
-  productId: any
-  title: any
-  thumb: any
-  price: any
-  originalPrice: any
+  productId: number
+  title: string
+  thumb: string
+  price: number
+  originalPrice?: number
 }>()
 
 // 图片加载状态
@@ -31,26 +31,29 @@ watch(() => props.thumb, (newThumb) => {
 
 <template>
   <div class="group block transition-opacity duration-300 hover:opacity-80">
-    <NuxtLink 
-      :to="`/product/${props.productId}`" 
+    <NuxtLink
+      :to="`/product/${props.productId}`"
       :title="props.title"
       class="block"
     >
       <UCard class="h-full hover:shadow-lg transition-shadow duration-300">
         <!-- 图片容器 - 强制正方形比例 -->
         <div class="relative w-full aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800 rounded-t-lg flex items-center justify-center">
-          <img 
+          <img
             v-if="!imageError && imageSrc"
-            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-            :src="imageSrc" 
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            :src="imageSrc"
             :alt="props.title"
             loading="lazy"
             @error="handleImageError"
-          />
+          >
           <!-- 默认占位图标 -->
-          <div v-else class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-            <UIcon 
-              name="i-lucide-image" 
+          <div
+            v-else
+            class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700"
+          >
+            <UIcon
+              name="i-lucide-image"
               class="w-16 h-16 text-gray-400 dark:text-gray-500"
             />
           </div>
@@ -58,19 +61,19 @@ watch(() => props.thumb, (newThumb) => {
 
         <!-- 商品信息 -->
         <div class="mt-3 space-y-1 p-4">
-          <NuxtLink 
-            :to="`/product/${props.productId}`" 
+          <NuxtLink
+            :to="`/product/${props.productId}`"
             :title="props.title"
             class="block text-gray-800 dark:text-gray-200 text-base leading-snug line-clamp-2 h-[3.2em] hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
           >
             {{ props.title }}
           </NuxtLink>
-          
+
           <div class="flex items-center gap-2">
             <span class="text-xl font-medium text-[#ff4d4f] dark:text-red-400">
               ${{ props.price }}
             </span>
-            <span 
+            <span
               v-if="props.originalPrice && props.originalPrice > props.price"
               class="text-sm text-gray-500 dark:text-gray-400 line-through"
             >

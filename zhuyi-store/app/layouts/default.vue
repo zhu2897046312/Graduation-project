@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCookie } from 'nuxt/app'
 import api from '../api'
-import type { BreadcrumbItem, DocumentListResponse, CmsDocument } from '../api/type'
+import type { BreadcrumbItem, FooterDocumentItem } from '../types/type'
 import { useCartShared } from '../composables/useCartShared'
 
 const router = useRouter()
@@ -36,26 +36,24 @@ const { data: breadcrumb } = await useAsyncData<BreadcrumbItem[]>('breadcrumb', 
   if (route.path === '/') {
     return []
   }
-  
+
   const path = route.path
   const params = route.params
-  
+
   try {
     // 检查是否是分类页 /collections/[code]
     if (path.startsWith('/collections/') && params.code) {
-      return await api.shop.market.breadcrumb({ 
-        mode: 1, 
-        category_code: params.code as string 
+      return await api.shop.market.breadcrumb({
+        mode: 1,
+        category_code: params.code as string
       })
-    } 
-    // 检查是否是商品页 /product/[id]
-    else if (path.startsWith('/product/') && params.id) {
-      return await api.shop.market.breadcrumb({ 
-        mode: 2, 
-        product_id: params.id as string 
+    } else if (path.startsWith('/product/') && params.id) {
+      return await api.shop.market.breadcrumb({
+        mode: 2,
+        product_id: params.id as string
       })
     }
-    
+
     return []
   } catch (error) {
     console.error('Failed to fetch breadcrumb:', error)
@@ -67,14 +65,14 @@ const { data: breadcrumb } = await useAsyncData<BreadcrumbItem[]>('breadcrumb', 
 
 // 构建面包屑项（转换为 NuxtUI 格式，包含 Home）
 const breadcrumbItems = computed(() => {
-  const items: Array<{ label: string; to: string; icon?: string }> = [
+  const items: Array<{ label: string, to: string, icon?: string }> = [
     {
       label: 'Home',
       to: '/',
       icon: 'i-lucide-home'
     }
   ]
-  
+
   if (breadcrumb.value && Array.isArray(breadcrumb.value)) {
     breadcrumb.value.forEach((item) => {
       if (item && item.title && item.link) {
@@ -85,19 +83,19 @@ const breadcrumbItems = computed(() => {
       }
     })
   }
-  
+
   return items
 })
 
 // Footer 文档列表
-const { data: footer_list } = await useAsyncData<Array<CmsDocument & { link: string }>>('footer_list_', async () => {
+const { data: footer_list } = await useAsyncData<FooterDocumentItem[]>('footer_list_', async () => {
   try {
     const res = await api.blogs.document.list({})
     // API 返回的是 DocumentListResponse 格式 { list: CmsDocument[], total: number }
     const list = res.list || []
-    return list.map((item) => ({
+    return list.map((item): FooterDocumentItem => ({
       ...item,
-      link: `/blogs/${item.code || ''}` // 动态生成 link 字段
+      link: `/blogs/${item.code ?? ''}` // 动态生成 link 字段
     }))
   } catch (error) {
     console.error('Failed to fetch footer list:', error)
@@ -108,17 +106,17 @@ const { data: footer_list } = await useAsyncData<Array<CmsDocument & { link: str
 // 将文档列表分成4列显示
 const footerColumns = computed(() => {
   if (!footer_list.value || footer_list.value.length === 0) return []
-  
+
   const itemsPerColumn = Math.ceil(footer_list.value.length / 4)
-  const columns: any[][] = [[], [], [], []]
-  
-  footer_list.value.forEach((item: any, index: number) => {
+  const columns: FooterDocumentItem[][] = [[], [], [], []]
+
+  footer_list.value.forEach((item: FooterDocumentItem, index: number) => {
     const columnIndex = Math.floor(index / itemsPerColumn)
     if (columnIndex < 4 && columns[columnIndex]) {
       columns[columnIndex].push(item)
     }
   })
-  
+
   return columns.filter(col => col && col.length > 0)
 })
 
@@ -168,7 +166,10 @@ const userMenuItems = computed(() => {
       <UHeader>
         <!-- Left: Logo -->
         <template #left>
-          <NuxtLink to="/" class="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+          <NuxtLink
+            to="/"
+            class="flex items-center gap-2 font-semibold text-gray-900 dark:text-white"
+          >
             <AppLogo class="h-7 w-auto" />
             <span class="hidden sm:inline">Store</span>
           </NuxtLink>
@@ -209,8 +210,16 @@ const userMenuItems = computed(() => {
             </UButton>
 
             <!-- User -->
-            <UDropdownMenu :items="userMenuItems" :popper="{ placement: 'bottom-end', offsetDistance: 6 }">
-              <UButton variant="ghost" color="neutral" size="sm" aria-label="User">
+            <UDropdownMenu
+              :items="userMenuItems"
+              :popper="{ placement: 'bottom-end', offsetDistance: 6 }"
+            >
+              <UButton
+                variant="ghost"
+                color="neutral"
+                size="sm"
+                aria-label="User"
+              >
                 <UAvatar
                   size="xs"
                   :alt="isAuthed ? 'User' : 'Guest'"
@@ -223,7 +232,10 @@ const userMenuItems = computed(() => {
       </UHeader>
 
       <!-- Expandable search bar (top area) -->
-      <div v-if="showSearch" class="border-t border-gray-200/70 dark:border-gray-800/70">
+      <div
+        v-if="showSearch"
+        class="border-t border-gray-200/70 dark:border-gray-800/70"
+      >
         <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-3">
           <div class="flex items-center gap-2">
             <UInput
@@ -234,10 +246,19 @@ const userMenuItems = computed(() => {
               class="w-full"
               @keydown.enter.prevent="submitSearch"
             />
-            <UButton color="primary" size="lg" @click="submitSearch">
+            <UButton
+              color="primary"
+              size="lg"
+              @click="submitSearch"
+            >
               Search
             </UButton>
-            <UButton variant="ghost" color="neutral" size="lg" @click="showSearch = false">
+            <UButton
+              variant="ghost"
+              color="neutral"
+              size="lg"
+              @click="showSearch = false"
+            >
               Cancel
             </UButton>
           </div>
@@ -246,7 +267,10 @@ const userMenuItems = computed(() => {
     </div>
 
     <!-- 面包屑导航 -->
-    <div v-if="breadcrumbItems && breadcrumbItems.length > 1" class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <div
+      v-if="breadcrumbItems && breadcrumbItems.length > 1"
+      class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+    >
       <UBreadcrumb :items="breadcrumbItems" />
     </div>
 
@@ -259,7 +283,10 @@ const userMenuItems = computed(() => {
     <UFooter class="mt-auto border-t">
       <template #top>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div v-if="footerColumns && footerColumns.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div
+            v-if="footerColumns && footerColumns.length > 0"
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
+          >
             <div
               v-for="(column, columnIndex) in footerColumns"
               :key="columnIndex"
@@ -279,20 +306,31 @@ const userMenuItems = computed(() => {
               </ul>
             </div>
           </div>
-          
+
           <!-- 如果没有数据，显示默认内容 -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div
+            v-else
+            class="grid grid-cols-1 md:grid-cols-4 gap-8"
+          >
             <!-- 关于我们 -->
             <div>
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">关于我们</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                关于我们
+              </h3>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li>
-                  <NuxtLink to="/about" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/about"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     公司简介
                   </NuxtLink>
                 </li>
                 <li>
-                  <NuxtLink to="/contact" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/contact"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     联系我们
                   </NuxtLink>
                 </li>
@@ -301,20 +339,31 @@ const userMenuItems = computed(() => {
 
             <!-- 客户服务 -->
             <div>
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">客户服务</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                客户服务
+              </h3>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li>
-                  <NuxtLink to="/shipping" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/shipping"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     配送信息
                   </NuxtLink>
                 </li>
                 <li>
-                  <NuxtLink to="/returns" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/returns"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     退换货政策
                   </NuxtLink>
                 </li>
                 <li>
-                  <NuxtLink to="/faq" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/faq"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     常见问题
                   </NuxtLink>
                 </li>
@@ -323,15 +372,23 @@ const userMenuItems = computed(() => {
 
             <!-- 法律信息 -->
             <div>
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">法律信息</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                法律信息
+              </h3>
               <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li>
-                  <NuxtLink to="/terms" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/terms"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     服务条款
                   </NuxtLink>
                 </li>
                 <li>
-                  <NuxtLink to="/privacy" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <NuxtLink
+                    to="/privacy"
+                    class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
                     隐私政策
                   </NuxtLink>
                 </li>
@@ -340,7 +397,9 @@ const userMenuItems = computed(() => {
 
             <!-- 关注我们 -->
             <div>
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">关注我们</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                关注我们
+              </h3>
               <div class="flex space-x-4">
                 <UButton
                   to="#"
@@ -382,6 +441,3 @@ const userMenuItems = computed(() => {
     </UFooter>
   </div>
 </template>
-
-
-

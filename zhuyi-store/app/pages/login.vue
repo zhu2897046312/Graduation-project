@@ -39,7 +39,7 @@ const errors = reactive({
 const validateField = (field: 'email' | 'password') => {
   const rules = field === 'email' ? emailRules : passwordRules
   const value = form[field]
-  
+
   for (const rule of rules) {
     const error = rule(value)
     if (error !== true) {
@@ -47,7 +47,7 @@ const validateField = (field: 'email' | 'password') => {
       return false
     }
   }
-  
+
   errors[field] = ''
   return true
 }
@@ -57,23 +57,22 @@ const handleLogin = async () => {
   // 验证所有字段
   const isEmailValid = validateField('email')
   const isPasswordValid = validateField('password')
-  
+
   if (!isEmailValid || !isPasswordValid) {
     return
   }
-  
+
   loading.value = true
-  
+
   try {
     const result = await api.shop.user.login({
       email: form.email,
       password: form.password
     })
-    
+
     // 登录成功，保存 token（根据实际 API 响应调整）
-    // 支持多种可能的响应格式：result.token, result.accessToken, 或 result 本身就是 token
-    const token = result?.token || result?.accessToken || (typeof result === 'string' ? result : null)
-    
+    const token = result?.token ?? result?.accessToken ?? (typeof result === 'string' ? result : null)
+
     if (token) {
       const accessToken = useCookie('accessToken', {
         maxAge: 60 * 60 * 24 * 7, // 7天
@@ -81,23 +80,24 @@ const handleLogin = async () => {
         secure: true
       })
       accessToken.value = token
-      
+
       toast.add({
         title: '登录成功',
         description: '欢迎回来！',
         color: 'success'
       })
-      
+
       // 跳转到首页或之前访问的页面
       const redirect = useRoute().query.redirect as string || '/'
       await router.push(redirect)
     } else {
       throw new Error('登录响应格式异常，未找到 token')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : '邮箱或密码错误，请重试'
     toast.add({
       title: '登录失败',
-      description: error.message || '邮箱或密码错误，请重试',
+      description: message,
       color: 'error'
     })
   } finally {
@@ -126,7 +126,10 @@ useHead({
     <div class="max-w-md w-full space-y-4">
       <!-- Logo 和标题区域 -->
       <div class="text-center">
-        <NuxtLink to="/" class="inline-block mb-4">
+        <NuxtLink
+          to="/"
+          class="inline-block mb-4"
+        >
           <AppLogo class="w-auto h-8 mx-auto" />
         </NuxtLink>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -147,7 +150,10 @@ useHead({
           </div>
         </template>
 
-        <form @submit.prevent="handleLogin" class="space-y-4">
+        <form
+          class="space-y-4"
+          @submit.prevent="handleLogin"
+        >
           <!-- 邮箱输入 -->
           <div>
             <UFormGroup
@@ -161,11 +167,11 @@ useHead({
                 placeholder="your.email@example.com"
                 size="lg"
                 :disabled="loading"
-                @blur="validateField('email')"
-                @keydown="handleKeydown"
                 icon="i-lucide-mail"
                 autocomplete="email"
                 class="w-full"
+                @blur="validateField('email')"
+                @keydown="handleKeydown"
               />
             </UFormGroup>
           </div>
@@ -183,11 +189,11 @@ useHead({
                 placeholder="请输入密码"
                 size="lg"
                 :disabled="loading"
-                @blur="validateField('password')"
-                @keydown="handleKeydown"
                 icon="i-lucide-lock"
                 autocomplete="current-password"
                 class="w-full"
+                @blur="validateField('password')"
+                @keydown="handleKeydown"
               >
                 <template #trailing>
                   <UButton
@@ -246,7 +252,10 @@ useHead({
             class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
           >
             立即注册
-            <UIcon name="i-lucide-arrow-right" class="ml-1 w-4 h-4" />
+            <UIcon
+              name="i-lucide-arrow-right"
+              class="ml-1 w-4 h-4"
+            />
           </NuxtLink>
         </div>
       </UCard>
@@ -254,11 +263,17 @@ useHead({
       <!-- 底部提示 -->
       <p class="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
         登录即表示您同意我们的
-        <NuxtLink to="/terms" class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+        <NuxtLink
+          to="/terms"
+          class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
           服务条款
         </NuxtLink>
         和
-        <NuxtLink to="/privacy" class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+        <NuxtLink
+          to="/privacy"
+          class="underline hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+        >
           隐私政策
         </NuxtLink>
       </p>

@@ -38,8 +38,8 @@ export const useAddressData = (key: string = 'address-json') => {
     if (!addressJson.value?.countries) {
       return []
     }
-    
-    return addressJson.value.countries.map((c) => ({
+
+    return addressJson.value.countries.map(c => ({
       label: c.full_name,
       value: c.name
     }))
@@ -53,11 +53,11 @@ export const useAddressData = (key: string = 'address-json') => {
     if (!countryName || !addressJson.value?.countries) {
       return []
     }
-    
+
     const selectedCountry = addressJson.value.countries.find(
-      (c) => c.name === countryName
+      c => c.name === countryName
     )
-    
+
     return selectedCountry?.provinces?.map((p: string) => ({
       label: p,
       value: p

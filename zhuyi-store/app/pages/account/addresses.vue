@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import api from '../../api'
-import type { Address, AddressCreateParams, AddressModifyParams } from '../../api/type'
+import type { Address, AddressCreateParams, AddressModifyParams } from '../../types/type'
 import { useAddressData } from '../../composables/useAddressData'
 
 definePageMeta({ layout: 'default' })
 
-const router = useRouter()
 const toast = useToast()
 const accessToken = useCookie('accessToken')
 const isAuthed = computed(() => !!accessToken.value)
@@ -157,19 +156,37 @@ useHead({
   <div class="addresses-page max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8 flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Address Book</h1>
-        <p class="text-gray-600 dark:text-gray-400">Manage your shipping addresses</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Address Book
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          Manage your shipping addresses
+        </p>
       </div>
-      <UButton color="primary" size="lg" icon="i-lucide-plus" @click="openModal()">
+      <UButton
+        color="primary"
+        size="lg"
+        icon="i-lucide-plus"
+        @click="openModal()"
+      >
         Add Address
       </UButton>
     </div>
 
-    <div v-if="pending" class="flex justify-center items-center py-20">
-      <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-600" />
+    <div
+      v-if="pending"
+      class="flex justify-center items-center py-20"
+    >
+      <UIcon
+        name="i-lucide-loader-2"
+        class="w-8 h-8 animate-spin text-primary-600"
+      />
     </div>
 
-    <div v-else-if="addressList?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      v-else-if="addressList?.length"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
       <UCard
         v-for="addr in addressList"
         :key="addr.id"
@@ -181,7 +198,12 @@ useHead({
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                 {{ addr.title || 'Address' }}
               </h3>
-              <UBadge v-if="addr.default_status === 1" color="primary" variant="subtle" size="sm">
+              <UBadge
+                v-if="addr.default_status === 1"
+                color="primary"
+                variant="subtle"
+                size="sm"
+              >
                 Default
               </UBadge>
             </div>
@@ -196,16 +218,28 @@ useHead({
           <p>{{ addr.city }}{{ addr.region ? `, ${addr.region}` : '' }} {{ addr.postal_code }}</p>
           <p>{{ addr.province }}, {{ addr.country }}</p>
           <p class="pt-2 flex items-center gap-1">
-            <UIcon name="i-lucide-phone" class="w-4 h-4" /> {{ addr.phone }}
+            <UIcon
+              name="i-lucide-phone"
+              class="w-4 h-4"
+            /> {{ addr.phone }}
           </p>
           <p class="flex items-center gap-1">
-            <UIcon name="i-lucide-mail" class="w-4 h-4" /> {{ addr.email }}
+            <UIcon
+              name="i-lucide-mail"
+              class="w-4 h-4"
+            /> {{ addr.email }}
           </p>
         </div>
 
         <template #footer>
           <div class="flex gap-2">
-            <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-edit" @click="openModal(addr)">
+            <UButton
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              icon="i-lucide-edit"
+              @click="openModal(addr)"
+            >
               Edit
             </UButton>
             <UButton
@@ -239,75 +273,158 @@ useHead({
       description="Add your first shipping address to get started"
       class="py-12"
     >
-      <UButton color="primary" size="lg" icon="i-lucide-plus" @click="openModal()">
+      <UButton
+        color="primary"
+        size="lg"
+        icon="i-lucide-plus"
+        @click="openModal()"
+      >
         Add Address
       </UButton>
     </UEmpty>
 
     <!-- 统一的 Modal（新增 & 编辑共用） -->
-    <UModal v-model:open="modalOpen" title="Address" :description="editingAddress ? 'Edit your shipping address' : 'Add a new shipping address'">
+    <UModal
+      v-model:open="modalOpen"
+      title="Address"
+      :description="editingAddress ? 'Edit your shipping address' : 'Add a new shipping address'"
+    >
       <template #body>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <UFormField label="First Name" required>
-              <UInput v-model="form.first_name" placeholder="Enter first name" size="lg" />
-            </UFormField>
-            <UFormField label="Last Name" required>
-              <UInput v-model="form.last_name" placeholder="Enter last name" size="lg" />
-            </UFormField>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <UFormField label="Email" required>
-              <UInput v-model="form.email" type="email" placeholder="Enter email" size="lg" />
-            </UFormField>
-            <UFormField label="Phone" required>
-              <UInput v-model="form.phone" type="tel" placeholder="Enter phone" size="lg" />
-            </UFormField>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <UFormField label="Country" required>
-              <USelect v-model="form.country" :items="countryOptions" placeholder="Select country" size="lg" />
-            </UFormField>
-            <UFormField label="Province" required>
-              <USelect
-                v-model="form.province"
-                :items="provinceOptions"
-                placeholder="Select province"
-                size="lg"
-                :disabled="!form.country"
-              />
-            </UFormField>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <UFormField label="City" required>
-              <UInput v-model="form.city" placeholder="Enter city" size="lg" />
-            </UFormField>
-            <UFormField label="Postal Code" required>
-              <UInput v-model="form.postal_code" placeholder="Enter postal code" size="lg" />
-            </UFormField>
-          </div>
-
-          <UFormField label="Region (Optional)">
-            <UInput v-model="form.region" placeholder="Enter region" size="lg" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField
+            label="First Name"
+            required
+          >
+            <UInput
+              v-model="form.first_name"
+              placeholder="Enter first name"
+              size="lg"
+            />
           </UFormField>
-
-          <UFormField label="Street Address" required>
-            <UInput v-model="form.detail_address" placeholder="Enter street address" size="lg" />
+          <UFormField
+            label="Last Name"
+            required
+          >
+            <UInput
+              v-model="form.last_name"
+              placeholder="Enter last name"
+              size="lg"
+            />
           </UFormField>
+        </div>
 
-          <UCheckbox
-            :checked="form.default_status === 1"
-            @update:checked="(val: boolean) => form.default_status = val ? 1 : 0"
-            label="Set as default address"
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField
+            label="Email"
+            required
+          >
+            <UInput
+              v-model="form.email"
+              type="email"
+              placeholder="Enter email"
+              size="lg"
+            />
+          </UFormField>
+          <UFormField
+            label="Phone"
+            required
+          >
+            <UInput
+              v-model="form.phone"
+              type="tel"
+              placeholder="Enter phone"
+              size="lg"
+            />
+          </UFormField>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField
+            label="Country"
+            required
+          >
+            <USelect
+              v-model="form.country"
+              :items="countryOptions"
+              placeholder="Select country"
+              size="lg"
+            />
+          </UFormField>
+          <UFormField
+            label="Province"
+            required
+          >
+            <USelect
+              v-model="form.province"
+              :items="provinceOptions"
+              placeholder="Select province"
+              size="lg"
+              :disabled="!form.country"
+            />
+          </UFormField>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField
+            label="City"
+            required
+          >
+            <UInput
+              v-model="form.city"
+              placeholder="Enter city"
+              size="lg"
+            />
+          </UFormField>
+          <UFormField
+            label="Postal Code"
+            required
+          >
+            <UInput
+              v-model="form.postal_code"
+              placeholder="Enter postal code"
+              size="lg"
+            />
+          </UFormField>
+        </div>
+
+        <UFormField label="Region (Optional)">
+          <UInput
+            v-model="form.region"
+            placeholder="Enter region"
+            size="lg"
           />
+        </UFormField>
+
+        <UFormField
+          label="Street Address"
+          required
+        >
+          <UInput
+            v-model="form.detail_address"
+            placeholder="Enter street address"
+            size="lg"
+          />
+        </UFormField>
+
+        <UCheckbox
+          :checked="form.default_status === 1"
+          label="Set as default address"
+          @update:checked="(val: boolean) => form.default_status = val ? 1 : 0"
+        />
 
         <div class="flex justify-end gap-3">
-          <UButton variant="ghost" color="neutral" @click="modalOpen = false">
+          <UButton
+            variant="ghost"
+            color="neutral"
+            @click="modalOpen = false"
+          >
             Cancel
           </UButton>
-          <UButton color="primary" :loading="formLoading" @click="handleSave">
+          <UButton
+            color="primary"
+            :loading="formLoading"
+            @click="handleSave"
+          >
             {{ editingAddress ? 'Update' : 'Add' }} Address
           </UButton>
         </div>

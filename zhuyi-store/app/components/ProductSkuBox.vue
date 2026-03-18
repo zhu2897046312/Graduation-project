@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import type { SpProductProdFrontVo } from '../api/type'
+import type { SpProductProdFrontVo, SpProductProdFrontVoValueItem } from '../types/type'
 
 const props = withDefaults(defineProps<{
-  list: SpProductProdFrontVo[],
+  list: SpProductProdFrontVo[]
   defaultSelected?: string
 }>(), {
-  list: () => [] 
+  list: () => []
 })
 
 const emit = defineEmits(['change'])
 
 // 使用 ref 而不是 useState 来避免 SSR 问题
-const current_selected = ref<{prop_id: number, value_id: number}[]>([])
+const current_selected = ref<{ prop_id: number, value_id: number }[]>([])
 
 // 在 onMounted 中设置初始选中状态，确保只在客户端执行
 onMounted(() => {
   if (props.defaultSelected && props.list && props.list.length > 0) {
     const valueIds = props.defaultSelected.split(';').map(Number)
-    const selectedItems: {prop_id: number, value_id: number}[] = []
-    
-    props.list.forEach(warp => {
+    const selectedItems: { prop_id: number, value_id: number }[] = []
+
+    props.list.forEach((warp) => {
       // 确保 warp.value 存在且是数组
       if (warp.value && Array.isArray(warp.value)) {
-        warp.value.forEach((item: any) => {
+        warp.value.forEach((item: SpProductProdFrontVoValueItem) => {
           if (valueIds.includes(item.id)) {
             selectedItems.push({
               prop_id: warp.id,
@@ -37,22 +37,22 @@ onMounted(() => {
   }
 })
 
-const current_list = computed(() => {
+const current_list = computed((): SpProductProdFrontVo[] => {
   if (!props.list || props.list.length === 0) {
     return []
   }
-  
-  const list: any[] = JSON.parse(JSON.stringify(props.list))
-  return list.map(warp => {
+
+  const list: SpProductProdFrontVo[] = JSON.parse(JSON.stringify(props.list))
+  return list.map((warp) => {
     // 确保 warp.value 存在且是数组
     if (!warp.value || !Array.isArray(warp.value)) {
       warp.value = []
       return warp
     }
-    
-    warp.value = warp.value.map((item: any) => {
+
+    warp.value = warp.value.map((item: SpProductProdFrontVoValueItem) => {
       // 使用可选链操作符避免 SSR 期间的错误
-      const isSelected = current_selected.value?.find(ic => 
+      const isSelected = current_selected.value?.find(ic =>
         ic.prop_id === warp.id && ic.value_id === item.id
       )
       item.selected = !!isSelected
@@ -64,15 +64,15 @@ const current_list = computed(() => {
 
 const handleSelect = (prop_id: number, value_id: number) => {
   let hit = false
-  for(let i = 0; i < current_selected.value.length; i++) {
-    const item = current_selected.value[i];
+  for (let i = 0; i < current_selected.value.length; i++) {
+    const item = current_selected.value[i]
     if (item?.prop_id === prop_id) {
-      hit = true;
-      item.value_id = value_id;
-      break;
+      hit = true
+      item.value_id = value_id
+      break
     }
   }
-  
+
   if (!hit) {
     current_selected.value.push({
       prop_id,
@@ -87,7 +87,7 @@ const emitChange = () => {
     emit('change', '')
     return
   }
-  
+
   const ids = current_selected.value
     .filter(item => item !== null && item !== undefined)
     .map(item => item.value_id)
@@ -98,7 +98,11 @@ const emitChange = () => {
 <template>
   <div class="sku-box py-2">
     <div v-if="current_list && current_list.length > 0">
-      <div class="sku-item flex gap-4 mb-4" v-for="item in current_list" :key="item.id">
+      <div
+        v-for="item in current_list"
+        :key="item.id"
+        class="sku-item flex gap-4 mb-4"
+      >
         <div class="sku-item-title text-gray-700 dark:text-gray-300 text-sm font-medium py-2 min-w-[80px]">
           {{ item.title }}:
         </div>
@@ -122,7 +126,10 @@ const emitChange = () => {
         </div>
       </div>
     </div>
-    <div v-else class="text-sm text-gray-500 dark:text-gray-400 py-4">
+    <div
+      v-else
+      class="text-sm text-gray-500 dark:text-gray-400 py-4"
+    >
       暂无可用选项
     </div>
   </div>
@@ -148,5 +155,3 @@ const emitChange = () => {
   color: white !important;
 }
 </style>
-
-

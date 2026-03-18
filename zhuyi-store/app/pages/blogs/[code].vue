@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import api from '../../api'
-import type { DocumentInfoResponse } from '../../api/type'
+import type { DocumentInfoResponse } from '../../types/type'
 
 // 使用默认布局
 definePageMeta({
@@ -40,6 +40,7 @@ const formatDate = (dateString: string | null) => {
       day: 'numeric'
     })
   } catch (error) {
+    console.error('Failed to format date:', error)
     return dateString
   }
 }
@@ -63,30 +64,57 @@ useHead({
 <template>
   <div class="blog-detail-page">
     <!-- 加载状态 -->
-    <div v-if="pending" class="flex justify-center items-center py-20">
-      <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-600" />
+    <div
+      v-if="pending"
+      class="flex justify-center items-center py-20"
+    >
+      <UIcon
+        name="i-lucide-loader-2"
+        class="w-8 h-8 animate-spin text-primary-600"
+      />
     </div>
 
     <!-- 文档内容 -->
-    <div v-else-if="status === 'success' && info" class="max-w-4xl mx-auto">
+    <div
+      v-else-if="status === 'success' && info"
+      class="max-w-4xl mx-auto"
+    >
       <!-- 文章头部 -->
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
           {{ info.document?.title }}
         </h1>
-        
+
         <!-- 文章元信息 -->
         <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <div v-if="info.document?.send_time" class="flex items-center gap-2">
-            <UIcon name="i-lucide-calendar" class="w-4 h-4" />
+          <div
+            v-if="info.document?.send_time"
+            class="flex items-center gap-2"
+          >
+            <UIcon
+              name="i-lucide-calendar"
+              class="w-4 h-4"
+            />
             <span>{{ formatDate(info.document.send_time) }}</span>
           </div>
-          <div v-if="info.document?.author" class="flex items-center gap-2">
-            <UIcon name="i-lucide-user" class="w-4 h-4" />
+          <div
+            v-if="info.document?.author"
+            class="flex items-center gap-2"
+          >
+            <UIcon
+              name="i-lucide-user"
+              class="w-4 h-4"
+            />
             <span>{{ info.document.author }}</span>
           </div>
-          <div v-if="info.document?.read_num !== undefined" class="flex items-center gap-2">
-            <UIcon name="i-lucide-eye" class="w-4 h-4" />
+          <div
+            v-if="info.document?.read_num !== undefined"
+            class="flex items-center gap-2"
+          >
+            <UIcon
+              name="i-lucide-eye"
+              class="w-4 h-4"
+            />
             <span>{{ info.document.read_num }} views</span>
           </div>
         </div>
@@ -101,13 +129,28 @@ useHead({
       </UCard>
 
       <!-- 文章底部信息 -->
-      <div v-if="info.document?.source || info.document?.like_num !== undefined" class="mt-6 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-        <div v-if="info.document?.source" class="flex items-center gap-2">
-          <UIcon name="i-lucide-link" class="w-4 h-4" />
+      <div
+        v-if="info.document?.source || info.document?.like_num !== undefined"
+        class="mt-6 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400"
+      >
+        <div
+          v-if="info.document?.source"
+          class="flex items-center gap-2"
+        >
+          <UIcon
+            name="i-lucide-link"
+            class="w-4 h-4"
+          />
           <span>Source: {{ info.document.source }}</span>
         </div>
-        <div v-if="info.document?.like_num !== undefined" class="flex items-center gap-2">
-          <UIcon name="i-lucide-heart" class="w-4 h-4" />
+        <div
+          v-if="info.document?.like_num !== undefined"
+          class="flex items-center gap-2"
+        >
+          <UIcon
+            name="i-lucide-heart"
+            class="w-4 h-4"
+          />
           <span>{{ info.document.like_num }} likes</span>
         </div>
       </div>

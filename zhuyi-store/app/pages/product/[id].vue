@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import api from '../../api'
-import type { ProductDetailData } from '../../api/type'
+import type { ProductDetailData, ProductItem } from '../../types/type'
 import useCart from '../../hook/useCartHook'
 import { getProductImage } from '../../utils/auth'
 
@@ -24,16 +24,16 @@ const tabItems = computed(() => {
       value: 'details'
     }
   ]
-  
+
   if (info.value?.property_list && info.value.property_list.length > 0) {
     items.push({
       label: 'Specifications',
       value: 'specs'
     })
   }
-  
+
   return items
-}) 
+})
 
 const price = useState<number>('price', () => 0)
 const original_price = useState<number>('original_price', () => 0)
@@ -41,23 +41,23 @@ const current_sku_id = useState<number>('current_sku_id', () => 0)
 const defaultSkuCode = useState<string>('defaultSkuCode', () => '') // 新增：存储默认SKU code
 // 商品的数量
 const quantity = useState<number>('quantity', () => 1)
-  
+
 const { data: info, status } = await useAsyncData<ProductDetailData>(`product-${productId.value}`, async () => {
   try {
     if (!productId.value || productId.value === 0) {
       throw createError({ statusCode: 404, message: 'Invalid product ID' })
     }
-    
+
     const res = await api.shop.product.info(productId.value)
-    
+
     // 设置初始价格
     price.value = res.price
     original_price.value = res.original_price
     quantity.value = 1
     current_sku_id.value = 0
-    
+
     // 查找默认 SKU
-    const defaultSku = res.sku_list?.find((sku) => sku.default_show === 1)
+    const defaultSku = res.sku_list?.find(sku => sku.default_show === 1)
     if (defaultSku) {
       defaultSkuCode.value = defaultSku.sku_code
       price.value = defaultSku.price
@@ -73,7 +73,7 @@ const { data: info, status } = await useAsyncData<ProductDetailData>(`product-${
 })
 
 // 推荐产品获取 - 如果没有标签则不获取
-const { data: recommendedProducts } = await useAsyncData(
+const { data: recommendedProducts } = await useAsyncData<ProductItem[]>(
   `recommended-products-${productId.value}`,
   async () => {
     try {
@@ -81,24 +81,24 @@ const { data: recommendedProducts } = await useAsyncData(
       if (!info.value) {
         return []
       }
-      
+
       // 获取当前商品的所有标签ID，tags 可能为 null
       const tags = info.value.tags || []
       if (tags.length === 0) {
         // 没有标签，直接返回空数组
         return []
       }
-      
-      const tagIds = tags.map((tag) => tag.id).filter((id) => id != null)
+
+      const tagIds = tags.map(tag => tag.id).filter(id => id != null)
       if (tagIds.length === 0) {
         return []
       }
-      
+
       // 随机选择最多4个标签（如果标签数超过4个）
       const randomTagIds = [...tagIds]
         .sort(() => 0.5 - Math.random())
         .slice(0, 4)
-      
+
       // 获取这些标签下的热门商品
       const res = await api.shop.product.list({
         tag_ids: randomTagIds.join(','),
@@ -106,7 +106,7 @@ const { data: recommendedProducts } = await useAsyncData(
         sort_by: 'sales',
         sort_order: 'desc'
       })
-      
+
       // 直接返回列表，API 已返回标准化的 ProductListResponse
       return res.list
     } catch (error) {
@@ -131,7 +131,6 @@ if (!info.value) {
   throw createError({ statusCode: 404, message: 'Page not found' })
 }
 
-
 const { addCart } = useCart()
 
 /**
@@ -139,20 +138,21 @@ const { addCart } = useCart()
  */
 const handleAddCart = async () => {
   try {
-    const productID = info!.value?.id as number
-    await addCart(productID, current_sku_id.value , quantity.value)    
-  } catch (_) {
-    // console.error(error)
+    const productID = info.value?.id
+    if (productID == null) return
+    await addCart(productID, current_sku_id.value, quantity.value)
+  } catch {
+    // 添加购物车失败时静默处理
   }
 }
 
 /**
  * 购物车发生变化
- * @param sku_code 
+ * @param sku_code
  */
 const handleOnSkuChange = (sku_code: string) => {
   const skuList = info.value?.sku_list || []
-  const selectedSku = skuList.find((it) => it.sku_code === sku_code)
+  const selectedSku = skuList.find(it => it.sku_code === sku_code)
   console.log(sku_code, selectedSku)
   if (selectedSku) {
     price.value = selectedSku.price
@@ -162,7 +162,6 @@ const handleOnSkuChange = (sku_code: string) => {
     console.log('没有找到sku')
   }
 }
-
 
 // SEO
 useHead({
@@ -183,35 +182,59 @@ useHead({
         />
       </div>
       <div class="product-info">
-        <h1 class="product-title">{{ info?.title }}</h1>
-        <div v-if="info?.tags && info.tags.length > 0" class="tags-container">
-          <NuxtLink 
-            v-for="item in info.tags" 
+        <h1 class="product-title">
+          {{ info?.title }}
+        </h1>
+        <div
+          v-if="info?.tags && info.tags.length > 0"
+          class="tags-container"
+        >
+          <NuxtLink
+            v-for="item in info.tags"
             :key="item.id"
             :to="`/tag/${item.code}`"
             class="tag-item"
           >
-            <UBadge :color="'primary'" variant="subtle" size="sm">
+            <UBadge
+              :color="'primary'"
+              variant="subtle"
+              size="sm"
+            >
               {{ item.title }}
             </UBadge>
           </NuxtLink>
         </div>
         <div class="product-price-container">
           <span class="price">${{ price }}</span>
-          <span v-if="original_price > price" class="original-price">${{ original_price }}</span>
+          <span
+            v-if="original_price > price"
+            class="original-price"
+          >${{ original_price }}</span>
         </div>
-        <div class="shipping-info">Tax included. Shipping cost calculated at checkout.</div>
-        <div v-if="info?.property_list && info.property_list.length > 0" class="property-container">
-          <div v-for="item in info?.property_list" class="property-item">
+        <div class="shipping-info">
+          Tax included. Shipping cost calculated at checkout.
+        </div>
+        <div
+          v-if="info?.property_list && info.property_list.length > 0"
+          class="property-container"
+        >
+          <div
+            v-for="item in info?.property_list"
+            :key="item.id"
+            class="property-item"
+          >
             <span class="property-item-label">{{ item.title }}:</span>
             <span class="property-item-value">{{ item.value }}</span>
           </div>
         </div>
-        <div v-if="info?.sku_config && info.sku_config.length > 0" class="sku-container">
-          <ProductSkuBox 
-            :list="info.sku_config" 
-            :defaultSelected="defaultSkuCode"
-            @change="handleOnSkuChange" 
+        <div
+          v-if="info?.sku_config && info.sku_config.length > 0"
+          class="sku-container"
+        >
+          <ProductSkuBox
+            :list="info.sku_config"
+            :default-selected="defaultSkuCode"
+            @change="handleOnSkuChange"
           />
         </div>
         <div class="cart-action-container">
@@ -237,71 +260,97 @@ useHead({
       </div>
     </div>
 
-      <div class="flex items-center justify-center gap-2 mt-8 mb-4">
-        <div class="w-full">
-          <UTabs v-model="activeTab" :items="tabItems" class="w-full" />
-        </div>
+    <div class="flex items-center justify-center gap-2 mt-8 mb-4">
+      <div class="w-full">
+        <UTabs
+          v-model="activeTab"
+          :items="tabItems"
+          class="w-full"
+        />
       </div>
-    
-      <!-- 根据选项卡显示不同内容 -->
-      <UCard v-if="activeTab === 'details'" class="product-body">
+    </div>
+
+    <!-- 根据选项卡显示不同内容 -->
+    <UCard
+      v-if="activeTab === 'details'"
+      class="product-body"
+    >
+      <template #header>
+        <h2>Product Details</h2>
+      </template>
+      <!-- 商品详情富文本来自 CMS 后台，内容受控，此处需 v-html 渲染 -->
+      <!-- eslint-disable vue/no-v-html -->
+      <div
+        class="blogs_box"
+        v-html="info?.content"
+      />
+      <!-- eslint-enable vue/no-v-html -->
+    </UCard>
+
+    <div
+      v-if="activeTab === 'specs'"
+      class="property my-2"
+    >
+      <UEmpty
+        v-if="!info?.property_list || info.property_list.length === 0"
+        icon="i-lucide-file-question"
+        title="No specifications available"
+        description="This product does not have specifications yet"
+        class="py-8"
+      />
+
+      <UCard
+        v-else
+        class="property-item"
+      >
         <template #header>
-          <h2>Product Details</h2>
+          <h3 class="text-lg font-semibold">
+            Specifications
+          </h3>
         </template>
-        <div class="blogs_box" v-html="info?.content"></div>
-      </UCard>
-
-      <div v-if="activeTab === 'specs'" class="property my-2">
-        <UEmpty 
-          v-if="!info?.property_list || info.property_list.length === 0"
-          icon="i-lucide-file-question"
-          title="No specifications available"
-          description="This product does not have specifications yet"
-          class="py-8"
-        />
-        
-        <UCard v-else class="property-item">
-          <template #header>
-            <h3 class="text-lg font-semibold">Specifications</h3>
-          </template>
-          <div class="space-y-2">
-            <div 
-              v-for="item in info.property_list" 
-              :key="item.title"
-              class="flex gap-4 py-2 border-b border-gray-200 dark:border-gray-700 last:border-0"
-            >
-              <span class="property-name font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
-                {{ item.title }}:
-              </span>
-              <span class="property-value text-gray-900 dark:text-gray-100">
-                {{ item.value }}
-              </span>
-            </div>
+        <div class="space-y-2">
+          <div
+            v-for="item in info.property_list"
+            :key="item.title"
+            class="flex gap-4 py-2 border-b border-gray-200 dark:border-gray-700 last:border-0"
+          >
+            <span class="property-name font-medium text-gray-600 dark:text-gray-400 min-w-[120px]">
+              {{ item.title }}:
+            </span>
+            <span class="property-value text-gray-900 dark:text-gray-100">
+              {{ item.value }}
+            </span>
           </div>
-        </UCard>
-      </div>
-
-      <div class="may-like product-body mt-8">
-        <h1 class="section-title">You May Also Like</h1>
-        <div v-if="recommendedProducts && recommendedProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-          <ProductCard
-            v-for="product in recommendedProducts"
-            :key="product.id"
-            :product-id="product.id"
-            :title="product.title"
-            :thumb="getProductThumb(product.picture)"
-            :price="product.price"
-            :original-price="product.original_price"
-          />
         </div>
-        <UEmpty
-          v-else
-          icon="i-lucide-package"
-          title="No recommended products"
-          description="There are no recommended products available at the moment"
-          class="py-8"
+      </UCard>
+    </div>
+
+    <div class="may-like product-body mt-8">
+      <h1 class="section-title">
+        You May Also Like
+      </h1>
+      <div
+        v-if="recommendedProducts && recommendedProducts.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6"
+      >
+        <ProductCard
+          v-for="product in recommendedProducts"
+          :key="product.id"
+          :product-id="product.id"
+          :title="product.title"
+          :thumb="getProductThumb(product.picture)"
+          :price="product.price"
+          :original-price="product.original_price"
         />
       </div>
+      <UEmpty
+        v-else
+        icon="i-lucide-package"
+        title="No recommended products"
+        description="There are no recommended products available at the moment"
+        class="py-8"
+      />
+    </div>
   </div>
 </template>
 

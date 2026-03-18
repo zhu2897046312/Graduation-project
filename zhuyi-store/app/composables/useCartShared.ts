@@ -1,5 +1,5 @@
 import api from '../api'
-import type { CartItem } from '../api/type'
+import type { CartItem, UseCartListOptions } from '../types/type'
 
 /**
  * 共享的购物车 composable
@@ -14,35 +14,28 @@ export const useCartShared = () => {
    * @param key - useAsyncData 的 key，用于区分不同的调用场景
    * @param options - useAsyncData 的选项，包括 lazy、watch 等
    */
-  const useCartList = (
-    key: string = 'cart-list', 
-    options?: { 
-      lazy?: boolean
-      watch?: any[]
-      onError?: (error: unknown) => void
-    }
-  ) => {
+  const useCartList = (key: string = 'cart-list', options?: UseCartListOptions) => {
     return useAsyncData<CartItem[]>(key, async () => {
       try {
         const res = await api.shop.cart.list()
         // API 返回的是 CartListResponse 格式 { list: CartItem[], total: number }
         const list = res.list || []
-        
+
         // 自动更新购物车数量
         const count = list.reduce((total, item) => total + item.quantity, 0)
         cartNum.value = count
-        
+
         return list
       } catch (error) {
         console.error('Failed to fetch cart:', error)
         // 出错时重置数量
         cartNum.value = 0
-        
+
         // 如果提供了错误处理回调，调用它
         if (options?.onError) {
           options.onError(error)
         }
-        
+
         return []
       }
     }, options)
@@ -65,15 +58,15 @@ export const useCartShared = () => {
     try {
       const res = await api.shop.cart.list()
       const list = res.list || []
-      
+
       // 更新购物车数量
       const count = list.reduce((total, item) => total + item.quantity, 0)
       cartNum.value = count
-      
+
       // 刷新所有使用 useAsyncData 的购物车列表
       await refreshNuxtData('cart-list')
       await refreshNuxtData('checkout-cart')
-      
+
       return list
     } catch (error) {
       console.error('Failed to refresh cart:', error)

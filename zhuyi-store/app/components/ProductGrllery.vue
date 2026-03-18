@@ -2,7 +2,7 @@
 const props = withDefaults(defineProps<{
   grllery: string[]
 }>(), {
-  grllery: () => [] 
+  grllery: () => []
 })
 
 const current = ref(0)
@@ -21,7 +21,7 @@ const currentImage = computed(() => {
 // 处理鼠标进入
 const handleMouseEnter = (event: MouseEvent) => {
   if (!bigPictureRef.value || !currentImage.value) return
-  
+
   const rect = bigPictureRef.value.getBoundingClientRect()
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
@@ -31,7 +31,7 @@ const handleMouseEnter = (event: MouseEvent) => {
 
   zoomStyle.value = {
     left: `${zoomX}px`,
-    top: `${zoomY}px`,
+    top: `${zoomY}px`
   }
 
   zoomShowStyle.value = {
@@ -45,7 +45,7 @@ const handleMouseEnter = (event: MouseEvent) => {
 // 处理鼠标移动
 const handleMouseMove = (event: MouseEvent) => {
   if (!bigPictureRef.value || !zoomVisible.value || !currentImage.value) return
-  
+
   const rect = bigPictureRef.value.getBoundingClientRect()
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
@@ -55,9 +55,9 @@ const handleMouseMove = (event: MouseEvent) => {
 
   zoomStyle.value = {
     left: `${zoomX}px`,
-    top: `${zoomY}px`,
+    top: `${zoomY}px`
   }
-  
+
   zoomShowStyle.value = {
     backgroundImage: `url(${currentImage.value})`,
     backgroundPosition: `-${zoomX * 2}px -${zoomY * 2}px`
@@ -79,7 +79,10 @@ const selectImage = (index: number) => {
 </script>
 
 <template>
-  <div v-if="props.grllery && props.grllery.length > 0" class="product-gallery flex gap-4">
+  <div
+    v-if="props.grllery && props.grllery.length > 0"
+    class="product-gallery flex gap-4"
+  >
     <!-- 缩略图列表 -->
     <div class="flex flex-col gap-2 flex-shrink-0">
       <button
@@ -98,7 +101,7 @@ const selectImage = (index: number) => {
           :alt="`Thumbnail ${index + 1}`"
           class="w-full h-full object-cover"
           loading="lazy"
-        />
+        >
         <div
           v-if="index === current"
           class="absolute inset-0 bg-primary-500/10 dark:bg-primary-400/10"
@@ -118,8 +121,8 @@ const selectImage = (index: number) => {
           @mousemove="handleMouseMove"
           @mouseleave="handleMouseLeave"
           @error="(e: any) => { e.target.src = '/placeholder-product.jpg' }"
-        />
-        
+        >
+
         <!-- 放大镜框 -->
         <div
           v-if="zoomVisible"
@@ -136,9 +139,12 @@ const selectImage = (index: number) => {
       />
     </div>
   </div>
-  
+
   <!-- 空状态 -->
-  <div v-else class="flex items-center justify-center w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg">
+  <div
+    v-else
+    class="flex items-center justify-center w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg"
+  >
     <UEmpty
       icon="i-lucide-image"
       title="暂无图片"

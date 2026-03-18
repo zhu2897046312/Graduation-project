@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import api from '../../api'
-import type { Category, ProductListResponse, ProductItem } from '../../api/type'
+import type { Category, ProductListResponse, ProductItem } from '../../types/type'
 import { getProductImage } from '../../utils/auth'
 
 // 使用默认布局
@@ -34,7 +34,7 @@ if (!info.value) {
 }
 
 // 获取商品列表
-const { data: productData, pending: productsPending, refresh } = await useAsyncData<ProductListResponse>(
+const { data: productData, pending: productsPending } = await useAsyncData<ProductListResponse>(
   `products-${code}`,
   async () => {
     if (!info.value) {
@@ -43,7 +43,7 @@ const { data: productData, pending: productsPending, refresh } = await useAsyncD
         total: 0
       }
     }
-    
+
     return await api.shop.product.list({
       category_id: info.value.id,
       page_no: page.value,
@@ -89,53 +89,73 @@ useHead({
 </script>
 
 <template>
-  <!-- 页面标题 -->
-  <div v-if="info" class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-      {{ info.title }}
-    </h1>
-    <p v-if="info.seo_description" class="text-gray-600 dark:text-gray-400">
-      {{ info.seo_description }}
-    </p>
-  </div>
+  <div>
+    <!-- 页面标题 -->
+    <div
+      v-if="info"
+      class="mb-8"
+    >
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        {{ info.title }}
+      </h1>
+      <p
+        v-if="info.seo_description"
+        class="text-gray-600 dark:text-gray-400"
+      >
+        {{ info.seo_description }}
+      </p>
+    </div>
 
-  <!-- 加载状态 -->
-  <div v-if="categoryPending || productsPending" class="flex justify-center items-center py-20">
-    <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-600" />
-  </div>
-
-  <!-- 商品列表 -->
-  <div v-else-if="products && products.length > 0" class="space-y-8">
-    <!-- 商品网格 - 一行4个 -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <ProductCard
-        v-for="item in products"
-        :key="item.id"
-        :product-id="item.id"
-        :title="item.title"
-        :thumb="getProductThumb(item.picture)"
-        :price="item.price"
-        :original-price="item.original_price"
+    <!-- 加载状态 -->
+    <div
+      v-if="categoryPending || productsPending"
+      class="flex justify-center items-center py-20"
+    >
+      <UIcon
+        name="i-lucide-loader-2"
+        class="w-8 h-8 animate-spin text-primary-600"
       />
     </div>
 
-    <!-- 分页 -->
-    <div v-if="totalPages > 1" class="flex justify-center mt-8">
-      <UPagination
-        v-model="page"
-        :total="productData?.total || 0"
-        :items-per-page="pageSize"
-        :max="7"
-        @update:model-value="onUpdatePage"
-      />
-    </div>
-  </div>
+    <!-- 商品列表 -->
+    <div
+      v-else-if="products && products.length > 0"
+      class="space-y-8"
+    >
+      <!-- 商品网格 - 一行4个 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ProductCard
+          v-for="item in products"
+          :key="item.id"
+          :product-id="item.id"
+          :title="item.title"
+          :thumb="getProductThumb(item.picture)"
+          :price="item.price"
+          :original-price="item.original_price"
+        />
+      </div>
 
-  <!-- 空状态 -->
-  <UEmpty
-    v-else
-    icon="i-lucide-package"
-    title="暂无商品"
-    description="该分类下暂时没有可用的商品，请稍后再试"
-  />
+      <!-- 分页 -->
+      <div
+        v-if="totalPages > 1"
+        class="flex justify-center mt-8"
+      >
+        <UPagination
+          v-model="page"
+          :total="productData?.total || 0"
+          :items-per-page="pageSize"
+          :max="7"
+          @update:model-value="onUpdatePage"
+        />
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <UEmpty
+      v-else
+      icon="i-lucide-package"
+      title="暂无商品"
+      description="该分类下暂时没有可用的商品，请稍后再试"
+    />
+  </div>
 </template>
