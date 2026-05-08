@@ -141,11 +141,11 @@ useHead({
         class="flex justify-center mt-8"
       >
         <UPagination
-          v-model="page"
+          v-model:page="page"
           :total="productData?.total || 0"
           :items-per-page="pageSize"
           :max="7"
-          @update:model-value="onUpdatePage"
+          @update:page="onUpdatePage"
         />
       </div>
     </div>

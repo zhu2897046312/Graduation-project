@@ -113,7 +113,7 @@ useHead({
         class="flex justify-center mt-8"
       >
         <UPagination
-          v-model="page"
+          v-model:page="page"
           :total="totalProducts"
           :items-per-page="pageSize"
           :max="7"
